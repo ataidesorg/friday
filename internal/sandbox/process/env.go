@@ -82,21 +82,30 @@ func maps(m map[string]string) func(func(string) bool) {
 	}
 }
 
-// pathDirs is the system path plus the directory of the host's go binary,
-// resolved through symlinks so a package manager's whole bin directory is
-// not exposed. Computed once per provider.
+// pathDirs is the directory of the host's go binary — resolved through
+// symlinks so a package manager's whole bin directory is not exposed —
+// then GOROOT/bin, then the system path. The toolchain leads so the sandbox
+// runs the same go the harness does: a distribution's older /usr/bin/go
+// would otherwise shadow it, and GOTOOLCHAIN=local leaves the build no way
+// to upgrade itself. Computed once per provider.
 func pathDirs() []string {
-	dirs := slices.Clone(systemPath)
-	if root := os.Getenv("GOROOT"); root != "" {
-		dirs = append(dirs, filepath.Join(root, "bin"))
+	var dirs []string
+	add := func(d string) {
+		if d != "" && !slices.Contains(dirs, d) {
+			dirs = append(dirs, d)
+		}
 	}
 	if p, err := exec.LookPath("go"); err == nil {
 		if resolved, err := filepath.EvalSymlinks(p); err == nil {
 			p = resolved
 		}
-		if d := filepath.Dir(p); !slices.Contains(dirs, d) {
-			dirs = append(dirs, d)
-		}
+		add(filepath.Dir(p))
+	}
+	if root := os.Getenv("GOROOT"); root != "" {
+		add(filepath.Join(root, "bin"))
+	}
+	for _, d := range systemPath {
+		add(d)
 	}
 	return dirs
 }

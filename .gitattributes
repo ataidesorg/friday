@@ -1,0 +1,3 @@
+# Check out LF everywhere. Windows runners would otherwise get CRLF working
+# copies, and `gofmt -l .` flags every Go file it sees with CRLF line endings.
+* text=auto eol=lf

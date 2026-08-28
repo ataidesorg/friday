@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 	"syscall"
@@ -434,7 +435,7 @@ func TestHostCachesAndPath(t *testing.T) {
 	if got := hostGoModCache(); got != "/c/mod" {
 		t.Errorf("GOMODCACHE = %q", got)
 	}
-	if dirs := pathDirs(); dirs[len(systemPath)] != "/opt/go/bin" {
+	if dirs := pathDirs(); !slices.Contains(dirs, "/opt/go/bin") {
 		t.Errorf("GOROOT/bin missing from %v", dirs)
 	}
 	t.Setenv("GOMODCACHE", "")
@@ -503,5 +504,26 @@ func TestWriteFileFailures(t *testing.T) {
 	}
 	if err := sb.WriteFile(ctx, "x", nil, 0o600); !errors.Is(err, core.ErrUnavailable) {
 		t.Errorf("write after destroy: %v", err)
+	}
+}
+
+func TestPathDirsPrefersHostToolchain(t *testing.T) {
+	p, err := exec.LookPath("go")
+	if err != nil {
+		t.Skip("go not on host PATH")
+	}
+	if resolved, err := filepath.EvalSymlinks(p); err == nil {
+		p = resolved
+	}
+	want := filepath.Dir(p)
+	dirs := pathDirs()
+	at := slices.Index(dirs, want)
+	if at < 0 {
+		t.Fatalf("pathDirs %v missing host go dir %q", dirs, want)
+	}
+	for _, d := range systemPath {
+		if i := slices.Index(dirs, d); i >= 0 && i < at {
+			t.Errorf("system dir %q precedes host go dir %q in %v", d, want, dirs)
+		}
 	}
 }
