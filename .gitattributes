@@ -1,3 +1,3 @@
-# Check out LF everywhere. Windows runners would otherwise get CRLF working
-# copies, and `gofmt -l .` flags every Go file it sees with CRLF line endings.
+# Check out LF everywhere, so a working copy made on Windows cannot land
+# CRLF files that fail the `gofmt -l .` gate on Linux and macOS.
 * text=auto eol=lf

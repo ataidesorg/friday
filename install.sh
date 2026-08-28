@@ -31,7 +31,6 @@ download() {
 case "$(uname -s)" in
   Darwin) os="darwin" ;;
   Linux) os="linux" ;;
-  MINGW*|MSYS*|CYGWIN*) os="windows" ;;
   *) fail "unsupported OS: $(uname -s)" ;;
 esac
 
@@ -89,9 +88,6 @@ mkdir -p "$tmp/unpacked"
 tar -xzf "$archive" -C "$tmp/unpacked"
 
 bin="friday"
-if [ "$os" = "windows" ]; then
-  bin="friday.exe"
-fi
 
 # Archives contain friday_<version>_<os>_<arch>/$bin. The latest alias
 # tarball keeps that inner directory name, so accept exactly one match.

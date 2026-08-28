@@ -33,8 +33,6 @@ Expected archives:
 - `friday_vX.Y.Z_darwin_arm64.tar.gz`
 - `friday_vX.Y.Z_linux_amd64.tar.gz`
 - `friday_vX.Y.Z_linux_arm64.tar.gz`
-- `friday_vX.Y.Z_windows_amd64.tar.gz`
-- `friday_vX.Y.Z_windows_arm64.tar.gz`
 - Stable latest aliases named `friday_<os>_<arch>.tar.gz`
 - `checksums.txt`
 
