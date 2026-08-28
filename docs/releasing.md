@@ -70,11 +70,22 @@ friday version
 
 Check the release page:
 
-- All six versioned archives are present.
-- All six stable alias archives are present.
+- All four versioned archives are present.
+- All four stable alias archives are present.
 - `checksums.txt` is present.
 - Generated notes describe the real diff.
 - The README install command works on a clean machine.
+
+Verify build provenance, which proves an archive was produced by this
+repository's `release` workflow rather than uploaded by hand:
+
+```console
+gh attestation verify friday_v0.1.0_darwin_arm64.tar.gz --repo ataidesorg/friday
+```
+
+`checksums.txt` only proves the download was not corrupted in transit: it
+ships from the same release as the binaries, so anyone who can publish a
+release can publish matching sums. The attestation is the authenticity check.
 
 ## Rollback
 

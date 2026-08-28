@@ -6,8 +6,7 @@ so. Treat it like a powerful developer tool, not a sandbox boundary.
 
 ## Reporting a Vulnerability
 
-Use GitHub private vulnerability reporting (enable it on the repository
-when publishing):
+Use GitHub private vulnerability reporting:
 
 1. Open the repository's **Security** tab.
 2. Choose **Report a vulnerability**.
