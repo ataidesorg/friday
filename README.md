@@ -11,7 +11,7 @@
 <p align="center">
   <a href="https://github.com/ataidesorg/friday/actions/workflows/ci.yml"><img src="https://github.com/ataidesorg/friday/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI"></a>
   <a href="https://pkg.go.dev/github.com/ataidesorg/friday"><img src="https://pkg.go.dev/badge/github.com/ataidesorg/friday.svg" alt="Go Reference"></a>
-  <a href="https://github.com/ataidesorg/friday/releases/latest"><img src="https://img.shields.io/github/v/release/ataidesorg/friday?sort=semver" alt="Release"></a>
+  <a href="https://github.com/ataidesorg/friday/releases/latest"><img src="https://img.shields.io/github/v/release/ataidesorg/friday?display_name=tag" alt="Release"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-blue.svg" alt="License: Apache-2.0"></a>
 </p>
 
