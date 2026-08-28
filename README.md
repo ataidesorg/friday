@@ -209,24 +209,6 @@ model = "accounts/fireworks/models/deepseek-v4-flash-0731"
 default = "fast"
 ```
 
-## Repository Map
-
-| Path | Purpose |
-| --- | --- |
-| `cmd/friday/` | Process entrypoint; two lines over `cli.Main` |
-| `internal/cli/` | CLI composition root: commands, flags, wiring |
-| `internal/core/` | Domain types, lifecycle, capabilities, events |
-| `internal/runtime/` | Agent loop: assemble, complete, act |
-| `internal/tui/` | Bubble Tea chat, overlays, themes, approvals |
-| `internal/tools/` | Typed tool registry and tool implementations |
-| `internal/config/` | Layered TOML config, trust, validation |
-| `internal/models/` | Provider clients, wire formats, model catalog |
-| `internal/session/` | Local JSONL session store and replay |
-| `docs/` | Roadmap, product, security, install, release |
-| `scripts/` | Local checks and support scripts |
-| `test/` | Fixture projects, mock transcripts, eval scenarios |
-| `assets/` | Images and logos |
-
 ## Development
 
 Requirements:
@@ -263,12 +245,6 @@ git push origin v0.1.0
 
 See [docs/git-strategy.md](docs/git-strategy.md) for the branching and tagging
 model, and [docs/releasing.md](docs/releasing.md) for the full checklist.
-
-## Roadmap
-
-What Friday does today, what is next, and what is deliberately not planned:
-[docs/roadmap.md](docs/roadmap.md). It is descriptive — an item leaves the list
-when the binary does it.
 
 ## License
 
