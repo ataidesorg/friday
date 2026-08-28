@@ -1,0 +1,7 @@
+# Planted test fixtures in frozen history, committed before inline
+# `gitleaks:allow` comments were adopted (S2-11). Commit-pinned
+# fingerprints never shift; current worktree files carry inline allows.
+24e6ca1551c44252a4737ca0ed57d6c5b0fda633:cmd/friday/run_provider_test.go:generic-api-key:25
+51557dc12b2fc8a259554bed4b7812949da78033:cmd/friday/auth_test.go:generic-api-key:29
+18d887fd4880579aeeeb33474215af916e84efb9:internal/redact/addliteral_test.go:generic-api-key:30
+18d887fd4880579aeeeb33474215af916e84efb9:internal/auth/auth_test.go:generic-api-key:290

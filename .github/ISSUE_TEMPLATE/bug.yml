@@ -1,0 +1,30 @@
+name: Bug report
+description: Something Friday did that it should not have
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you expected, what you saw.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Friday version
+      description: Output of `friday version`
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: OS and architecture
+      placeholder: macOS arm64, Linux amd64, …
+    validations:
+      required: true
+  - type: markdown
+    attributes:
+      value: |
+        Do not paste secrets, API keys, or session files.
+        Security issues go through [SECURITY.md](../../SECURITY.md), not this form.

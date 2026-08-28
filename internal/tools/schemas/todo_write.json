@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "todo_write",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["todos"],
+  "properties": {
+    "merge": {
+      "type": "boolean",
+      "description": "When true (default), merge items by id (send only the fields that change). When false, replace the whole list."
+    },
+    "todos": {
+      "type": "array",
+      "description": "Todo items to write. merge=true updates by id; merge=false replaces the list.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id"],
+        "properties": {
+          "id": {"type": "string", "description": "Stable id for merge."},
+          "content": {"type": "string", "description": "The task. Required for new items."},
+          "status": {
+            "type": "string",
+            "description": "pending, in_progress, completed, or cancelled. Default pending."
+          }
+        }
+      }
+    }
+  }
+}

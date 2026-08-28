@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "read_file",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["path"],
+  "properties": {
+    "path": {"type": "string", "description": "File path relative to the workspace root."},
+    "max_bytes": {"type": "integer", "minimum": 1, "maximum": 1048576, "description": "Truncate after this many bytes (default 262144)."}
+  }
+}

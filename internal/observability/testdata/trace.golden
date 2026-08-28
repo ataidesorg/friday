@@ -1,0 +1,17 @@
+SEQ  ELAPSED  KIND                SUMMARY
+1    +0s      task_created        code harness: add Farewell(name) with a test
+2    +250ms   state_changed       advance: active/intake → active/preflight
+3    +500ms   sandbox_created     process sandbox 000000aa
+4    +750ms   context_assembled   512/8000 tokens, 3 items, 1 excluded
+5    +1s      model_selected      mock/scripted via default: single provider configured
+6    +1.25s   model_usage         mock/scripted in=100 out=20 cached=0 cost=$0.001234 latency=15ms
+7    +1.5s    tool_called         write_file (write_local) call=000000bb: farewell.go (120 bytes) token=[REDACTED:literal]
+8    +1.75s   policy_decision     allow write_file (write_local) by tools.allow[write_file]: listed
+9    +2s      approval_requested  run_command (execute_local) approval=000000cc: run the tests
+10   +2.25s   approval_resolved   approved by user lucas, scope session, approval=000000cc
+11   +2.5s    tool_completed      write_file call=000000bb ok=true in 2ms: wrote 120 bytes
+12   +2.75s   validation_result   "go test ./..." passed=true exit=0 in 1.2s: ok
+13   +3s      memory_candidate    project pending candidate=000000dd
+14   +3.25s   warning             long warning text long warning text long warning text long warning text long warning text long warning text long warnin…
+15   +3.5s    sandbox_destroyed   sandbox 000000aa
+16   +3.75s   task_finished       completed_verified in 3s, in=100 out=20 cost=$0.001234

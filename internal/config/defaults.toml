@@ -1,0 +1,185 @@
+# Friday compiled defaults. Every key below is the complete configuration
+# reference: user, profile, and project files override these; FRIDAY__ env
+# vars and CLI --set overrides come last. Secrets never belong in any of
+# these files; providers reference credentials through an auth table:
+#
+#   [providers.example.auth]
+#   source = "env"          # env | keyring | secret_store
+#   name   = "EXAMPLE_API_KEY"   # env var name (source = "env")
+#   # service = "friday"  account = "example"   (source = "keyring")
+#   # id = "..."                                 (source = "secret_store")
+
+# Bumped on incompatible schema changes; loaders reject other versions.
+schema_version = 1
+
+[profile]
+# Which [profiles.<name>] is active unless --profile overrides it.
+active = "default"
+
+[profiles.default]
+# Free-text label shown by `friday config show`.
+description = "Strict, concise default profile"
+# Communication style: concise | detailed.
+style = "concise"
+# Policy posture: strict (approve everything non-read-only) | standard.
+posture = "strict"
+# Harness: code | assistant.
+harness = "code"
+# Memory store namespace this profile writes.
+memory_namespace = "project"
+# Highest sensitivity this profile may store or retrieve (secret is never storable).
+sensitivity_cap = "internal"
+
+[profiles.assistant]
+description = "Personal assistant: personal memory, sensitivity cap personal"
+style = "concise"
+posture = "strict"
+harness = "assistant"
+memory_namespace = "personal"
+sensitivity_cap = "personal"
+
+# No providers are configured by default; the harness reports "unavailable".
+[providers]
+
+[models]
+# Named routes: [models.routes.<name>] provider, model, fallbacks, max_cost_usd,
+# max_latency_ms, privacy, allow_fallback.
+[models.routes]
+
+# Model prices in USD per million tokens: [models.pricing."<model>"]
+# input_usd_per_mtok, output_usd_per_mtok, cached_usd_per_mtok. A model
+# missing here has unknown cost; cost caps then fail closed at selection.
+[models.pricing]
+
+[models.routing]
+# Route used when a task does not name one. Must exist in models.routes.
+default = ""
+
+[budgets]
+# Hard USD ceilings; a run stops with budget_exceeded when any is hit.
+per_task_usd = 2.0
+per_session_usd = 10.0
+per_day_usd = 25.0
+
+[sandbox]
+# Sandbox backend: process (private HOME/TMPDIR, fixed PATH, timeouts;
+# the network is not isolated, see docs/architecture/sandbox-and-policy.md) |
+# container (Docker/Podman, --network none, cgroup limits) | unavailable.
+provider = "process"
+
+[sandbox.limits]
+cpu_cores = 1
+memory_mb = 2048
+disk_mb = 1024
+max_processes = 64
+# Wall-clock ceiling per sandbox command, in seconds.
+wall_clock_secs = 600
+
+[tools]
+# Effect for tools not listed below: deny | require_approval | allow.
+default_effect = "deny"
+# Read-only tools that run without approval.
+allow = ["read_file", "list_dir", "search", "ask_user_question", "todo_write"]
+# Tools that always need a human decision (or `friday run --yes`). run_command
+# additionally needs an argv prefix from tools.commands.allowed or project.commands.
+require_approval = ["write_file", "apply_patch", "run_command"]
+# Experimental per-resource rules ([[tools.rules]] with tool + path glob or
+# argv prefix + effect) apply only when this flag is on.
+experimental_rules = false
+rules = []
+# Tools that are never available.
+deny = []
+
+[tools.commands]
+# Argv prefixes run_command may run once approved; empty = none beyond
+# project.commands.*, which the runtime already runs during verification.
+allowed = []
+
+[memory]
+# Namespaces the memory store may write to.
+namespaces = ["global", "project", "personal"]
+
+[memory.retention]
+# Episodic memories expire after this many days.
+episodic_days = 30
+# Working memory lifetime: session | task.
+working = "session"
+
+[telemetry]
+# off | local. Nothing is ever sent anywhere.
+mode = "local"
+# Event privacy: standard (secrets scrubbed) | minimal (free text blanked too).
+privacy = "standard"
+# Local event retention in days.
+retention_days = 30
+
+[evals]
+# required: promotion blocked without a passing evaluation | advisory.
+gate = "required"
+# Minimum scenario pass rate (percent) for a promotion gate.
+min_pass_rate = 100
+
+[project]
+# Project display name; usually set in .friday/config.toml.
+name = ""
+# Instruction files read into the project context layer, in order.
+instructions = []
+
+[project.commands]
+# Named deterministic commands, e.g. test = "go test ./...".
+
+[tui]
+# Launch theme; the in-app picker's saved choice wins over this.
+theme = ""
+# Hide warnings about guardrails that could not be enforced: an unpriced
+# model (budgets unenforceable) and a missing validation command (result
+# unverified). Real failures are always shown.
+hide_advisories = false
+
+[tui.keys]
+# Rebind chat shortcuts, e.g. palette = "ctrl+o". Actions: palette,
+# scroll_up, scroll_down. ctrl+c, enter, and esc are fixed.
+
+[agents]
+# Named agent profiles: [agents.NAME] with description, prompt, route, and a
+# tools allowlist. /agent NAME in the chat activates one; policy still gates
+# every tool it may hold.
+
+# Per-tool overrides of the coarse lists: tool = "allow" | "ask" | "deny".
+# A tool may not appear in both a list and permissions.
+[tools.permissions]
+
+[tools.custom]
+# Config-declared argv tools: [tools.custom.NAME] with argv (required),
+# description, risk (a risk class, default execute_local), and schema (JSON
+# Schema for the arguments; the model's arguments JSON is piped to stdin).
+# User layer only; each custom tool defaults to require_approval.
+
+[format]
+# Post-write formatters. Off by default; failures warn and never block.
+# User layer only.
+enabled = false
+
+[format.languages]
+# Per-language formatters, e.g.
+# [format.languages.go]
+# command = ["gofmt", "-w"]
+# extensions = [".go"]
+
+# [tools.permissions] maps one tool to allow | ask | deny, overriding the
+# coarse lists per tool, e.g. write_file = "ask". A tool may not appear in
+# both a list and permissions.
+
+# [[tools.rules]] are experimental per-resource rules (first match wins):
+# tool + optional path glob ("docs/**") or argv prefix + effect. They apply
+# only when tools.experimental_rules = true.
+
+[mcp]
+# MCP servers over stdio: [mcp.NAME] with command (argv) and enabled = true.
+# Tools appear as mcp_NAME_TOOL and default to require_approval. User layer
+# only; no network transports.
+
+[lsp]
+# Language servers over stdio: [lsp.NAME] with command (argv), extensions
+# ([".go"]), and enabled = true. Diagnostics for edited files are appended to
+# write_file/apply_patch output. User layer only; off by default.

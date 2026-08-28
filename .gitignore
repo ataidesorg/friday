@@ -1,0 +1,50 @@
+
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+
+# Code coverage profiles and other test artifacts
+*.out
+coverage.*
+*.coverprofile
+profile.cov
+
+# Go workspace file
+go.work
+go.work.sum
+
+# Build artifacts
+/bin/
+/dist/
+
+# Owner/agent continuity
+/HANDOVER.md
+/handoff/
+/tasks/
+/.friday
+
+# Local databases and state
+*.db
+*.sqlite*
+.friday/local/
+
+# Secrets and environment files — never enter the repository
+.env*
+*.pem
+*.key
+
+# OS cruft
+.DS_Store
+
+# Local agent tooling state
+.serena/
+
+# Test artifacts
+coverage.out
+/friday

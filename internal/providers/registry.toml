@@ -1,0 +1,186 @@
+# Friday provider registry.
+#
+# Compiled into the binary. This list is short on purpose: an entry earns its
+# place by being reachable, or by being the only thing that exercises an
+# implemented wire or auth path. Every other vendor is reachable through
+# `openrouter`, or by pointing `openai` at a custom base_url — Friday does not
+# need a row per vendor to talk to one.
+#
+# An empty base_url means Friday has not confirmed an endpoint: the entry is
+# unusable until the user sets providers.<id>.base_url. status is "unverified"
+# until a Friday test completes a real call (never claim more), then
+# "verified"; an entry that stops working degrades to "broken".
+
+[[provider]]
+id = "actual"
+aliases = ["actual-computer", "actualcomputer", "aci"]
+wire = "chat_completions"
+base_url = "https://api.actual.inc/v1"
+base_url_env = "ACTUAL_BASE_URL"
+privacy = "public_cloud"
+status = "unverified"
+auth = { kind = "key", env = ["ACTUAL_API_KEY"], optional = true }
+notes = "the one optional-key cloud row: proves Friday skips a cloud probe with no key rather than treating it as keyless local; loopback deployment (http://127.0.0.1:8080) runs keyless, set privacy local in config for it"
+
+[[provider]]
+id = "anthropic"
+wire = "anthropic_messages"
+base_url = "https://api.anthropic.com"
+base_url_env = "ANTHROPIC_BASE_URL"
+privacy = "public_cloud"
+status = "unverified"
+auth = { kind = "key", env = ["ANTHROPIC_API_KEY"] }
+key_url = "https://console.anthropic.com/settings/keys"
+
+[[provider]]
+id = "anthropic-oauth"
+wire = "anthropic_messages"
+base_url = "https://api.anthropic.com"
+privacy = "public_cloud"
+status = "unverified"
+auth = { kind = "external_cli", env = ["ANTHROPIC_TOKEN", "CLAUDE_CODE_OAUTH_TOKEN"], opt_in_risk = true }
+oauth = { auth_url = "https://claude.ai/oauth/authorize", token_url = "https://console.anthropic.com/v1/oauth/token", client_id = "9d1c250a-e61b-44d9-88ed-5944d1962f5e", scopes = ["org:create_api_key", "user:profile", "user:inference"], redirect_uri = "https://console.anthropic.com/oauth/code/callback" }
+notes = "Claude Code credential reuse; Anthropic's terms explicitly prohibit subscription OAuth tokens in third-party tools (2026-02-20 update); endpoints recorded from public third-party sources, unverified by Friday"
+
+[[provider]]
+id = "azure-foundry"
+wire = "chat_completions"
+base_url = ""
+base_url_env = "AZURE_FOUNDRY_BASE_URL"
+privacy = "public_cloud"
+status = "unverified"
+auth = { kind = "key", env = ["AZURE_FOUNDRY_API_KEY"], cloud = "azure" }
+notes = "key first, then Entra ID client-secret grant; anthropic_messages variant via /anthropic base URL"
+
+[[provider]]
+id = "bedrock"
+wire = "bedrock"
+base_url = ""
+base_url_env = "BEDROCK_BASE_URL"
+privacy = "public_cloud"
+status = "unverified"
+auth = { kind = "cloud", cloud = "aws" }
+notes = "AWS SigV4 credential chain; https://bedrock-runtime.<region>.amazonaws.com (from AWS_REGION when base_url is unset)"
+
+[[provider]]
+id = "codex"
+aliases = ["openai-codex"]
+wire = "responses"
+base_url = "https://chatgpt.com/backend-api/codex"
+privacy = "public_cloud"
+status = "unverified"
+auth = { kind = "oauth2_pkce" }
+oauth = { auth_url = "https://auth.openai.com/oauth/authorize", token_url = "https://auth.openai.com/oauth/token", client_id = "app_EMoamEEZ73f0CkXaXp7hrann", scopes = ["openid", "profile", "email", "offline_access"], redirect_port = 1455 }
+notes = "ChatGPT sign-in; OpenAI documents the flow publicly (developers.openai.com/codex/auth) and third-party harness use is established practice as of 2026; endpoints and chat base URL recorded from the public codex CLI source, unverified by Friday"
+
+[[provider]]
+id = "copilot"
+wire = "chat_completions"
+base_url = "https://api.githubcopilot.com"
+base_url_env = "COPILOT_API_BASE_URL"
+privacy = "public_cloud"
+status = "unverified"
+auth = { kind = "oauth2_device", env = ["COPILOT_GITHUB_TOKEN", "GH_TOKEN", "GITHUB_TOKEN"] }
+oauth = { device_auth_url = "https://github.com/login/device/code", token_url = "https://github.com/login/oauth/access_token", client_id = "01ab8ac9400c4e429b23", scopes = ["read:user"], exchange_url = "https://api.github.com/copilot_internal/v2/token" }
+notes = "token kinds gho_/github_pat_/ghu_ only; device-code flow and gh reuse are not implemented"
+
+[[provider]]
+id = "copilot-acp"
+wire = "acp"
+base_url = ""
+privacy = "local"
+status = "unverified"
+auth = { kind = "external_cli" }
+notes = "spawns copilot --acp --stdio; the acp wire is not implemented"
+
+[[provider]]
+id = "fireworks"
+aliases = ["fireworks-ai", "fw"]
+wire = "chat_completions"
+base_url = "https://api.fireworks.ai/inference/v1"
+privacy = "public_cloud"
+status = "verified"
+auth = { kind = "key", env = ["FIREWORKS_API_KEY"] }
+key_url = "https://app.fireworks.ai"
+
+[[provider]]
+id = "gemini"
+aliases = ["google"]
+wire = "chat_completions"
+base_url = ""
+base_url_env = "GEMINI_BASE_URL"
+privacy = "public_cloud"
+status = "unverified"
+auth = { kind = "key", env = ["GOOGLE_API_KEY", "GEMINI_API_KEY"] }
+notes = "Gemini OpenAI-compatible endpoint; base URL unconfirmed"
+
+[[provider]]
+id = "lmstudio"
+wire = "chat_completions"
+base_url = "http://localhost:1234/v1"
+base_url_env = "LM_BASE_URL"
+privacy = "local"
+status = "unverified"
+auth = { kind = "key", env = ["LM_API_KEY"], optional = true }
+notes = "accepts a placeholder key"
+
+[[provider]]
+id = "nous"
+aliases = ["nous-portal"]
+wire = "chat_completions"
+base_url = ""
+base_url_env = "NOUS_BASE_URL"
+privacy = "public_cloud"
+status = "unverified"
+auth = { kind = "oauth2_pkce" }
+notes = "the one PKCE row with no recorded endpoints: login fails closed until providers.nous.oauth supplies them"
+
+[[provider]]
+id = "ollama"
+wire = "chat_completions"
+base_url = "http://localhost:11434/v1"
+privacy = "local"
+status = "unverified"
+auth = { kind = "none" }
+
+[[provider]]
+id = "openai"
+aliases = ["openai-api"]
+wire = "chat_completions"
+base_url = "https://api.openai.com/v1"
+base_url_env = "OPENAI_BASE_URL"
+privacy = "public_cloud"
+status = "unverified"
+auth = { kind = "key", env = ["OPENAI_API_KEY"] }
+key_url = "https://platform.openai.com/api-keys"
+notes = "Responses API also available: set wire = \"responses\""
+
+[[provider]]
+id = "openrouter"
+wire = "chat_completions"
+base_url = "https://openrouter.ai/api/v1"
+base_url_env = "OPENROUTER_BASE_URL"
+privacy = "public_cloud"
+status = "unverified"
+auth = { kind = "key", env = ["OPENROUTER_API_KEY"] }
+key_url = "https://openrouter.ai/settings/keys"
+
+[[provider]]
+id = "vertex"
+wire = "vertex"
+base_url = ""
+base_url_env = "VERTEX_BASE_URL"
+privacy = "public_cloud"
+status = "unverified"
+auth = { kind = "cloud", cloud = "gcp" }
+notes = "GCP service-account JSON / ADC; OpenAI-compatible endpoint https://<region>-aiplatform.googleapis.com/v1beta1/projects/<project>/locations/<region>/endpoints/openapi"
+
+[[provider]]
+id = "xai-oauth"
+wire = "chat_completions"
+base_url = "https://api.x.ai/v1"
+privacy = "public_cloud"
+status = "unverified"
+auth = { kind = "oauth2_device" }
+oauth = { auth_url = "https://auth.x.ai/oauth2/authorize", token_url = "https://auth.x.ai/oauth2/token", device_auth_url = "https://auth.x.ai/oauth2/device/code", client_id = "b1a00492-073a-47ea-816f-4c329264a828", scopes = ["openid", "profile", "email", "offline_access", "grok-cli:access", "api:access"] }
+notes = "SuperGrok / X Premium+ sign-in; endpoints from the auth.x.ai OIDC discovery document, client id from xAI's own Grok CLI installer (x.ai/cli/install.sh); refresh tokens rotate on every refresh; unverified by Friday"

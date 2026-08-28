@@ -1,0 +1,12 @@
+[project]
+name = "sample"
+instructions = ["AGENTS.md"]
+
+# project.commands.* run during verification, so they stay behind the trust
+# gate even though the rest of this file merges freely.
+[project.commands]
+test = "go test ./..."
+build = "go build ./..."
+
+[memory.retention]
+episodic_days = 14

@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "apply_patch",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["patch"],
+  "properties": {
+    "patch": {"type": "string", "description": "Unified diff with paths relative to the workspace root. Applied atomically: every hunk or none."}
+  }
+}

@@ -1,0 +1,12 @@
+# Deliberately invalid: evals.gate is not one of the accepted values, so
+# validation fails. sandbox.* is gated, so until the owner runs `friday trust`
+# it is recorded as rejected (untrusted) and reported as a warning, never
+# applied.
+[sandbox]
+provider = "container"
+
+[evals]
+gate = "loud"
+
+[project]
+name = "invalid"

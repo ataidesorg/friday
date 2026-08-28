@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ask_user_question",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["questions"],
+  "properties": {
+    "questions": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 8,
+      "description": "Multiple-choice questions for the human. Do not use this to confirm destructive actions that already have an approval prompt.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["question", "options"],
+        "properties": {
+          "question": {"type": "string", "description": "The question, phrased as a full question."},
+          "options": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 8,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["label", "description"],
+              "properties": {
+                "label": {"type": "string", "description": "Short choice shown to the user."},
+                "description": {"type": "string", "description": "What picking this option means."},
+                "preview": {"type": "string", "description": "Optional extra detail shown when focused."}
+              }
+            }
+          },
+          "multi_select": {"type": "boolean", "description": "Allow more than one option (default false)."}
+        }
+      }
+    }
+  }
+}

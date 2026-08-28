@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "list_dir",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["path"],
+  "properties": {
+    "path": {"type": "string", "description": "Directory path relative to the workspace root; \".\" for the root."},
+    "depth": {"type": "integer", "minimum": 1, "maximum": 8, "description": "How many levels to descend (default 1)."}
+  }
+}

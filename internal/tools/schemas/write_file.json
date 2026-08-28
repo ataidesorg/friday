@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "write_file",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["path", "content"],
+  "properties": {
+    "path": {"type": "string", "description": "File path relative to the workspace root; parent directories are created."},
+    "content": {"type": "string", "description": "Full new content of the file."},
+    "create_only": {"type": "boolean", "description": "Fail instead of overwriting an existing file."}
+  }
+}

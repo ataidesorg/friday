@@ -1,0 +1,33 @@
+{
+  "model": "mock-1",
+  "turns": [
+    {
+      "content": "I need a preference.",
+      "finish": "tool_calls",
+      "usage": {"input_tokens": 40, "output_tokens": 12},
+      "tool_calls": [
+        {
+          "id": "call-ask",
+          "name": "ask_user_question",
+          "arguments": {
+            "questions": [
+              {
+                "question": "Ship?",
+                "options": [
+                  {"label": "yes", "description": "go"},
+                  {"label": "no", "description": "stop"}
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "content": "Shipping.\nLearned: user said yes.",
+      "finish": "stop",
+      "match": "Ship?: yes",
+      "usage": {"input_tokens": 48, "output_tokens": 10}
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+version: 2
+
+project_name: friday
+
+builds:
+  - id: friday
+    main: ./cmd/friday
+    binary: friday
+    env:
+      - CGO_ENABLED=0
+    flags:
+      - -trimpath
+      - -buildvcs=false
+    ldflags:
+      - -s -w
+      - -X github.com/ataidesorg/friday/internal/buildinfo.Version={{ .Tag }}
+      - -X github.com/ataidesorg/friday/internal/buildinfo.Commit={{ printf "%.12s" .FullCommit }}
+    goos: [darwin, linux, windows]
+    goarch: [amd64, arm64]
+
+archives:
+  # Versioned archive: friday_v0.1.0_linux_amd64.tar.gz
+  - id: versioned
+    ids: [friday]
+    formats: [tar.gz]
+    name_template: "friday_{{ .Tag }}_{{ .Os }}_{{ .Arch }}"
+    wrap_in_directory: "friday_{{ .Tag }}_{{ .Os }}_{{ .Arch }}"
+    files: [README.md, LICENSE, NOTICE]
+
+  # Stable alias for install.sh without FRIDAY_VERSION, which resolves
+  # /releases/latest/download/friday_<os>_<arch>.tar.gz.
+  - id: latest-alias
+    ids: [friday]
+    formats: [tar.gz]
+    name_template: "friday_{{ .Os }}_{{ .Arch }}"
+    wrap_in_directory: "friday_{{ .Tag }}_{{ .Os }}_{{ .Arch }}"
+    files: [README.md, LICENSE, NOTICE]
+
+checksum:
+  name_template: checksums.txt
+  algorithm: sha256
+
+snapshot:
+  version_template: "{{ .Tag }}-snapshot"
+
+changelog:
+  use: github-native
+
+release:
+  github:
+    owner: ataidesorg
+    name: friday
+  draft: false
+  prerelease: auto
