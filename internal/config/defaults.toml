@@ -133,7 +133,7 @@ instructions = []
 theme = ""
 # Hide warnings about guardrails that could not be enforced: an unpriced
 # model (budgets unenforceable) and a missing validation command (result
-# unverified). Real failures are always shown.
+# unverified). Real failures are always shown. Toggle in chat with /advisories.
 hide_advisories = false
 
 [tui.keys]

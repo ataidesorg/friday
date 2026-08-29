@@ -291,9 +291,10 @@ func (m ChatModel) slashKey(v tea.KeyMsg, menu []slashEntry) (tea.Model, tea.Cmd
 	return m, nil, false
 }
 
-// approvalKey answers a pending approval: y approves once, s for the
-// session, n or esc denies. Ctrl-C denies and then cancels the turn.
-// Everything else is swallowed so a half-typed draft never answers a prompt.
+// approvalKey answers a pending approval. Arrow keys move the highlighted
+// row; enter commits it. y / s / n and esc still work as shortcuts.
+// Ctrl-C denies and then cancels the turn. Other keys are swallowed so a
+// half-typed draft never answers a prompt.
 func (m ChatModel) approvalKey(v tea.KeyMsg) (tea.Model, tea.Cmd) {
 	if v.Type == tea.KeyCtrlC {
 		m = m.resolveApproval(core.ApprovalDenied, core.ApprovalOnce)
@@ -307,6 +308,17 @@ func (m ChatModel) approvalKey(v tea.KeyMsg) (tea.Model, tea.Cmd) {
 	}
 	if v.Type == tea.KeyEsc {
 		return m.resolveApproval(core.ApprovalDenied, core.ApprovalOnce), nil
+	}
+	switch v.Type {
+	case tea.KeyUp, tea.KeyShiftTab:
+		m.approvalSel = (m.approvalSel + len(approvalChoices) - 1) % len(approvalChoices)
+		return m.layout(), nil
+	case tea.KeyDown, tea.KeyTab:
+		m.approvalSel = (m.approvalSel + 1) % len(approvalChoices)
+		return m.layout(), nil
+	case tea.KeyEnter:
+		c := approvalChoices[m.approvalSel]
+		return m.resolveApproval(c.decision, c.scope), nil
 	}
 	switch v.String() {
 	case keyApproveOnce:

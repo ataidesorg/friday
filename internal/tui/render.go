@@ -208,6 +208,7 @@ func helpLines(km Keymap) []string {
 		"  /tools             show or hide tool calls in the transcript",
 		"  /thinking          show or hide the live thinking indicator",
 		"  /verbose           show the full event stream",
+		"  /advisories        show or hide unpriced-model and unverified-result warnings",
 		"",
 		"EXTENSIONS",
 		"  /skills            inspect and invoke loaded skills",

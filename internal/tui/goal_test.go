@@ -121,6 +121,20 @@ func TestChatGoalAutoContinuesWhenActive(t *testing.T) {
 	}
 }
 
+func TestChatAdvisoriesToggle(t *testing.T) {
+	m := NewChat(Options{Width: 80, NoColor: true}, nil)
+	if m.hideAdvis {
+		t.Fatal("advisories show by default")
+	}
+	m = slash(t, m, "/advisories")
+	if !m.hideAdvis {
+		t.Fatal("/advisories did not hide")
+	}
+	if !strings.Contains(strings.Join(m.Lines, "\n"), "advisories off") {
+		t.Fatalf("toggle status:\n%s", strings.Join(m.Lines, "\n"))
+	}
+}
+
 func TestChatGoalPausedDoesNotAutoContinue(t *testing.T) {
 	g, err := core.NewGoal("wait", time.Date(2026, 8, 28, 12, 0, 0, 0, time.UTC))
 	if err != nil {

@@ -2,6 +2,7 @@ package runtime
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 
@@ -83,7 +84,26 @@ func (s *state) dispatch(ctx context.Context, t core.Tool, known bool, c core.To
 	case err != nil:
 		return "error: " + err.Error(), false, nil
 	}
+	s.noteSuccess(c)
 	return out.Content, true, nil
+}
+
+func (s *state) noteSuccess(c core.ToolCall) {
+	switch c.Name {
+	case "write_file":
+		var a struct {
+			Path string `json:"path"`
+		}
+		if json.Unmarshal(c.Arguments, &a) != nil || a.Path == "" {
+			return
+		}
+		if s.wrote == nil {
+			s.wrote = map[string]bool{}
+		}
+		s.wrote[a.Path] = true
+	case "run_command":
+		s.ranOK = true
+	}
 }
 
 // authorise turns a decision into a verdict; anything but an explicit allow
@@ -124,6 +144,11 @@ func (s *state) approve(ctx context.Context, req core.CapabilityRequest, dec cor
 // resolve answers from the session store, then the approver, then fails
 // closed; an approver error aborts the run rather than guessing.
 func (s *state) resolve(ctx context.Context, a core.Approval) (core.ApprovalResolution, error) {
+	key := s.d.Approvals.Key(a.Request)
+	if s.denied[key] {
+		system := core.Principal{Kind: core.PrincipalSystem, Name: "runtime"}
+		return core.ApprovalResolution{Decision: core.ApprovalDenied, By: system, At: s.now(), Scope: core.ApprovalOnce, Note: "already denied this run"}, nil
+	}
 	if res, ok := s.d.Approvals.Lookup(a.Request); ok {
 		res.Note = "resolved from session approval"
 		return res, nil
@@ -144,6 +169,12 @@ func (s *state) resolve(ctx context.Context, a core.Approval) (core.ApprovalReso
 	}
 	if res.At.IsZero() {
 		res.At = s.now()
+	}
+	if res.Decision == core.ApprovalDenied {
+		if s.denied == nil {
+			s.denied = map[string]bool{}
+		}
+		s.denied[key] = true
 	}
 	s.d.Approvals.Record(a.Request, res)
 	return res, nil

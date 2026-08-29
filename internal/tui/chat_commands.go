@@ -402,6 +402,9 @@ func (m ChatModel) command(line string) (tea.Model, tea.Cmd) {
 			return m.append(tagStatus + " verbose on, full event trace"), nil
 		}
 		return m.append(tagStatus + " verbose off, tools and warnings only"), nil
+	case "/advisories":
+		m.hideAdvis = !m.hideAdvis
+		return m.append(tagStatus + " advisories " + onOff(!m.hideAdvis)), nil
 	case "/quit", "/exit":
 		// Reachable mid-turn through the palette: cancel the turn first so
 		// close() joins it instead of timing out against a live tool.

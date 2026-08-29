@@ -118,7 +118,7 @@ func TestGoalCompleteToolFinishes(t *testing.T) {
     {
       "finish": "tool_calls",
       "usage": {"input_tokens": 8, "output_tokens": 6},
-      "tool_calls": [{"id": "call-1", "name": "goal_complete", "arguments": {"goal_id": ` + jsonQuote(string(g.ID)) + `, "kind": "test", "summary": "go test ./... exit 0"}}]
+      "tool_calls": [{"id": "call-1", "name": "goal_complete", "arguments": {"goal_id": ` + jsonQuote(string(g.ID)) + `, "kind": "eval", "summary": "command_succeeds"}}]
     },
     {
       "content": "Marked complete.",
@@ -137,7 +137,7 @@ func TestGoalCompleteToolFinishes(t *testing.T) {
 	var saved core.Goal
 	h.in.SaveGoal = func(next core.Goal) error { saved = next; return nil }
 	res := h.run(context.Background(), t)
-	if res.Goal == nil || res.Goal.Status != core.GoalComplete || res.Goal.EvidenceKind != core.GoalEvidenceTest {
+	if res.Goal == nil || res.Goal.Status != core.GoalComplete || res.Goal.EvidenceKind != core.GoalEvidenceEval {
 		t.Fatalf("complete: %+v", res.Goal)
 	}
 	if res.ContinueGoal {

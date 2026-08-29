@@ -210,6 +210,7 @@ type ChatModel struct {
 	clearGoal     func() error
 	goal          *core.Goal
 	continueGoal  bool
+	approvalSel   int // 0 allow once, 1 session, 2 reject
 	editFn        func(string) (string, error)
 	dash          bool
 	dashSel       int
@@ -384,17 +385,12 @@ func (m ChatModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m.layout(), nil
 	case ApprovalMsg:
 		a := v.A
-		m.pending, m.replyCh = &a, v.Reply
+		m.pending, m.replyCh, m.approvalSel = &a, v.Reply, 0
 		if m.autoApprove(a) {
 			return m.stream(m.resolveApproval(core.ApprovalApproved, core.ApprovalSession))
 		}
 		m = m.append(approvalLine(a))
-		for _, l := range strings.Split(a.Preview, "\n") {
-			if l != "" {
-				m = m.append("  " + l)
-			}
-		}
-		return m.stream(m)
+		return m.stream(m.layout())
 	case QuestionMsg:
 		m.question = newQuestionPrompt(v.Questions, v.Reply)
 		if q := m.question.current(); q.Question != "" {

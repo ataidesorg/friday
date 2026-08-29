@@ -3,6 +3,9 @@ package tools
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -103,6 +106,51 @@ func TestGoalBlockedAndWait(t *testing.T) {
 		`{"goal_id":"stale","reason":"x","evidence":"y","repeated_turns":3}`)
 	if err == nil || !errors.Is(err, core.ErrInvalidInput) {
 		t.Fatalf("stale blocked id: %v", err)
+	}
+}
+
+func TestGoalCompleteFileNeedsPathAndExistingFile(t *testing.T) {
+	now := time.Date(2026, 8, 28, 12, 0, 0, 0, time.UTC)
+	g, _ := core.NewGoal("say hi", now)
+	mem := &memGoal{g: g, ok: true}
+	root, tc := ws(t)
+	tool := &GoalComplete{Load: mem.load, Save: mem.save, Now: func() time.Time { return now }}
+	_, err := call(t, tool, tc, `{"goal_id":"`+string(g.ID)+`","kind":"file","summary":"hello.txt exists"}`)
+	if err == nil {
+		t.Fatal("file kind without path must fail")
+	}
+	_, err = call(t, tool, tc, `{"goal_id":"`+string(g.ID)+`","kind":"file","path":"missing.txt","summary":"wrote missing.txt"}`)
+	if err == nil {
+		t.Fatal("missing file must fail")
+	}
+	if err := os.WriteFile(filepath.Join(root, "hello.txt"), []byte("hi\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := call(t, tool, tc, `{"goal_id":"`+string(g.ID)+`","kind":"file","path":"hello.txt","summary":"hello.txt exists"}`); err != nil {
+		t.Fatal(err)
+	}
+	if mem.g.Status != core.GoalComplete {
+		t.Fatalf("status %s", mem.g.Status)
+	}
+}
+
+func TestGoalCompleteProofRejectsUnwrittenFile(t *testing.T) {
+	now := time.Date(2026, 8, 28, 12, 0, 0, 0, time.UTC)
+	g, _ := core.NewGoal("say hi", now)
+	mem := &memGoal{g: g, ok: true}
+	_, tc := ws(t)
+	tool := &GoalComplete{
+		Load: mem.load, Save: mem.save, Now: func() time.Time { return now },
+		Proof: func(core.GoalEvidenceKind, string, string) error {
+			return fmt.Errorf("%w: file hello.txt was not written this run", core.ErrInvalidInput)
+		},
+	}
+	_, err := call(t, tool, tc, `{"goal_id":"`+string(g.ID)+`","kind":"file","path":"hello.txt","summary":"hello.txt exists"}`)
+	if err == nil {
+		t.Fatal("proof must reject an unwritten file")
+	}
+	if mem.g.Status == core.GoalComplete {
+		t.Fatal("goal completed despite proof failure")
 	}
 }
 

@@ -15,6 +15,13 @@ a minor release. Breaking changes are always listed under **Changed**.
   `goal_complete` records command, test, file, or eval evidence. Prose "done"
   does not complete a goal. Turn, no-progress, and token caps pause automatic
   continuation; `goal_blocked` and `goal_wait` stop the loop for a reason.
+  File evidence is checked by the harness: the path must have been written
+  this run, not merely claimed.
+- Approval card in the composer with the action, preview, and a selectable
+  list (allow once / this session / reject). A denied write is not retried
+  in the same run and does not land on disk.
+- `/advisories` hides unpriced-model and unverified-result warnings for the
+  session (`tui.hide_advisories` in config for the default).
 - Fullscreen TUI chat and a headless `friday run` mode for scripts and CI.
 - Typed file, search, and command tools behind a policy and approval layer.
 - Process sandbox with path confinement, environment scrubbing, and timeouts;

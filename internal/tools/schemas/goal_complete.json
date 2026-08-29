@@ -11,6 +11,7 @@
       "description": "How completion was proven. Prose is not evidence.",
       "enum": ["command", "test", "file", "eval"]
     },
+    "path": {"type": "string", "description": "Workspace-relative path. Required when kind is file. The harness checks the file was written this run."},
     "summary": {"type": "string", "description": "The command, test, file, or eval check that proves the goal is done."}
   }
 }

@@ -10,6 +10,8 @@ import (
 	"time"
 
 	"github.com/charmbracelet/lipgloss"
+
+	"github.com/ataidesorg/friday/internal/core"
 )
 
 // promptRows is the prompt's height in rows: one for a fresh draft, growing
@@ -50,6 +52,7 @@ var builtinSlash = []slashEntry{
 	{"usage", "toggle usage near the model name"},
 	{"cost", "print session tokens and cost"},
 	{"verbose", "toggle the full event trace"},
+	{"advisories", "show or hide unenforceable-guardrail warnings"},
 	{"tools", "show or hide tool activity"},
 	{"thinking", "show or hide thinking indicator"},
 	{"connect", "add a provider with an api key"},
@@ -573,20 +576,108 @@ func formatTokens(n int) string {
 	return fmt.Sprintf("%dk", n/1000)
 }
 
-// approvalPromptView fills the composer with OpenCode-style choices so the
-// keys are in the prompt frame, not only on the status line.
+type approvalChoice struct {
+	label    string
+	key      string
+	decision core.ApprovalDecision
+	scope    core.ApprovalScope
+}
+
+var approvalChoices = []approvalChoice{
+	{label: "Allow once", key: "y", decision: core.ApprovalApproved, scope: core.ApprovalOnce},
+	{label: "Allow this session", key: "s", decision: core.ApprovalApproved, scope: core.ApprovalSession},
+	{label: "Reject", key: "n", decision: core.ApprovalDenied, scope: core.ApprovalOnce},
+}
+
+func approvalTitle(a core.Approval) string {
+	r := a.Request
+	sc := r.Capability.Scope
+	switch {
+	case sc.Path != "" && r.Tool == "write_file":
+		return "Write " + sc.Path
+	case sc.Path != "" && r.Tool == "apply_patch":
+		return "Patch " + sc.Path
+	case sc.Path != "":
+		return r.Tool + " " + sc.Path
+	case len(sc.Argv) > 0:
+		return "Run " + strings.Join(sc.Argv, " ")
+	case r.Tool != "":
+		return r.Tool
+	default:
+		return "tool"
+	}
+}
+
+func approvalRiskLabel(a core.Approval) string {
+	r := a.Request
+	parts := []string{r.Tool}
+	if r.Capability.Risk != "" {
+		parts = append(parts, strings.ReplaceAll(string(r.Capability.Risk), "_", " "))
+	}
+	return strings.Join(parts, " · ")
+}
+
+// approvalPromptView is the composer card: action, risk, preview, then a
+// selectable list of decisions. Arrow keys move; y/s/n still work.
 func (m ChatModel) approvalPromptView() string {
-	tool := "tool"
-	if m.pending != nil && m.pending.Request.Tool != "" {
-		tool = m.pending.Request.Tool
+	if m.pending == nil {
+		return ""
 	}
-	choices := "Allow once (y)   session (s)   reject (n)"
+	a := *m.pending
+	var b strings.Builder
+	title := approvalTitle(a)
 	if m.cstyle.on {
-		choices = m.cstyle.accent.Render("Allow once (y)") + "   " +
-			m.cstyle.dimText("session (s)") + "   " +
-			m.cstyle.fail.Render("reject (n)")
+		b.WriteString(m.cstyle.header.Render(title))
+	} else {
+		b.WriteString(title)
 	}
-	return tool + "\n" + choices
+	b.WriteByte('\n')
+	risk := approvalRiskLabel(a)
+	if m.cstyle.on {
+		b.WriteString(m.cstyle.dimText(risk))
+	} else {
+		b.WriteString(risk)
+	}
+	preview := strings.TrimSpace(a.Preview)
+	if preview != "" {
+		b.WriteByte('\n')
+		lines := strings.Split(preview, "\n")
+		if len(lines) > 8 {
+			lines = append(lines[:8], fmt.Sprintf("… (%d more lines)", len(lines)-8))
+		}
+		for _, l := range lines {
+			b.WriteByte('\n')
+			if m.cstyle.on {
+				b.WriteString(m.cstyle.dimText("  " + l))
+			} else {
+				b.WriteString("  " + l)
+			}
+		}
+	}
+	b.WriteByte('\n')
+	sel := m.approvalSel
+	if sel < 0 || sel >= len(approvalChoices) {
+		sel = 0
+	}
+	for i, c := range approvalChoices {
+		mark := "  "
+		if i == sel {
+			mark = "▸ "
+		}
+		line := fmt.Sprintf("%s%s  (%s)", mark, c.label, c.key)
+		b.WriteByte('\n')
+		switch {
+		case i == sel && m.cstyle.on && c.decision == core.ApprovalDenied:
+			b.WriteString(m.cstyle.fail.Render(line))
+		case i == sel && m.cstyle.on:
+			b.WriteString(m.cstyle.accent.Render(line))
+		case m.cstyle.on:
+			b.WriteString(m.cstyle.dimText(line))
+		default:
+			b.WriteString(line)
+		}
+	}
+	return b.String()
 }
 
 // footerView is the persistent key-hint bar under the prompt. It rewrites
@@ -597,11 +688,7 @@ func (m ChatModel) footerView() string {
 	case m.question != nil:
 		h = "1–9 select · enter confirm · esc skip"
 	case m.pending != nil:
-		tool := "tool"
-		if m.pending.Request.Tool != "" {
-			tool = m.pending.Request.Tool
-		}
-		h = tool + " · y once · s session · n deny"
+		h = "↑↓ choose · enter · y once · s session · n reject · esc reject"
 	case m.ov != nil:
 		h = "type to filter · ↑↓ move · enter selects · esc closes"
 	case m.conn != nil:

@@ -3,6 +3,7 @@ package tools
 import (
 	"context"
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
@@ -11,9 +12,10 @@ import (
 
 // GoalComplete records evidence-backed done for the session goal.
 type GoalComplete struct {
-	Load func() (core.Goal, bool)
-	Save func(core.Goal) error
-	Now  func() time.Time
+	Load  func() (core.Goal, bool)
+	Save  func(core.Goal) error
+	Now   func() time.Time
+	Proof func(kind core.GoalEvidenceKind, path, summary string) error
 }
 
 // GoalBlocked records a repeated impasse.
@@ -31,7 +33,7 @@ type GoalWait struct {
 }
 
 func (t *GoalComplete) bindGoal(load func() (core.Goal, bool), save func(core.Goal) error) core.Tool {
-	return &GoalComplete{Load: load, Save: save, Now: t.Now}
+	return &GoalComplete{Load: load, Save: save, Now: t.Now, Proof: t.Proof}
 }
 func (t *GoalBlocked) bindGoal(load func() (core.Goal, bool), save func(core.Goal) error) core.Tool {
 	return &GoalBlocked{Load: load, Save: save, Now: t.Now}
@@ -74,11 +76,12 @@ func (*GoalComplete) Spec() core.ToolSpec {
 type goalCompleteArgs struct {
 	GoalID  string `json:"goal_id"`
 	Kind    string `json:"kind"`
+	Path    string `json:"path,omitempty"`
 	Summary string `json:"summary"`
 }
 
 // Invoke completes the current goal.
-func (t *GoalComplete) Invoke(_ context.Context, in core.ToolInput, _ core.ToolContext) (core.ToolOutput, error) {
+func (t *GoalComplete) Invoke(_ context.Context, in core.ToolInput, tc core.ToolContext) (core.ToolOutput, error) {
 	var a goalCompleteArgs
 	if err := decodeArgs("goal_complete", in.Arguments, &a); err != nil {
 		return core.ToolOutput{}, err
@@ -86,11 +89,15 @@ func (t *GoalComplete) Invoke(_ context.Context, in core.ToolInput, _ core.ToolC
 	if t == nil || t.Save == nil {
 		return core.ToolOutput{}, fmt.Errorf("%w: goal_complete needs a session", core.ErrUnavailable)
 	}
+	kind := core.GoalEvidenceKind(a.Kind)
+	if err := proveGoalEvidence(kind, a.Path, a.Summary, tc, t.Proof); err != nil {
+		return core.ToolOutput{}, err
+	}
 	g, err := loadOpenGoal(t.Load, a.GoalID)
 	if err != nil {
 		return core.ToolOutput{}, err
 	}
-	next, err := g.Complete(core.GoalEvidenceKind(a.Kind), a.Summary, goalNow(t.Now))
+	next, err := g.Complete(kind, a.Summary, goalNow(t.Now))
 	if err != nil {
 		return core.ToolOutput{}, err
 	}
@@ -98,6 +105,33 @@ func (t *GoalComplete) Invoke(_ context.Context, in core.ToolInput, _ core.ToolC
 		return core.ToolOutput{}, err
 	}
 	return output("goal complete: "+string(next.EvidenceKind)+" — "+next.Evidence, next, core.Capability{Risk: core.RiskReadOnly, Scope: core.ResourceScope{Kind: core.ScopeAny}})
+}
+
+func proveGoalEvidence(kind core.GoalEvidenceKind, path, summary string, tc core.ToolContext, proof func(core.GoalEvidenceKind, string, string) error) error {
+	if kind == core.GoalEvidenceFile {
+		path = strings.TrimSpace(path)
+		if path == "" {
+			return fmt.Errorf("%w: file evidence needs a path", core.ErrInvalidInput)
+		}
+		if proof != nil {
+			return proof(kind, path, summary)
+		}
+		if tc.WorkspaceRoot == "" {
+			return fmt.Errorf("%w: file evidence needs a workspace", core.ErrUnavailable)
+		}
+		abs, err := confine(tc.WorkspaceRoot, path)
+		if err != nil {
+			return err
+		}
+		if _, err := os.Stat(abs); err != nil {
+			return fmt.Errorf("%w: file evidence %s is not on disk", core.ErrNotFound, path)
+		}
+		return nil
+	}
+	if proof != nil {
+		return proof(kind, path, summary)
+	}
+	return nil
 }
 
 // Spec describes the tool.

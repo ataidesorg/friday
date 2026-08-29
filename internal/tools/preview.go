@@ -73,7 +73,10 @@ func (f *formatted) Preview(in core.ToolInput, tc core.ToolContext) string {
 // skipping the common prefix and suffix.
 func naiveDiff(old, cur string) string {
 	if old == cur {
-		return "(no change)"
+		if strings.TrimSpace(old) == "" {
+			return "new empty file"
+		}
+		return "already exists — this write would not change it"
 	}
 	ol, nl := strings.Split(old, "\n"), strings.Split(cur, "\n")
 	p := 0

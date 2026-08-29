@@ -465,6 +465,51 @@ func TestNoApproverDeniesRequireApproval(t *testing.T) {
 	}
 }
 
+func TestApproverDenyDoesNotWrite(t *testing.T) {
+	body := `{
+  "model": "mock-1",
+  "turns": [
+    {
+      "finish": "tool_calls",
+      "usage": {"input_tokens": 8, "output_tokens": 6},
+      "tool_calls": [
+        {"id": "call-1", "name": "write_file", "arguments": {"path": "hello.txt", "content": "hi\n"}},
+        {"id": "call-2", "name": "write_file", "arguments": {"path": "hello.txt", "content": "hi\n"}}
+      ]
+    },
+    {
+      "content": "stopped",
+      "finish": "stop",
+      "match": "denied",
+      "usage": {"input_tokens": 8, "output_tokens": 2}
+    }
+  ]
+}`
+	script := filepath.Join(t.TempDir(), "deny-write.json")
+	if err := os.WriteFile(script, []byte(body), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	cfg := toolsCfg()
+	cfg.Allow = []string{"read_file", "list_dir", "search", "run_command"}
+	cfg.RequireApproval = []string{"write_file"}
+	h := newHarnessAt(t, script, cfg)
+	asked := 0
+	h.deps.Approve = func(_ context.Context, _ core.Approval) (core.ApprovalResolution, error) {
+		asked++
+		return core.ApprovalResolution{Decision: core.ApprovalDenied, By: core.Principal{Kind: core.PrincipalUser, Name: "owner"}, Scope: core.ApprovalOnce, Note: "no"}, nil
+	}
+	res := h.run(context.Background(), t)
+	if res.Outcome.Kind == core.OutcomeFailed {
+		t.Fatalf("outcome %+v", res.Outcome)
+	}
+	if asked != 1 {
+		t.Fatalf("harness re-asked after deny: %d prompts", asked)
+	}
+	if _, err := os.Stat(filepath.Join(h.root, "hello.txt")); !errors.Is(err, os.ErrNotExist) {
+		t.Fatalf("denied write landed: %v", err)
+	}
+}
+
 func TestApproverSessionScope(t *testing.T) {
 	cfg := toolsCfg()
 	cfg.Allow = []string{"read_file", "list_dir", "search"}
