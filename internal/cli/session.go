@@ -314,6 +314,22 @@ func (c *chatSession) close(stderr io.Writer) {
 	if err := c.cleanup(ctx, false); err != nil {
 		fmt.Fprintf(stderr, "warning: workspace cleanup: %v\n", err)
 	}
+	c.dropIfEmpty(stderr)
+}
+
+// dropIfEmpty removes the live session when it has no transcript. Opening
+// Friday and quitting without sending a prompt must not leave a shell behind.
+func (c *chatSession) dropIfEmpty(stderr io.Writer) {
+	if c.store == nil || c.id == "" {
+		return
+	}
+	m, err := c.store.Meta(c.id)
+	if err != nil || m.Turns > 0 {
+		return
+	}
+	if err := c.store.Delete(c.id); err != nil && stderr != nil {
+		fmt.Fprintf(stderr, "warning: drop empty session: %v\n", err)
+	}
 }
 
 // waitTimeout waits for wg, returning false if d elapses first.

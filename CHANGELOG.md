@@ -17,6 +17,11 @@ a minor release. Breaking changes are always listed under **Changed**.
   `[profiles.assistant]` built-in, `telemetry.mode`, and
   `telemetry.retention_days`. The event trail is always local; set
   `telemetry.privacy` only.
+- `/` typeahead, Ctrl+P, and slash dispatch share one named command table,
+  including custom commands. The slash menu groups commands, ranks by name,
+  highlights the selection, windows to the terminal, and wraps at the ends.
+  Custom command files are reserved against that table, not a parallel name
+  list. Display toggles from the palette persist in the Friday home.
 
 ### Added
 
@@ -31,9 +36,13 @@ a minor release. Breaking changes are always listed under **Changed**.
   in the same run and does not land on disk.
 - `/advisories` hides unpriced-model and unverified-result warnings for the
   session (`tui.hide_advisories` in config for the default).
-- `/` typeahead and Ctrl+P share one command catalog, including custom
-  commands. The slash menu groups commands, ranks by name, highlights the
-  selection, and windows to the terminal.
+- A chat session with no turns is discarded on quit and on `/new`, so opening
+  Friday and leaving does not leave an empty session behind.
+
+## [0.1.0] - 2026-08-28
+
+### Added
+
 - Fullscreen TUI chat and a headless `friday run` mode for scripts and CI.
 - Typed file, search, and command tools behind a policy and approval layer.
 - Process sandbox with path confinement, environment scrubbing, and timeouts;
@@ -49,4 +58,5 @@ a minor release. Breaking changes are always listed under **Changed**.
 - `install.sh` with checksum verification, and reproducible cross-platform
   release archives built by GoReleaser.
 
-[Unreleased]: https://github.com/ataidesorg/friday/commits/main
+[Unreleased]: https://github.com/ataidesorg/friday/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/ataidesorg/friday/releases/tag/v0.1.0

@@ -12,12 +12,14 @@ import (
 	"testing"
 	"time"
 
+	"github.com/ataidesorg/friday/internal/commands"
 	"github.com/ataidesorg/friday/internal/config"
 	"github.com/ataidesorg/friday/internal/core"
 	"github.com/ataidesorg/friday/internal/redact"
 	"github.com/ataidesorg/friday/internal/runtime"
 	sessionstore "github.com/ataidesorg/friday/internal/session"
 	"github.com/ataidesorg/friday/internal/tools"
+	"github.com/ataidesorg/friday/internal/tui"
 )
 
 type nopObs struct{}
@@ -533,5 +535,96 @@ func TestChatSessionTodosAndAgents(t *testing.T) {
 	}
 	if rows := cs.listAgents(); len(rows) != 1 || rows[0].ID != "s1" {
 		t.Fatalf("after delete %+v", rows)
+	}
+}
+
+func TestEmptySessionIsNotKept(t *testing.T) {
+	store := newTestStore(t)
+	now := time.Unix(0, 0).UTC()
+	if _, err := store.Create("empty", now); err != nil {
+		t.Fatal(err)
+	}
+	cs := &chatSession{store: store, id: "empty", clock: func() time.Time { return now }}
+	cs.dropIfEmpty(io.Discard)
+	if _, err := store.Meta("empty"); err == nil {
+		t.Fatal("empty session should have been deleted")
+	}
+
+	if _, err := store.Create("used", now); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := store.Append("used", sessionstore.Turn{Role: core.RoleUser, Text: "hi", TS: now}, now); err != nil {
+		t.Fatal(err)
+	}
+	cs = &chatSession{store: store, id: "used", clock: func() time.Time { return now }}
+	cs.dropIfEmpty(io.Discard)
+	if _, err := store.Meta("used"); err != nil {
+		t.Fatalf("session with a turn was deleted: %v", err)
+	}
+}
+
+func TestRotateDropsEmptyPrevious(t *testing.T) {
+	store := newTestStore(t)
+	now := time.Unix(0, 0).UTC()
+	if _, err := store.Create("old", now); err != nil {
+		t.Fatal(err)
+	}
+	cs := &chatSession{store: store, id: "old", clock: func() time.Time { return now }}
+	id, err := cs.rotate()
+	if err != nil || id == "" || id == "old" {
+		t.Fatalf("rotate id=%q err=%v", id, err)
+	}
+	if _, err := store.Meta("old"); err == nil {
+		t.Fatal("empty previous session should have been deleted")
+	}
+	if _, err := store.Meta(id); err != nil {
+		t.Fatalf("new session missing: %v", err)
+	}
+
+	if _, err := store.Append(id, sessionstore.Turn{Role: core.RoleUser, Text: "hi", TS: now}, now); err != nil {
+		t.Fatal(err)
+	}
+	cs.id = id
+	next, err := cs.rotate()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := store.Meta(id); err != nil {
+		t.Fatalf("session with a turn was deleted on /new: %v", err)
+	}
+	if next == id {
+		t.Fatal("rotate returned the same id")
+	}
+}
+
+func TestReservedSlashComesFromTheTUITable(t *testing.T) {
+	got := reservedSlash()
+	names := tui.SlashNames()
+	if len(got) != len(names) {
+		t.Fatalf("reserved %d, SlashNames %d", len(got), len(names))
+	}
+	for _, name := range names {
+		if !got[name] {
+			t.Fatalf("reservedSlash missing %q", name)
+		}
+	}
+	if got["cycle-mode"] {
+		t.Fatal("palette-only cycle-mode must not be reserved")
+	}
+
+	root := t.TempDir()
+	dir := filepath.Join(root, ".friday", "commands")
+	if err := os.MkdirAll(dir, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "help.md"), []byte("must not load\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "greet.md"), []byte("hello\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	loaded := commands.Load(root, "", io.Discard, got)
+	if len(loaded) != 1 || loaded[0].Name != "greet" {
+		t.Fatalf("loaded %+v, help.md must not shadow /help", loaded)
 	}
 }

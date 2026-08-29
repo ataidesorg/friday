@@ -99,7 +99,30 @@ func (m ChatModel) toggleVim() (tea.Model, tea.Cmd) {
 			return m.append(tagWarn + " vim-mode: " + clip(err.Error())), nil
 		}
 	}
-	return m.append(tagStatus + " vim-mode " + onOff(m.vim)), nil
+	return m.persistPrefs().append(tagStatus + " vim-mode " + onOff(m.vim)), nil
+}
+
+func (m ChatModel) currentPrefs() Prefs {
+	return Prefs{
+		Verbose:        m.verbose,
+		ShowTools:      m.showTools,
+		ShowThinking:   m.showThinking,
+		Timestamps:     m.showTimes,
+		Multiline:      m.multiline,
+		UsageMeter:     m.usageOpen,
+		HideAdvisories: m.hideAdvis,
+		VimMode:        m.vim,
+	}
+}
+
+func (m ChatModel) persistPrefs() ChatModel {
+	if m.setPrefs == nil {
+		return m
+	}
+	if err := m.setPrefs(m.currentPrefs()); err != nil {
+		return m.append(tagWarn + " save prefs: " + clip(err.Error()))
+	}
+	return m
 }
 
 func (m ChatModel) doctorLines() []string {
@@ -324,125 +347,128 @@ func (m ChatModel) listCustomCommands() (tea.Model, tea.Cmd) {
 	return m.append(lines...), nil
 }
 
-// command dispatches a leading-slash prompt. Unknown commands warn rather
-// than run as a turn.
+func (m ChatModel) showHelp() (tea.Model, tea.Cmd) {
+	return m.append(helpLines(m.keys)...), nil
+}
+
+func (m ChatModel) showStatus() (tea.Model, tea.Cmd) {
+	return m.append(statusLines(m)...), nil
+}
+
+func (m ChatModel) showDoctor() (tea.Model, tea.Cmd) {
+	return m.append(m.doctorLines()...), nil
+}
+
+func (m ChatModel) showCost() (tea.Model, tea.Cmd) {
+	return m.append(costLines(m.Usage, m.Cost)...), nil
+}
+
+func (m ChatModel) goHome() (tea.Model, tea.Cmd) {
+	m.homeOpen = true
+	return m.layout(), nil
+}
+
+func (m ChatModel) clearView() (tea.Model, tea.Cmd) {
+	m.Lines, m.lineTimes = nil, nil
+	return m.layout(), nil
+}
+
+func (m ChatModel) exportTranscript() (tea.Model, tea.Cmd) {
+	return m.copyOut(transcriptPlain(m.Lines))
+}
+
+func (m ChatModel) cmdPlan() (tea.Model, tea.Cmd) {
+	return m.setChatMode("plan")
+}
+
+func (m ChatModel) cmdTheme(arg string) (tea.Model, tea.Cmd) {
+	if name := firstField(arg); name != "" {
+		return m.applyTheme(name)
+	}
+	return m.openThemes()
+}
+
+func (m ChatModel) cmdModel(arg string) (tea.Model, tea.Cmd) {
+	if name := firstField(arg); name != "" {
+		return m.switchModel(name)
+	}
+	return m.openModels()
+}
+
+func (m ChatModel) cmdAgent(arg string) (tea.Model, tea.Cmd) {
+	if name := firstField(arg); name != "" {
+		return m.applyAgent(name)
+	}
+	return m.openAgents()
+}
+
+func (m ChatModel) toggleMultiline() (tea.Model, tea.Cmd) {
+	m.multiline = !m.multiline
+	return m.persistPrefs().append(tagStatus + " multiline " + onOff(m.multiline)), nil
+}
+
+func (m ChatModel) toggleTimestamps() (tea.Model, tea.Cmd) {
+	m.showTimes = !m.showTimes
+	return m.persistPrefs().append(tagStatus + " timestamps " + onOff(m.showTimes)), nil
+}
+
+func (m ChatModel) toggleUsageMeter() (tea.Model, tea.Cmd) {
+	m.usageOpen = !m.usageOpen
+	return m.persistPrefs().append(tagStatus + " usage " + onOff(m.usageOpen)), nil
+}
+
+func (m ChatModel) toggleToolActivity() (tea.Model, tea.Cmd) {
+	m.showTools = !m.showTools
+	return m.persistPrefs().append(tagStatus + " tool activity " + onOff(m.showTools)).layout(), nil
+}
+
+func (m ChatModel) toggleThinkingLine() (tea.Model, tea.Cmd) {
+	m.showThinking = !m.showThinking
+	return m.persistPrefs().append(tagStatus + " thinking " + onOff(m.showThinking)).layout(), nil
+}
+
+func (m ChatModel) toggleVerbose() (tea.Model, tea.Cmd) {
+	m.verbose = !m.verbose
+	m = m.persistPrefs()
+	if m.verbose {
+		return m.append(tagStatus + " verbose on, full event trace"), nil
+	}
+	return m.append(tagStatus + " verbose off, tools and warnings only"), nil
+}
+
+func (m ChatModel) toggleAdvisories() (tea.Model, tea.Cmd) {
+	m.hideAdvis = !m.hideAdvis
+	return m.persistPrefs().append(tagStatus + " advisories " + onOff(!m.hideAdvis)), nil
+}
+
+func (m ChatModel) quitChat() (tea.Model, tea.Cmd) {
+	// Reachable mid-turn through the palette: cancel the turn first so
+	// close() joins it instead of timing out against a live tool.
+	if m.cancel != nil {
+		m.cancel()
+		m.cancel = nil
+	}
+	return m, tea.Quit
+}
+
+// command dispatches a leading-slash prompt from the built-in table.
+// Unknown names fall through to a loaded custom command, then warn.
 func (m ChatModel) command(line string) (tea.Model, tea.Cmd) {
 	// Every command prints into the transcript, and the home pane paints over
 	// it. Leaving home is the price of running one; /home and /new opt back in.
 	m.homeOpen = false
 	fields := strings.Fields(line)
-	switch strings.ToLower(fields[0]) {
-	case "/help":
-		return m.append(helpLines(m.keys)...), nil
-	case "/status":
-		return m.append(statusLines(m)...), nil
-	case "/goal":
-		return m.applyGoal(strings.TrimSpace(strings.TrimPrefix(line, fields[0])))
-	case "/copy":
-		return m.copyCommand(strings.TrimSpace(strings.TrimPrefix(line, fields[0])))
-	case "/export":
-		return m.copyOut(transcriptPlain(m.Lines))
-	case "/doctor":
-		return m.append(m.doctorLines()...), nil
-	case "/history":
-		return m.openHistory()
-	case "/home":
-		m.homeOpen = true
-		return m.layout(), nil
-	case "/rewind":
-		return m.openRewind()
-	case "/fork":
-		return m.applyFork()
-	case "/rename":
-		return m.applyRename(strings.TrimSpace(strings.TrimPrefix(line, fields[0])))
-	case "/delete":
-		return m.deleteCurrent(strings.TrimSpace(strings.TrimPrefix(line, fields[0])))
-	case "/always-approve":
-		return m.toggleYolo()
-	case "/vim-mode":
-		return m.toggleVim()
-	case "/plan":
-		return m.setChatMode("plan")
-	case "/theme":
-		if len(fields) > 1 {
-			return m.applyTheme(fields[1])
-		}
-		return m.openThemes()
-	case "/multiline":
-		m.multiline = !m.multiline
-		return m.append(tagStatus + " multiline " + onOff(m.multiline)), nil
-	case "/timestamps":
-		m.showTimes = !m.showTimes
-		return m.append(tagStatus + " timestamps " + onOff(m.showTimes)), nil
-	case "/usage":
-		m.usageOpen = !m.usageOpen
-		return m.append(tagStatus + " usage " + onOff(m.usageOpen)), nil
-	case "/tools":
-		m.showTools = !m.showTools
-		return m.append(tagStatus + " tool activity " + onOff(m.showTools)).layout(), nil
-	case "/thinking":
-		m.showThinking = !m.showThinking
-		return m.append(tagStatus + " thinking " + onOff(m.showThinking)).layout(), nil
-	case "/dashboard":
-		return m.toggleDashboard()
-	case "/skills":
-		return m.openSkills()
-	case "/queue":
-		return m.toggleQueue()
-	case "/commands":
-		return m.listCustomCommands()
-	case "/edit-prompt":
-		return m.openEditor()
-	case "/clear":
-		m.Lines = nil
-		m.lineTimes = nil
-		return m.layout(), nil
-	case "/cost":
-		return m.append(costLines(m.Usage, m.Cost)...), nil
-	case "/model":
-		if len(fields) > 1 {
-			return m.switchModel(fields[1])
-		}
-		return m.openModels()
-	case "/agent":
-		if len(fields) > 1 {
-			return m.applyAgent(fields[1])
-		}
-		return m.openAgents()
-	case "/new":
-		return m.newSession()
-	case "/resume":
-		return m.resumeSession()
-	case "/compact":
-		return m.startCompact()
-	case "/connect":
-		return m.openConnect()
-	case "/verbose":
-		m.verbose = !m.verbose
-		if m.verbose {
-			return m.append(tagStatus + " verbose on, full event trace"), nil
-		}
-		return m.append(tagStatus + " verbose off, tools and warnings only"), nil
-	case "/advisories":
-		m.hideAdvis = !m.hideAdvis
-		return m.append(tagStatus + " advisories " + onOff(!m.hideAdvis)), nil
-	case "/quit", "/exit":
-		// Reachable mid-turn through the palette: cancel the turn first so
-		// close() joins it instead of timing out against a live tool.
-		if m.cancel != nil {
-			m.cancel()
-			m.cancel = nil
-		}
-		return m, tea.Quit
-	default:
-		name := strings.TrimPrefix(strings.ToLower(fields[0]), "/")
-		for _, c := range m.commands {
-			if c.Name == name {
-				return m.runCustom(c, strings.TrimSpace(strings.TrimPrefix(line, fields[0])))
-			}
-		}
-		return m.append(tagWarn + " unknown command " + clip(line) + " — try /help"), nil
+	name := strings.TrimPrefix(strings.ToLower(fields[0]), "/")
+	arg := strings.TrimSpace(strings.TrimPrefix(line, fields[0]))
+	if c, ok := lookupSlash(name); ok {
+		return c.Run(m, arg)
 	}
+	for _, c := range m.commands {
+		if c.Name == name {
+			return m.runCustom(c, arg)
+		}
+	}
+	return m.append(tagWarn + " unknown command " + clip(line) + " — try /help"), nil
 }
 
 // runCustom starts a turn from a custom command: switch to its route when it

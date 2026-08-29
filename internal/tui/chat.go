@@ -131,6 +131,7 @@ type ChatModel struct {
 	themeName  string             // committed palette
 	styledName string             // palette currently painted (preview may differ)
 	setTheme   func(string) error // persist a theme choice; may be nil
+	setPrefs   func(Prefs) error  // persist display/input knobs; may be nil
 
 	route       string // provider/model shown by /model
 	worktree    string // header tag for a worktree session; empty hides it
@@ -283,6 +284,7 @@ func NewChat(opts Options, runner Runner) ChatModel {
 		themeName:       themeName,
 		styledName:      themeName,
 		setTheme:        opts.SetTheme,
+		setPrefs:        opts.SetPrefs,
 		width:           w,
 		height:          defaultHeight,
 		now:             time.Now,
@@ -335,6 +337,17 @@ func NewChat(opts Options, runner Runner) ChatModel {
 		setGoal:         opts.SetGoal,
 		clearGoal:       opts.ClearGoal,
 		editFn:          opts.EditPrompt,
+	}
+	if opts.Prefs != nil {
+		p := *opts.Prefs
+		m.verbose = p.Verbose
+		m.showTools = p.ShowTools
+		m.showThinking = p.ShowThinking
+		m.showTimes = p.Timestamps
+		m.multiline = p.Multiline
+		m.usageOpen = p.UsageMeter
+		m.hideAdvis = p.HideAdvisories
+		m.vim = p.VimMode
 	}
 	m = m.reloadGoal()
 	return m.layout()

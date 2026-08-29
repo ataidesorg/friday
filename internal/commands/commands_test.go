@@ -11,7 +11,7 @@ import (
 )
 
 func TestParse(t *testing.T) {
-	c, err := Parse("deploy", []byte("---\ndescription = \"ship it\"\nmodel = \"fast\"\n---\nDeploy $ARGUMENTS now.\n"))
+	c, err := Parse("deploy", []byte("---\ndescription = \"ship it\"\nmodel = \"fast\"\n---\nDeploy $ARGUMENTS now.\n"), nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -35,7 +35,7 @@ func TestParseRejects(t *testing.T) {
 		{"badtoml", "---\n= broken\n---\nx\n"},
 	}
 	for _, tc := range cases {
-		if _, err := Parse(tc.name, []byte(tc.body)); err == nil {
+		if _, err := Parse(tc.name, []byte(tc.body), map[string]bool{"help": true}); err == nil {
 			t.Fatalf("%s: no error", tc.name)
 		} else if !errors.Is(err, core.ErrInvalidInput) && !errors.Is(err, core.ErrConflict) {
 			t.Fatalf("%s: err %v", tc.name, err)
@@ -71,7 +71,7 @@ func TestLoadProjectWins(t *testing.T) {
 	write(filepath.Join(root, ".friday", "commands"), "notes.txt", "not a command\n")
 
 	var warn strings.Builder
-	got := Load(root, home, &warn)
+	got := Load(root, home, &warn, nil)
 	if len(got) != 2 || got[0].Name != "greet" || got[1].Name != "solo" {
 		t.Fatalf("loaded %+v", got)
 	}
@@ -84,7 +84,29 @@ func TestLoadProjectWins(t *testing.T) {
 }
 
 func TestLoadNoDirs(t *testing.T) {
-	if got := Load(t.TempDir(), "", nil); len(got) != 0 {
+	if got := Load(t.TempDir(), "", nil, nil); len(got) != 0 {
 		t.Fatalf("loaded %v", got)
+	}
+}
+
+func TestLoadSkipsReserved(t *testing.T) {
+	root := t.TempDir()
+	dir := filepath.Join(root, ".friday", "commands")
+	if err := os.MkdirAll(dir, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "help.md"), []byte("should not load\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "greet.md"), []byte("hello\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	var warn strings.Builder
+	got := Load(root, "", &warn, map[string]bool{"help": true})
+	if len(got) != 1 || got[0].Name != "greet" {
+		t.Fatalf("loaded %+v", got)
+	}
+	if !strings.Contains(warn.String(), "help") {
+		t.Fatalf("reserved skip not reported: %q", warn.String())
 	}
 }

@@ -202,11 +202,17 @@ func (c *chatSession) deleteSession() (string, error) {
 }
 
 func (c *chatSession) rotate() (string, error) {
+	old := c.id
 	id := string(core.NewSessionID())
 	if _, err := c.store.Create(id, c.clock()); err != nil {
 		return "", err
 	}
 	c.id, c.sess = id, core.SessionID(id)
+	if old != "" {
+		if m, err := c.store.Meta(old); err == nil && m.Turns == 0 {
+			_ = c.store.Delete(old)
+		}
+	}
 	return id, nil
 }
 

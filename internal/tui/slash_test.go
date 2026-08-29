@@ -89,6 +89,57 @@ func TestSlashCustomBadge(t *testing.T) {
 	}
 }
 
+func TestSlashMenuWraps(t *testing.T) {
+	m := NewChat(Options{Width: 80, NoColor: true}, nil)
+	next, _ := m.Update(tea.WindowSizeMsg{Width: 80, Height: 24})
+	m = typeText(next.(ChatModel), "/")
+	n := len(m.slashMatches())
+	if n < 2 {
+		t.Fatal("need a menu to wrap")
+	}
+	if m.slashSel != 0 {
+		t.Fatalf("start sel %d, want 0", m.slashSel)
+	}
+	up, _ := m.Update(tea.KeyMsg{Type: tea.KeyUp})
+	m = up.(ChatModel)
+	if m.slashSel != n-1 {
+		t.Fatalf("up at top = %d, want last %d", m.slashSel, n-1)
+	}
+	down, _ := m.Update(tea.KeyMsg{Type: tea.KeyDown})
+	m = down.(ChatModel)
+	if m.slashSel != 0 {
+		t.Fatalf("down at bottom = %d, want 0", m.slashSel)
+	}
+}
+
+func TestSlashGroupHeadersHaveSpace(t *testing.T) {
+	m := NewChat(Options{Width: 80, NoColor: true}, nil)
+	next, _ := m.Update(tea.WindowSizeMsg{Width: 80, Height: 40})
+	m = typeText(next.(ChatModel), "/")
+	got := m.slashMenuView(m.slashMatches())
+	lines := strings.Split(got, "\n")
+	idx := -1
+	for i, l := range lines {
+		if strings.Contains(l, "Extensions") {
+			idx = i
+			break
+		}
+	}
+	if idx < 1 {
+		t.Fatalf("Extensions header missing:\n%s", got)
+	}
+	if strings.Contains(lines[idx], "/") {
+		t.Fatalf("Extensions wrapped onto a command row:\n%s", lines[idx])
+	}
+	if !strings.Contains(lines[idx], "─") {
+		t.Fatalf("Extensions header split from its rule:\n%s", got)
+	}
+	prev := strings.Trim(lines[idx-1], " │")
+	if prev != "" {
+		t.Fatalf("group header sits on %q; want a blank line above:\n%s", prev, got)
+	}
+}
+
 // Down moves the selection, tab completes the draft to the selected command.
 func TestSlashTypeaheadTabCompletes(t *testing.T) {
 	m := typeText(NewChat(Options{Width: 80}, nil), "/cost")

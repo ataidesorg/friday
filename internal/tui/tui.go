@@ -74,6 +74,12 @@ type Options struct {
 	// HideAdvisories drops warnings about guardrails that could not be
 	// enforced (unpriced model, no validation command) from the transcript.
 	HideAdvisories bool
+	// Prefs, when non-nil, overrides the built-in launch defaults for
+	// display and input knobs (tools and thinking on, the rest off).
+	Prefs *Prefs
+	// SetPrefs persists those knobs after a palette or slash toggle; nil
+	// keeps them session-local. It runs on the UI goroutine.
+	SetPrefs func(Prefs) error
 	// SetTheme persists a theme choice (called by the theme picker); nil
 	// keeps choices session-only. It runs on the UI goroutine.
 	SetTheme func(name string) error
@@ -176,6 +182,19 @@ type Options struct {
 	// lines to the wizard; nil hides OAuth rows' sign-in. It runs on a
 	// background goroutine and honors ctx cancellation (esc).
 	Login func(ctx context.Context, provider string, progress func(string)) error
+}
+
+// Prefs are the TUI display and input knobs the command palette toggles.
+// Permission posture (plan, always-approve) stays session-local.
+type Prefs struct {
+	Verbose        bool
+	ShowTools      bool
+	ShowThinking   bool
+	Timestamps     bool
+	Multiline      bool
+	UsageMeter     bool
+	HideAdvisories bool
+	VimMode        bool
 }
 
 // HistoryTurn is one stored exchange replayed into the scrollback on

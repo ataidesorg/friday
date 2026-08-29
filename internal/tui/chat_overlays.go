@@ -21,30 +21,11 @@ func (m ChatModel) paletteItems() []overlayItem {
 		items = append(items, itemD(gCmds, "cmd:"+c.Name, "/"+c.Name, "/"+c.Name, c.Description))
 	}
 	for i, it := range items {
-		switch it.id {
-		case "vim-mode":
-			items[i].state = onOff(m.vim)
-		case "always-approve":
-			items[i].state = onOff(m.yolo)
-		case "verbose":
-			items[i].state = onOff(m.verbose)
-		case "tools-display":
-			items[i].state = onOff(m.showTools)
-		case "thinking":
-			items[i].state = onOff(m.showThinking)
-		case "multiline":
-			items[i].state = onOff(m.multiline)
-		case "plan":
-			items[i].state = onOff(m.mode == "plan")
-		case "cycle-mode":
-			items[i].state = m.permLabel()
-		case "usage":
-			items[i].state = onOff(m.usageOpen)
-		case "timestamps":
-			items[i].state = onOff(m.showTimes)
-		case "advisories":
-			items[i].state = onOff(!m.hideAdvis)
+		c, ok := lookupID(it.id)
+		if !ok || c.State == nil {
+			continue
 		}
+		items[i].state = c.State(m)
 	}
 	return items
 }
@@ -120,7 +101,7 @@ func (m ChatModel) overlayKey(v tea.KeyMsg) (tea.Model, tea.Cmd) {
 }
 
 // overlayCommit runs the committed selection: a route swap from the model
-// picker, or a palette action named by its slash command.
+// picker, or a palette action from the built-in command table.
 func (m ChatModel) overlayCommit(kind overlayKind, id string) (tea.Model, tea.Cmd) {
 	if kind == overlayModels {
 		return m.switchModel(id)
@@ -166,29 +147,14 @@ func (m ChatModel) overlayCommit(kind overlayKind, id string) (tea.Model, tea.Cm
 	if strings.HasPrefix(id, "cmd:") {
 		return m.command("/" + strings.TrimPrefix(id, "cmd:"))
 	}
-	switch id {
-	case "model":
-		return m.openModels()
-	case "theme":
-		return m.openThemes()
-	case "agent":
-		return m.openAgents()
-	case "queue":
-		return m.toggleQueue()
-	case "edit-prompt":
-		return m.openEditor()
-	case "skills":
-		return m.openSkills()
-	case "cycle-mode":
-		return m.cycleMode()
-	case "tools-display":
-		m.showTools = !m.showTools
-		return m.append(tagStatus + " tool activity " + onOff(m.showTools)).layout(), nil
-	case "thinking":
-		m.showThinking = !m.showThinking
-		return m.append(tagStatus + " thinking " + onOff(m.showThinking)).layout(), nil
+	c, ok := lookupID(id)
+	if !ok {
+		return m, nil
 	}
-	return m.command("/" + id)
+	if c.Slash != "" {
+		return m.command("/" + c.Slash)
+	}
+	return c.Run(m, "")
 }
 
 // skillHelp is the /skills overlay's "How to manage" copy: Friday has no

@@ -180,9 +180,13 @@ func (m ChatModel) slashMenuView(menu []slashEntry) string {
 	prev := ""
 	for i, e := range win {
 		if grouped && e.group != "" && e.group != prev {
+			if prev != "" {
+				rows = append(rows, "")
+			}
 			label := e.group
-			line := label + " " + strings.Repeat("─", max(1, w-2-runeLen(label)))
-			rows = append(rows, m.cstyle.dimText("  "+line))
+			prefix := "  " + label + " "
+			rule := max(1, w-runeLen(prefix))
+			rows = append(rows, m.cstyle.dimText(prefix+strings.Repeat("─", rule)))
 			prev = e.group
 		}
 		rows = append(rows, m.slashRow(e, start+i == sel, w))
