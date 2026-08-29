@@ -22,7 +22,7 @@ a second long-lived branch would only add merge debt.
 1. Branch from an up-to-date `main`.
 2. Write or update tests first when behavior changes.
 3. Commit using [Conventional Commits](../CONTRIBUTING.md#commit-style).
-4. Push and open a pull request. `ci.yml` runs on every push and every PR.
+4. Push and open a pull request. `ci.yml` runs on the PR (and again on `main` after merge).
 5. Merge only with CI green and the strict gate passing.
 6. **Squash merge.** Delete the branch.
 
@@ -76,7 +76,7 @@ Settings the repository owner applies to `main` on GitHub:
 
 | Event | Workflow | What it does |
 | --- | --- | --- |
-| Push to any branch | `ci.yml` | Strict gate, full-history secret scan, fixture project's own tests |
-| Pull request | `ci.yml` | The same checks |
+| Push to `main` | `ci.yml` | Strict gate, full-history secret scan, fixture project's own tests |
+| Pull request | `ci.yml` | The same checks (not a second copy of the branch push) |
 | Push a `v*` tag | `release.yml` | Strict gate, then build and publish the GitHub Release |
 | Manual dispatch | `release.yml` | Builds and uploads workflow artifacts without creating a Release |
