@@ -25,9 +25,9 @@ active = "default"
 [profiles.default]
 # Free-text label shown by `friday config show`.
 description = "Strict, concise default profile"
-# How verbose the agent should be. Stored on the profile; not yet injected
-# into the system prompt.
-#   concise  |  detailed
+# How verbose the agent is. Injected into the system prompt as <style>.
+#   concise   = short answers, no preamble (this default)
+#   detailed  = explain reasoning and call out trade-offs
 style = "concise"
 # How conservative policy is when a tool would otherwise be allowed.
 #   strict    = ask the human before any non-read-only tool, even one listed
@@ -35,30 +35,6 @@ style = "concise"
 #   standard  = trust tools.allow; only tools.require_approval prompts.
 # "Strict" does not mean auto-approve. It means more prompts, not fewer.
 posture = "strict"
-# Product this profile is for. Not a TUI mode (those are code / plan / ask,
-# cycled with Shift+Tab).
-#   code       = coding agent (this default)
-#   assistant  = the [profiles.assistant] product; switch with --profile assistant
-harness = "code"
-# Namespace Learned: lines are tagged with. There is no durable memory store
-# yet: candidates are extracted in-run and then discarded.
-#   global  |  project  |  personal
-memory_namespace = "project"
-# Highest sensitivity a Learned: candidate may have. Ranked
-# public < internal < personal. "secret" is never storable.
-# A candidate above this cap is dropped. Only applies to that extraction.
-#   public  |  internal  |  personal
-sensitivity_cap = "internal"
-
-[profiles.assistant]
-# Second built-in profile (`friday --profile assistant`). Same coding tools;
-# only the memory tags differ. Not a TUI "assistant mode".
-description = "Personal assistant: personal memory, sensitivity cap personal"
-style = "concise"
-posture = "strict"
-harness = "assistant"
-memory_namespace = "personal"
-sensitivity_cap = "personal"
 
 # No providers are configured by default; the harness reports "unavailable"
 # until you add one (`/connect` or a [providers.NAME] table).
@@ -139,29 +115,13 @@ deny = []
 # Example: allowed = ["git", "go test", "go vet"]
 allowed = []
 
-[memory]
-# Namespaces a future durable memory store may write to. Not used yet:
-# Learned: lines become in-run candidates and are not persisted.
-namespaces = ["global", "project", "personal"]
-
-[memory.retention]
-# Reserved. Episodic memories would expire after this many days.
-episodic_days = 30
-# Reserved. Working memory lifetime: session | task.
-working = "session"
-
 [telemetry]
 # Local JSONL event trail under the project (replay with `friday trace`).
 # Nothing is ever sent off the machine. This is not product analytics.
-#   off    = accepted; the CLI currently still writes the trail
-#   local  = write the trail (this default)
-mode = "local"
 # How much free text the trail keeps after secret redaction.
 #   standard  = secrets scrubbed, prose kept
 #   minimal   = secrets scrubbed and free text blanked
 privacy = "standard"
-# Reserved. Intended local trail retention in days; not yet enforced.
-retention_days = 30
 
 [evals]
 # What `friday eval` does with a failing scenario.

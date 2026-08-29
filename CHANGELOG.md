@@ -9,6 +9,15 @@ a minor release. Breaking changes are always listed under **Changed**.
 
 ## [Unreleased]
 
+### Changed
+
+- Profile `style` (`concise` | `detailed`) is injected into the system prompt.
+- Removed unused config: `[memory]`, `profiles.*.harness`,
+  `profiles.*.memory_namespace`, `profiles.*.sensitivity_cap`, the
+  `[profiles.assistant]` built-in, `telemetry.mode`, and
+  `telemetry.retention_days`. The event trail is always local; set
+  `telemetry.privacy` only.
+
 ### Added
 
 - Session-scoped goals (`/goal`, `friday run --goal`) that stay active until

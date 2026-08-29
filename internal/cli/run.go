@@ -210,11 +210,7 @@ func newSession(ctx context.Context, cfg config.Config, f runFlags, text string,
 	if deps.Spend, err = runtime.NewSpend(cfg.Budgets.PerSessionUSD, cfg.Budgets.PerDayUSD, spendPath); err != nil {
 		return nil, err
 	}
-	harness := in.Agent.Harness
-	if harness == "" {
-		harness = core.HarnessCode
-	}
-	task, err := core.NewTask(text, harness, core.NewProfileID(), core.NewSessionID(), core.Principal{Kind: core.PrincipalUser, Name: userName(environ)})
+	task, err := core.NewTask(text, core.HarnessCode, core.NewProfileID(), core.NewSessionID(), core.Principal{Kind: core.PrincipalUser, Name: userName(environ)})
 	if err != nil {
 		return nil, err
 	}

@@ -194,11 +194,7 @@ func (c *chatSession) turnOn(ctx context.Context, id, prompt string, obs runtime
 	if err != nil {
 		return runtime.Result{}, err
 	}
-	harness := c.base.Agent.Harness
-	if harness == "" {
-		harness = core.HarnessCode
-	}
-	task, err := core.NewTask(prompt, harness, c.profile, core.SessionID(id), c.principal)
+	task, err := core.NewTask(prompt, core.HarnessCode, c.profile, core.SessionID(id), c.principal)
 	if err != nil {
 		return runtime.Result{}, err
 	}

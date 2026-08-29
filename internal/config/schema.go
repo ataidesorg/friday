@@ -18,7 +18,6 @@ type Config struct {
 	Budgets       BudgetsConfig              `toml:"budgets"`
 	Sandbox       SandboxConfig              `toml:"sandbox"`
 	Tools         ToolsConfig                `toml:"tools"`
-	Memory        MemoryConfig               `toml:"memory"`
 	Telemetry     TelemetryConfig            `toml:"telemetry"`
 	Evals         EvalsConfig                `toml:"evals"`
 	Project       ProjectConfig              `toml:"project"`
@@ -58,22 +57,14 @@ type ProfileSelection struct {
 
 // ProfileConfig is one agent profile.
 type ProfileConfig struct {
-	Description     string `toml:"description"`
-	Style           string `toml:"style"`
-	Posture         string `toml:"posture"`
-	Harness         string `toml:"harness,omitempty"`
-	MemoryNamespace string `toml:"memory_namespace,omitempty"`
-	SensitivityCap  string `toml:"sensitivity_cap,omitempty"`
+	Description string `toml:"description"`
+	Style       string `toml:"style"`
+	Posture     string `toml:"posture"`
 }
 
-// ToAgent maps a config profile onto the core type. Empty harness, namespace,
-// and sensitivity cap take the code-harness defaults; harness = "assistant"
-// takes the personal-assistant defaults.
+// ToAgent maps a config profile onto the core type.
 func (p ProfileConfig) ToAgent(name string) core.AgentProfile {
 	d := core.DefaultCodeProfile()
-	if core.HarnessKind(p.Harness) == core.HarnessAssistant {
-		d = core.DefaultAssistantProfile()
-	}
 	d.Name = name
 	if p.Description != "" {
 		d.Identity = p.Description
@@ -83,15 +74,6 @@ func (p ProfileConfig) ToAgent(name string) core.AgentProfile {
 	}
 	if p.Posture != "" {
 		d.Posture = core.PolicyPosture(p.Posture)
-	}
-	if p.Harness != "" {
-		d.Harness = core.HarnessKind(p.Harness)
-	}
-	if p.MemoryNamespace != "" {
-		d.MemoryNamespace = p.MemoryNamespace
-	}
-	if p.SensitivityCap != "" {
-		d.SensitivityCap = core.Sensitivity(p.SensitivityCap)
 	}
 	return d
 }
@@ -271,23 +253,9 @@ type CommandsConfig struct {
 	Allowed []string `toml:"allowed"`
 }
 
-// MemoryConfig bounds the memory store.
-type MemoryConfig struct {
-	Namespaces []string        `toml:"namespaces"`
-	Retention  RetentionConfig `toml:"retention"`
-}
-
-// RetentionConfig is memory decay policy.
-type RetentionConfig struct {
-	EpisodicDays int    `toml:"episodic_days"`
-	Working      string `toml:"working"`
-}
-
 // TelemetryConfig controls the local event trail.
 type TelemetryConfig struct {
-	Mode          string `toml:"mode"`
-	Privacy       string `toml:"privacy"`
-	RetentionDays int    `toml:"retention_days"`
+	Privacy string `toml:"privacy"`
 }
 
 // EvalsConfig controls promotion gating.

@@ -58,7 +58,7 @@ func TestVersionAndUsage(t *testing.T) {
 
 func TestConfigShowValidateExplain(t *testing.T) {
 	code, out, errOut := exec(t, "config", "show", "--project", sample)
-	if code != 0 || !strings.Contains(out, `name = "sample"`) || !strings.Contains(out, "episodic_days = 14") {
+	if code != 0 || !strings.Contains(out, `name = "sample"`) || !strings.Contains(out, `instructions = ["AGENTS.md"]`) {
 		t.Fatalf("show: %d %q %q", code, out, errOut)
 	}
 	if code, out, _ := exec(t, "config", "validate", "--project", sample); code != 0 || out != "ok\n" {
@@ -76,8 +76,8 @@ func TestConfigShowValidateExplain(t *testing.T) {
 	if code != 0 || !strings.Contains(out, `sandbox.provider = "process"`) || !strings.Contains(out, "[rejected: untrusted]") {
 		t.Fatalf("explain rejected: %d %q", code, out)
 	}
-	code, out, _ = exec(t, "config", "explain", "--set", "memory.retention.episodic_days=1000", "memory.retention.episodic_days", "--project", sample)
-	if code != 0 || !strings.Contains(out, "cli → 1000") || !strings.Contains(out, "project (") {
+	code, out, _ = exec(t, "config", "explain", "--set", "evals.min_pass_rate=50", "evals.min_pass_rate", "--project", sample)
+	if code != 0 || !strings.Contains(out, "cli → 50") {
 		t.Fatalf("explain cli layer: %d %q", code, out)
 	}
 	if code, _, errOut := exec(t, "config", "explain", "nope.nope"); code != exitError || !strings.Contains(errOut, "unknown key") {

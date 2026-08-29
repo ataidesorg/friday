@@ -7,21 +7,13 @@ Stage 6, their own calendar, mail, and notes). Not a team tool. Not a hosted pro
 multi-user. If a decision would only make sense for a shared deployment, it is out of scope —
 see [non-goals.md](non-goals.md).
 
-## Two harnesses, one core
+## One coding harness
 
-Friday defines one harness type, `core.HarnessKind` (`internal/core/agent.go`), with two values:
-
-- `core.HarnessCode` (`"code"`) — plans, edits, runs commands, and validates inside a project
-  workspace. This is the current Friday CLI/TUI harness.
-- `core.HarnessAssistant` (`"assistant"`) — the same lifecycle applied to personal tasks
-  (calendar, mail, notes, reminders) through typed integration tools with declared scopes. The
-  Stage 6 target: see tasks/stage-6-personal-assistant.md.
-
-Both harnesses share one `core.Task` / `core.Run` lifecycle, one policy engine, one event trail.
-`core.NewTask` takes a `HarnessKind` as a required argument, not an optional flavour bolted on
-after the fact (`internal/core/task.go`; exercised by `TestNewTask`,
-`internal/core/domain_test.go`). The code harness runs today (`friday` chat and `friday run`).
-The assistant harness is Stage 6.
+Friday is a coding agent. `core.HarnessKind` has one value, `core.HarnessCode` (`"code"`):
+plans, edits, runs commands, and validates inside a project workspace
+(`internal/core/agent.go`). `core.NewTask` records that kind on every task
+(`internal/core/task.go`; `TestNewTask` in `internal/core/domain_test.go`).
+The CLI and TUI (`friday` chat and `friday run`) are that harness.
 
 ## Principles, stated as things you can check
 
@@ -84,13 +76,14 @@ Every claim below points at a concrete identifier and the test that enforces it,
   defaults to the current working directory unless `--project` or workspace mode points
   Friday elsewhere (`internal/config/paths.go`; `internal/cli/config.go`).
 - **No service, no account.** The boundaries Friday talks to are named once, in
-  `internal/core/contracts.go`: a model provider, a sandbox, typed tools, a memory store, a
+  `internal/core/contracts.go`: a model provider, a sandbox, typed tools, a
   policy engine, an evaluation runner. Each is either a local implementation or an explicit
   `Unavailable*` stub. The default `[providers]` table is empty until the user connects
   or configures a provider, and the default sandbox is the local `process` provider
   (`internal/config/defaults.toml`).
-- **Telemetry stays on the machine.** The default is `telemetry.mode = "local"`
-  (`internal/config/defaults.toml`); Friday has no hosted telemetry export path.
+- **Telemetry stays on the machine.** The local JSONL trail is redacted per
+  `telemetry.privacy` (`internal/config/defaults.toml`); Friday has no hosted
+  telemetry export path.
 - **Runtime state** — event logs, sessions, compaction state, and local run data —
   lives under `.friday/local/` or the Friday home directory and is excluded from
   version control (`.gitignore`).

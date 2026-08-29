@@ -20,7 +20,7 @@ const SchemaVersion = 1
 // ProjectLayerGatedPrefixes are the keys a repository's .friday/config.toml
 // may not set until its owner trusts the file: they reach the network with
 // your prompts, launch commands, downgrade privacy, spend money, or take the
-// sandbox away. Everything else — routes, profiles, memory, evals, project
+// sandbox away. Everything else — routes, profiles, evals, project
 // metadata, TUI — merges without asking.
 var ProjectLayerGatedPrefixes = []string{"budgets", "lsp", "mcp", "providers", "sandbox", "telemetry", "tools"}
 
@@ -86,19 +86,15 @@ func ruleUnknownKeys(r *Resolved) []ValidationError {
 }
 
 var enumValues = map[string][]string{
-	"sandbox.provider":           {"unavailable", "process", "container"},
-	"tools.default_effect":       {string(core.EffectDeny), string(core.EffectRequireApproval), string(core.EffectAllow)},
-	"telemetry.mode":             {"off", "local"},
-	"telemetry.privacy":          {string(core.PrivacyStandard), string(core.PrivacyMinimal)},
-	"evals.gate":                 {"required", "advisory"},
-	"memory.retention.working":   {"session", "task"},
-	"profiles.*.style":           {"concise", "detailed"},
-	"profiles.*.posture":         {"strict", "standard"},
-	"profiles.*.harness":         {string(core.HarnessCode), string(core.HarnessAssistant)},
-	"profiles.*.sensitivity_cap": {string(core.SensitivityPublic), string(core.SensitivityInternal), string(core.SensitivityPersonal)},
-	"providers.*.privacy":        {string(core.PrivacyLocal), string(core.PrivacyPrivateCloud), string(core.PrivacyPublicCloud)},
-	"providers.*.auth.source":    {"env", "keyring", "secret_store", "command"},
-	"models.routes.*.privacy":    {string(core.PrivacyLocal), string(core.PrivacyPrivateCloud), string(core.PrivacyPublicCloud)},
+	"sandbox.provider":        {"unavailable", "process", "container"},
+	"tools.default_effect":    {string(core.EffectDeny), string(core.EffectRequireApproval), string(core.EffectAllow)},
+	"telemetry.privacy":       {string(core.PrivacyStandard), string(core.PrivacyMinimal)},
+	"evals.gate":              {"required", "advisory"},
+	"profiles.*.style":        {"concise", "detailed"},
+	"profiles.*.posture":      {"strict", "standard"},
+	"providers.*.privacy":     {string(core.PrivacyLocal), string(core.PrivacyPrivateCloud), string(core.PrivacyPublicCloud)},
+	"providers.*.auth.source": {"env", "keyring", "secret_store", "command"},
+	"models.routes.*.privacy": {string(core.PrivacyLocal), string(core.PrivacyPrivateCloud), string(core.PrivacyPublicCloud)},
 }
 
 func checkEnum(errs []ValidationError, pattern, key, value string) []ValidationError {
@@ -116,20 +112,12 @@ func ruleEnums(r *Resolved) []ValidationError {
 	var errs []ValidationError
 	errs = checkEnum(errs, "sandbox.provider", "sandbox.provider", c.Sandbox.Provider)
 	errs = checkEnum(errs, "tools.default_effect", "tools.default_effect", c.Tools.DefaultEffect)
-	errs = checkEnum(errs, "telemetry.mode", "telemetry.mode", c.Telemetry.Mode)
 	errs = checkEnum(errs, "telemetry.privacy", "telemetry.privacy", c.Telemetry.Privacy)
 	errs = checkEnum(errs, "evals.gate", "evals.gate", c.Evals.Gate)
-	errs = checkEnum(errs, "memory.retention.working", "memory.retention.working", c.Memory.Retention.Working)
 	for _, name := range sortedKeys(c.Profiles) {
 		p := c.Profiles[name]
 		errs = checkEnum(errs, "profiles.*.style", "profiles."+name+".style", p.Style)
 		errs = checkEnum(errs, "profiles.*.posture", "profiles."+name+".posture", p.Posture)
-		if p.Harness != "" {
-			errs = checkEnum(errs, "profiles.*.harness", "profiles."+name+".harness", p.Harness)
-		}
-		if p.SensitivityCap != "" {
-			errs = checkEnum(errs, "profiles.*.sensitivity_cap", "profiles."+name+".sensitivity_cap", p.SensitivityCap)
-		}
 	}
 	for _, name := range sortedKeys(c.Providers) {
 		p := c.Providers[name]

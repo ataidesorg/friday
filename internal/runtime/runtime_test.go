@@ -980,6 +980,21 @@ func TestAssembleRendersGlobalAndProjectRules(t *testing.T) {
 	if !warned {
 		t.Fatal("missing global file must warn, not fail")
 	}
+	if !strings.Contains(sys, "<style>") || !strings.Contains(sys, "Be concise.") {
+		t.Fatalf("default style missing from system prompt:\n%s", sys)
+	}
+}
+
+func TestAssembleInjectsDetailedStyle(t *testing.T) {
+	h := newHarness(t, "add-farewell.json", toolsCfg())
+	capP := &capturingProvider{ModelProvider: h.deps.Provider}
+	h.deps.Provider = capP
+	h.in.Agent.Style = core.StyleDetailed
+	h.run(context.Background(), t)
+	sys := capP.first[0].Content
+	if !strings.Contains(sys, "Be detailed.") || strings.Contains(sys, "Be concise.") {
+		t.Fatalf("detailed style missing:\n%s", sys)
+	}
 }
 
 func TestAssembleRendersSkills(t *testing.T) {
