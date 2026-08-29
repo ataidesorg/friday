@@ -411,37 +411,3 @@ func itemD(group, id, title, key, detail string) overlayItem {
 	it.detail = detail
 	return it
 }
-
-// chatActions is the Ctrl+P catalog (no live toggle state).
-func chatActions() []overlayItem {
-	gSession, gCtx, gModel, gDisplay, gTools, gOther := "Session", "Context", "Model & Input", "Display", "Extensions", "Other"
-	return []overlayItem{
-		itemD(gSession, "new", "New Session", "ctrl+n", "start a fresh conversation"),
-		itemD(gSession, "home", "Home", "/home", "return to the welcome surface"),
-		itemD(gSession, "dashboard", "Agent Dashboard", "ctrl+\\", "roster of live sessions"),
-		itemD(gSession, "resume", "Resume Session", "/resume", "reopen a prior conversation"),
-		itemD(gSession, "rename", "Rename Session", "/rename", "set the session title"),
-		itemD(gSession, "delete", "Delete Session", "/delete", "requires typed confirmation"),
-		itemD(gSession, "status", "Session Info", "/status", "id, route, tokens"),
-		itemD(gSession, "goal", "Session Goal", "/goal", "start, pause, resume, edit, or clear"),
-		itemD(gCtx, "compact", "Compact History", "/compact", "fold older turns into a summary"),
-		itemD(gCtx, "queue", "Prompt Queue", "ctrl+b", "queued prompts waiting to run"),
-		itemD(gCtx, "usage", "Usage Meter", "/usage", "toggle context and spend in the composer"),
-		itemD(gModel, "model", "Switch Model", "/model", "pick the active route"),
-		itemD(gModel, "cycle-mode", "Switch Mode", "shift+tab", "normal, plan, auto, always-approve, always-ask"),
-		itemD(gModel, "multiline", "Multiline Input", "/multiline", "enter inserts a newline"),
-		itemD(gModel, "vim-mode", "Vim Mode", "/vim-mode", "j/k in the scrollback"),
-		itemD(gDisplay, "verbose", "Verbose Trace", "/verbose", "full event trace"),
-		itemD(gDisplay, "tools-display", "Tool Activity", "/tools", "show tool calls in chat"),
-		itemD(gDisplay, "thinking", "Thinking Indicator", "/thinking", "show live thinking line"),
-		itemD(gTools, "skills", "Skills", "/skills", "install, inspect, invoke"),
-		itemD(gTools, "connect", "Connect Provider", "/connect", "add an API key"),
-		itemD(gTools, "agent", "Manage Agents", "/agent", "switch agent profiles"),
-		itemD(gOther, "theme", "Switch Theme", "/theme", "friday, dark, light, ansi"),
-		itemD(gOther, "edit-prompt", "Edit Prompt", "ctrl+g", "open $VISUAL"),
-		itemD(gOther, "copy", "Copy Last Reply", "/copy", "clipboard the last reply"),
-		itemD(gOther, "history", "Prompt History", "/history", "recall a sent prompt"),
-		itemD(gOther, "help", "Help", "/help", "commands and keys"),
-		itemD(gOther, "quit", "Quit", "ctrl+c", "exit friday"),
-	}
-}

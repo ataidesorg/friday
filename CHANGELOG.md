@@ -31,6 +31,8 @@ a minor release. Breaking changes are always listed under **Changed**.
   in the same run and does not land on disk.
 - `/advisories` hides unpriced-model and unverified-result warnings for the
   session (`tui.hide_advisories` in config for the default).
+- `/` typeahead and Ctrl+P share one command catalog, including custom
+  commands. The slash menu lists every match and windows to the terminal.
 - Fullscreen TUI chat and a headless `friday run` mode for scripts and CI.
 - Typed file, search, and command tools behind a policy and approval layer.
 - Process sandbox with path confinement, environment scrubbing, and timeouts;

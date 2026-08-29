@@ -27,54 +27,17 @@ func (m ChatModel) promptRows() int {
 // slashEntry is one row of the typeahead menu for a drafted /command.
 type slashEntry struct{ name, detail string }
 
-// builtinSlash lists every built-in slash command for the typeahead menu.
-var builtinSlash = []slashEntry{
-	{"help", "list commands"},
-	{"status", "session, route, tokens"},
-	{"goal", "start, pause, resume, edit, or clear a goal"},
-	{"home", "show the welcome surface"},
-	{"copy", "copy the last assistant reply"},
-	{"model", "show or switch the model route"},
-	{"agent", "switch agent profile"},
-	{"new", "start a fresh session"},
-	{"resume", "reopen the previous session"},
-	{"compact", "fold older turns into a summary"},
-	{"queue", "show queued prompts"},
-	{"rewind", "drop later turns"},
-	{"delete", "delete this session after confirmation"},
-	{"doctor", "terminal and clipboard checks"},
-	{"history", "recall a sent prompt"},
-	{"always-approve", "auto-approve remaining asks"},
-	{"vim-mode", "j/k scrollback keys"},
-	{"plan", "read-only planning"},
-	{"theme", "switch palette"},
-	{"clear", "clear the scrollback"},
-	{"usage", "toggle usage near the model name"},
-	{"cost", "print session tokens and cost"},
-	{"verbose", "toggle the full event trace"},
-	{"advisories", "show or hide unenforceable-guardrail warnings"},
-	{"tools", "show or hide tool activity"},
-	{"thinking", "show or hide thinking indicator"},
-	{"connect", "add a provider with an api key"},
-	{"dashboard", "live agent roster"},
-	{"commands", "custom slash commands"},
-	{"skills", "loaded agent skills"},
-	{"edit-prompt", "edit draft in $VISUAL"},
-	{"quit", "exit friday"},
-	{"exit", "exit friday"},
-}
-
-// slashMatches is the typeahead menu for the current draft: built-ins plus
-// custom commands whose names extend it. Empty unless the draft is a
-// single-line "/prefix" that has not reached its arguments, and always empty
-// under an overlay or a pending approval.
+// slashMatches is every built-in and custom command whose name extends the
+// draft. Empty unless the draft is a single-line "/prefix" that has not
+// reached its arguments, and always empty under an overlay or a pending
+// approval. The menu view windows this list to the terminal height.
 func (m ChatModel) slashMatches() []slashEntry {
 	d := m.ta.Value()
 	if m.ov != nil || m.pending != nil || m.question != nil || m.conn != nil || !strings.HasPrefix(d, "/") || strings.ContainsAny(d, " \n") {
 		return nil
 	}
 	var out []slashEntry
-	for _, e := range builtinSlash {
+	for _, e := range builtinSlash() {
 		if strings.HasPrefix("/"+e.name, d) {
 			out = append(out, e)
 		}
@@ -84,10 +47,32 @@ func (m ChatModel) slashMatches() []slashEntry {
 			out = append(out, slashEntry{c.Name, c.Description})
 		}
 	}
-	if len(out) > slashMenuMax {
-		out = out[:slashMenuMax]
-	}
 	return out
+}
+
+func (m ChatModel) slashMenuLimit() int {
+	h := m.height
+	if h <= 0 {
+		h = defaultHeight
+	}
+	limit := h - chatChrome - m.promptRows() - promptFrame - footerRows - 6
+	if limit < 4 {
+		limit = 4
+	}
+	return limit
+}
+
+func (m ChatModel) slashWindow(menu []slashEntry) (int, []slashEntry) {
+	limit := m.slashMenuLimit()
+	if len(menu) <= limit {
+		return 0, menu
+	}
+	sel := min(max(m.slashSel, 0), len(menu)-1)
+	start := 0
+	if sel >= limit {
+		start = sel - limit + 1
+	}
+	return start, menu[start : start+limit]
 }
 
 // lastToken is the draft's final whitespace-separated token; the @-file
@@ -134,10 +119,11 @@ func (m ChatModel) atMenuView(menu []string) string {
 // slashMenuView renders the typeahead rows shown above the prompt.
 func (m ChatModel) slashMenuView(menu []slashEntry) string {
 	sel := min(m.slashSel, len(menu)-1)
+	start, win := m.slashWindow(menu)
 	rows := []string{m.cstyle.overlayTitle("Commands")}
-	for i, e := range menu {
+	for i, e := range win {
 		marker := "  "
-		if i == sel {
+		if start+i == sel {
 			marker = m.cstyle.glyph("▍", m.cstyle.accent) + " "
 		}
 		row := marker + "/" + e.name
@@ -145,6 +131,9 @@ func (m ChatModel) slashMenuView(menu []slashEntry) string {
 			row += "  " + m.cstyle.dimText(e.detail)
 		}
 		rows = append(rows, row)
+	}
+	if len(menu) > len(win) {
+		rows = append(rows, m.cstyle.dimText(fmt.Sprintf("  %d/%d", sel+1, len(menu))))
 	}
 	return m.cstyle.modal.Width(min(64, max(20, m.innerWidth()-2))).Render(strings.Join(rows, "\n"))
 }

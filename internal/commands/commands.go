@@ -31,14 +31,15 @@ type Command struct {
 // reserved must hold every name ChatModel.command dispatches, or a custom
 // file would load and then never run.
 var reserved = map[string]bool{
-	"help": true, "status": true, "copy": true, "export": true,
+	"help": true, "status": true, "goal": true, "copy": true, "export": true,
 	"doctor": true, "history": true, "home": true, "rewind": true,
 	"fork": true, "rename": true, "delete": true, "always-approve": true,
 	"vim-mode": true, "plan": true, "theme": true, "multiline": true,
 	"timestamps": true, "usage": true, "tools": true, "thinking": true,
-	"dashboard": true, "skills": true, "clear": true,
-	"cost": true, "model": true, "agent": true, "new": true, "resume": true,
-	"compact": true, "connect": true, "verbose": true, "quit": true,
+	"dashboard": true, "skills": true, "queue": true, "commands": true,
+	"edit-prompt": true, "clear": true, "cost": true, "model": true,
+	"agent": true, "new": true, "resume": true, "compact": true,
+	"connect": true, "verbose": true, "advisories": true, "quit": true,
 	"exit": true,
 }
 

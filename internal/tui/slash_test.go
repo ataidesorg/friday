@@ -10,8 +10,8 @@ import (
 	"github.com/ataidesorg/friday/internal/core"
 )
 
-// A bare "/" offers the command menu (capped), a prefix filters it, custom
-// commands join it, and arguments or overlays dismiss it.
+// A bare "/" offers every built-in plus custom commands; a prefix filters
+// it, and arguments or overlays dismiss it.
 func TestSlashTypeaheadFiltersAndCaps(t *testing.T) {
 	m := NewChat(Options{
 		Width: 80, NoColor: true,
@@ -21,8 +21,18 @@ func TestSlashTypeaheadFiltersAndCaps(t *testing.T) {
 	m = next.(ChatModel)
 
 	m = typeText(m, "/")
-	if menu := m.slashMatches(); len(menu) != slashMenuMax {
-		t.Fatalf("bare / shows %d rows, want the %d-row cap", len(menu), slashMenuMax)
+	menu := m.slashMatches()
+	got := map[string]bool{}
+	for _, e := range menu {
+		got[e.name] = true
+	}
+	for _, want := range []string{"help", "fork", "export", "timestamps", "advisories", "always-approve", "deploy", "quit"} {
+		if !got[want] {
+			t.Fatalf("bare / missing %q (%d matches)", want, len(menu))
+		}
+	}
+	if len(menu) < len(builtinSlash()) {
+		t.Fatalf("bare / shows %d, want at least the %d built-ins", len(menu), len(builtinSlash()))
 	}
 	m = typeText(m, "/mod")
 	if menu := m.slashMatches(); len(menu) != 1 || menu[0].name != "model" {

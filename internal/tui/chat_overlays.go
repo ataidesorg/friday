@@ -17,6 +17,9 @@ func (m ChatModel) openPalette() (tea.Model, tea.Cmd) {
 
 func (m ChatModel) paletteItems() []overlayItem {
 	items := chatActions()
+	for _, c := range m.commands {
+		items = append(items, itemD(gCmds, "cmd:"+c.Name, "/"+c.Name, "/"+c.Name, c.Description))
+	}
 	for i, it := range items {
 		switch it.id {
 		case "vim-mode":
@@ -37,6 +40,10 @@ func (m ChatModel) paletteItems() []overlayItem {
 			items[i].state = m.permLabel()
 		case "usage":
 			items[i].state = onOff(m.usageOpen)
+		case "timestamps":
+			items[i].state = onOff(m.showTimes)
+		case "advisories":
+			items[i].state = onOff(!m.hideAdvis)
 		}
 	}
 	return items
@@ -155,6 +162,9 @@ func (m ChatModel) overlayCommit(kind overlayKind, id string) (tea.Model, tea.Cm
 			return m.append(skillHelp(id)...), nil
 		}
 		return m.invokeSkill(id)
+	}
+	if strings.HasPrefix(id, "cmd:") {
+		return m.command("/" + strings.TrimPrefix(id, "cmd:"))
 	}
 	switch id {
 	case "model":

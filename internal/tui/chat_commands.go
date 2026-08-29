@@ -309,6 +309,21 @@ func (m ChatModel) cycleMode() (tea.Model, tea.Cmd) {
 	return m.layout(), nil
 }
 
+func (m ChatModel) listCustomCommands() (tea.Model, tea.Cmd) {
+	if len(m.commands) == 0 {
+		return m.append(tagStatus + " no custom commands — add .md files under .friday/commands/ or the Friday home commands/ directory"), nil
+	}
+	lines := []string{tagStatus + " custom commands"}
+	for _, c := range m.commands {
+		detail := c.Description
+		if detail == "" {
+			detail = c.Name
+		}
+		lines = append(lines, "  /"+c.Name+"  "+detail)
+	}
+	return m.append(lines...), nil
+}
+
 // command dispatches a leading-slash prompt. Unknown commands warn rather
 // than run as a turn.
 func (m ChatModel) command(line string) (tea.Model, tea.Cmd) {
@@ -372,6 +387,12 @@ func (m ChatModel) command(line string) (tea.Model, tea.Cmd) {
 		return m.toggleDashboard()
 	case "/skills":
 		return m.openSkills()
+	case "/queue":
+		return m.toggleQueue()
+	case "/commands":
+		return m.listCustomCommands()
+	case "/edit-prompt":
+		return m.openEditor()
 	case "/clear":
 		m.Lines = nil
 		m.lineTimes = nil

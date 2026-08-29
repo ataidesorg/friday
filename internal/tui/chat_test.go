@@ -939,10 +939,15 @@ func TestChatCustomCommand(t *testing.T) {
 		t.Fatalf("expanded prompt leaked into scrollback:\n%s", out)
 	}
 
-	for _, it := range chatActions() {
-		if it.id == "deploy" {
-			t.Fatal("custom commands must not appear in Ctrl+P")
+	found := false
+	for _, it := range m.paletteItems() {
+		if it.id == "cmd:deploy" {
+			found = true
+			break
 		}
+	}
+	if !found {
+		t.Fatal("custom commands must appear in Ctrl+P")
 	}
 }
 
