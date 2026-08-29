@@ -258,6 +258,13 @@ func (m ChatModel) key(v tea.KeyMsg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
+func wrapSel(sel, n, delta int) int {
+	if n <= 0 {
+		return 0
+	}
+	return (sel + delta%n + n) % n
+}
+
 // slashKey drives the typeahead menu for a drafted /command: arrows move,
 // tab completes the draft, enter runs the selection, esc clears the draft.
 // Unhandled keys fall through to normal editing.
@@ -265,10 +272,10 @@ func (m ChatModel) slashKey(v tea.KeyMsg, menu []slashEntry) (tea.Model, tea.Cmd
 	sel := min(m.slashSel, len(menu)-1)
 	switch v.Type {
 	case tea.KeyUp:
-		m.slashSel = max(0, sel-1)
+		m.slashSel = wrapSel(sel, len(menu), -1)
 		return m, nil, true
 	case tea.KeyDown:
-		m.slashSel = min(len(menu)-1, sel+1)
+		m.slashSel = wrapSel(sel, len(menu), 1)
 		return m, nil, true
 	case tea.KeyTab:
 		m.ta.SetValue("/" + menu[sel].name + " ")
@@ -291,9 +298,10 @@ func (m ChatModel) slashKey(v tea.KeyMsg, menu []slashEntry) (tea.Model, tea.Cmd
 	return m, nil, false
 }
 
-// approvalKey answers a pending approval: y approves once, s for the
-// session, n or esc denies. Ctrl-C denies and then cancels the turn.
-// Everything else is swallowed so a half-typed draft never answers a prompt.
+// approvalKey answers a pending approval. Arrow keys move the highlighted
+// row; enter commits it. y / s / n and esc still work as shortcuts.
+// Ctrl-C denies and then cancels the turn. Other keys are swallowed so a
+// half-typed draft never answers a prompt.
 func (m ChatModel) approvalKey(v tea.KeyMsg) (tea.Model, tea.Cmd) {
 	if v.Type == tea.KeyCtrlC {
 		m = m.resolveApproval(core.ApprovalDenied, core.ApprovalOnce)
@@ -307,6 +315,17 @@ func (m ChatModel) approvalKey(v tea.KeyMsg) (tea.Model, tea.Cmd) {
 	}
 	if v.Type == tea.KeyEsc {
 		return m.resolveApproval(core.ApprovalDenied, core.ApprovalOnce), nil
+	}
+	switch v.Type {
+	case tea.KeyUp, tea.KeyShiftTab:
+		m.approvalSel = (m.approvalSel + len(approvalChoices) - 1) % len(approvalChoices)
+		return m.layout(), nil
+	case tea.KeyDown, tea.KeyTab:
+		m.approvalSel = (m.approvalSel + 1) % len(approvalChoices)
+		return m.layout(), nil
+	case tea.KeyEnter:
+		c := approvalChoices[m.approvalSel]
+		return m.resolveApproval(c.decision, c.scope), nil
 	}
 	switch v.String() {
 	case keyApproveOnce:
@@ -619,10 +638,10 @@ func (m ChatModel) atKey(v tea.KeyMsg, menu []string) (tea.Model, tea.Cmd, bool)
 	sel := min(m.atSel, len(menu)-1)
 	switch v.Type {
 	case tea.KeyUp:
-		m.atSel = max(0, sel-1)
+		m.atSel = wrapSel(sel, len(menu), -1)
 		return m, nil, true
 	case tea.KeyDown:
-		m.atSel = min(len(menu)-1, sel+1)
+		m.atSel = wrapSel(sel, len(menu), 1)
 		return m, nil, true
 	case tea.KeyTab, tea.KeyEnter:
 		val := m.ta.Value()

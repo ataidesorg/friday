@@ -91,6 +91,11 @@ type Usage struct {
 	CachedInputTokens int64 `json:"cached_input_tokens"`
 }
 
+// Total is input + output + cached input, used for goal token budgets.
+func (u Usage) Total() int64 {
+	return u.InputTokens + u.OutputTokens + u.CachedInputTokens
+}
+
 // Add returns the component-wise sum.
 func (u Usage) Add(o Usage) Usage {
 	return Usage{

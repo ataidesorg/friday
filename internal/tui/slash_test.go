@@ -10,8 +10,8 @@ import (
 	"github.com/ataidesorg/friday/internal/core"
 )
 
-// A bare "/" offers the command menu (capped), a prefix filters it, custom
-// commands join it, and arguments or overlays dismiss it.
+// A bare "/" offers every built-in plus custom commands; a prefix filters
+// it, and arguments or overlays dismiss it.
 func TestSlashTypeaheadFiltersAndCaps(t *testing.T) {
 	m := NewChat(Options{
 		Width: 80, NoColor: true,
@@ -21,12 +21,22 @@ func TestSlashTypeaheadFiltersAndCaps(t *testing.T) {
 	m = next.(ChatModel)
 
 	m = typeText(m, "/")
-	if menu := m.slashMatches(); len(menu) != slashMenuMax {
-		t.Fatalf("bare / shows %d rows, want the %d-row cap", len(menu), slashMenuMax)
+	menu := m.slashMatches()
+	got := map[string]bool{}
+	for _, e := range menu {
+		got[e.name] = true
+	}
+	for _, want := range []string{"help", "fork", "export", "timestamps", "advisories", "always-approve", "deploy", "quit"} {
+		if !got[want] {
+			t.Fatalf("bare / missing %q (%d matches)", want, len(menu))
+		}
+	}
+	if len(menu) < len(builtinSlash()) {
+		t.Fatalf("bare / shows %d, want at least the %d built-ins", len(menu), len(builtinSlash()))
 	}
 	m = typeText(m, "/mod")
-	if menu := m.slashMatches(); len(menu) != 1 || menu[0].name != "model" {
-		t.Fatalf("filter /mod got %+v, want model only", menu)
+	if menu := m.slashMatches(); len(menu) == 0 || menu[0].name != "model" {
+		t.Fatalf("filter /mod got %+v, want model first", menu)
 	}
 	m = typeText(m, "/verb")
 	if menu := m.slashMatches(); len(menu) != 1 || menu[0].name != "verbose" {
@@ -43,11 +53,97 @@ func TestSlashTypeaheadFiltersAndCaps(t *testing.T) {
 	}
 }
 
+func TestSlashMenuFuzzyAndGroups(t *testing.T) {
+	m := NewChat(Options{Width: 80, NoColor: true}, nil)
+	next, _ := m.Update(tea.WindowSizeMsg{Width: 80, Height: 24})
+	m = next.(ChatModel)
+	m = typeText(m, "/")
+	v := m.View()
+	for _, want := range []string{"Session", "/new", "▸"} {
+		if !strings.Contains(v, want) {
+			t.Fatalf("bare / menu missing %q:\n%s", want, v)
+		}
+	}
+	if names := m.slashMatches(); len(names) == 0 || names[0].name != "new" {
+		t.Fatalf("catalog order lost: %+v", names)
+	}
+	if !strings.Contains(m.footerView(), "enter run") {
+		t.Fatalf("slash footer: %q", m.footerView())
+	}
+	m = typeText(m, "/mode")
+	menu := m.slashMatches()
+	if len(menu) == 0 || menu[0].name != "model" {
+		t.Fatalf("/mode got %+v, want model first", menu)
+	}
+}
+
+func TestSlashCustomBadge(t *testing.T) {
+	m := NewChat(Options{
+		Width: 80, NoColor: true,
+		Commands: []CommandInfo{{Name: "deploy", Description: "ship it"}},
+	}, nil)
+	next, _ := m.Update(tea.WindowSizeMsg{Width: 80, Height: 24})
+	m = typeText(next.(ChatModel), "/deploy")
+	if v := m.View(); !strings.Contains(v, "custom") || !strings.Contains(v, "/deploy") {
+		t.Fatalf("custom badge missing:\n%s", v)
+	}
+}
+
+func TestSlashMenuWraps(t *testing.T) {
+	m := NewChat(Options{Width: 80, NoColor: true}, nil)
+	next, _ := m.Update(tea.WindowSizeMsg{Width: 80, Height: 24})
+	m = typeText(next.(ChatModel), "/")
+	n := len(m.slashMatches())
+	if n < 2 {
+		t.Fatal("need a menu to wrap")
+	}
+	if m.slashSel != 0 {
+		t.Fatalf("start sel %d, want 0", m.slashSel)
+	}
+	up, _ := m.Update(tea.KeyMsg{Type: tea.KeyUp})
+	m = up.(ChatModel)
+	if m.slashSel != n-1 {
+		t.Fatalf("up at top = %d, want last %d", m.slashSel, n-1)
+	}
+	down, _ := m.Update(tea.KeyMsg{Type: tea.KeyDown})
+	m = down.(ChatModel)
+	if m.slashSel != 0 {
+		t.Fatalf("down at bottom = %d, want 0", m.slashSel)
+	}
+}
+
+func TestSlashGroupHeadersHaveSpace(t *testing.T) {
+	m := NewChat(Options{Width: 80, NoColor: true}, nil)
+	next, _ := m.Update(tea.WindowSizeMsg{Width: 80, Height: 40})
+	m = typeText(next.(ChatModel), "/")
+	got := m.slashMenuView(m.slashMatches())
+	lines := strings.Split(got, "\n")
+	idx := -1
+	for i, l := range lines {
+		if strings.Contains(l, "Extensions") {
+			idx = i
+			break
+		}
+	}
+	if idx < 1 {
+		t.Fatalf("Extensions header missing:\n%s", got)
+	}
+	if strings.Contains(lines[idx], "/") {
+		t.Fatalf("Extensions wrapped onto a command row:\n%s", lines[idx])
+	}
+	if !strings.Contains(lines[idx], "─") {
+		t.Fatalf("Extensions header split from its rule:\n%s", got)
+	}
+	prev := strings.Trim(lines[idx-1], " │")
+	if prev != "" {
+		t.Fatalf("group header sits on %q; want a blank line above:\n%s", prev, got)
+	}
+}
+
 // Down moves the selection, tab completes the draft to the selected command.
 func TestSlashTypeaheadTabCompletes(t *testing.T) {
-	m := typeText(NewChat(Options{Width: 80}, nil), "/cos") // cost
-	next, _ := m.Update(tea.KeyMsg{Type: tea.KeyDown})
-	next, _ = next.(ChatModel).Update(tea.KeyMsg{Type: tea.KeyTab})
+	m := typeText(NewChat(Options{Width: 80}, nil), "/cost")
+	next, _ := m.Update(tea.KeyMsg{Type: tea.KeyTab})
 	if got := next.(ChatModel).ta.Value(); got != "/cost " {
 		t.Fatalf("tab completed to %q, want %q", got, "/cost ")
 	}

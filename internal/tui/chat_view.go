@@ -5,11 +5,14 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/charmbracelet/lipgloss"
+
+	"github.com/ataidesorg/friday/internal/core"
 )
 
 // promptRows is the prompt's height in rows: one for a fresh draft, growing
@@ -23,67 +26,106 @@ func (m ChatModel) promptRows() int {
 }
 
 // slashEntry is one row of the typeahead menu for a drafted /command.
-type slashEntry struct{ name, detail string }
-
-// builtinSlash lists every built-in slash command for the typeahead menu.
-var builtinSlash = []slashEntry{
-	{"help", "list commands"},
-	{"status", "session, route, tokens"},
-	{"home", "show the welcome surface"},
-	{"copy", "copy the last assistant reply"},
-	{"model", "show or switch the model route"},
-	{"agent", "switch agent profile"},
-	{"new", "start a fresh session"},
-	{"resume", "reopen the previous session"},
-	{"compact", "fold older turns into a summary"},
-	{"queue", "show queued prompts"},
-	{"rewind", "drop later turns"},
-	{"delete", "delete this session after confirmation"},
-	{"doctor", "terminal and clipboard checks"},
-	{"history", "recall a sent prompt"},
-	{"always-approve", "auto-approve remaining asks"},
-	{"vim-mode", "j/k scrollback keys"},
-	{"plan", "read-only planning"},
-	{"theme", "switch palette"},
-	{"clear", "clear the scrollback"},
-	{"usage", "toggle usage near the model name"},
-	{"cost", "print session tokens and cost"},
-	{"verbose", "toggle the full event trace"},
-	{"tools", "show or hide tool activity"},
-	{"thinking", "show or hide thinking indicator"},
-	{"connect", "add a provider with an api key"},
-	{"dashboard", "live agent roster"},
-	{"commands", "custom slash commands"},
-	{"skills", "loaded agent skills"},
-	{"edit-prompt", "edit draft in $VISUAL"},
-	{"quit", "exit friday"},
-	{"exit", "exit friday"},
+type slashEntry struct {
+	name, detail, group, title string
+	custom                     bool
 }
 
-// slashMatches is the typeahead menu for the current draft: built-ins plus
-// custom commands whose names extend it. Empty unless the draft is a
-// single-line "/prefix" that has not reached its arguments, and always empty
-// under an overlay or a pending approval.
+// slashMatches is the ranked command menu for the current draft. Empty unless
+// the draft is a single-line "/prefix" that has not reached its arguments,
+// and always empty under an overlay or a pending approval.
 func (m ChatModel) slashMatches() []slashEntry {
 	d := m.ta.Value()
 	if m.ov != nil || m.pending != nil || m.question != nil || m.conn != nil || !strings.HasPrefix(d, "/") || strings.ContainsAny(d, " \n") {
 		return nil
 	}
-	var out []slashEntry
-	for _, e := range builtinSlash {
-		if strings.HasPrefix("/"+e.name, d) {
-			out = append(out, e)
-		}
+	q := strings.TrimPrefix(d, "/")
+	type ranked struct {
+		e    slashEntry
+		rank int
+		idx  int
 	}
-	for _, c := range m.commands {
-		if strings.HasPrefix("/"+c.Name, d) {
-			out = append(out, slashEntry{c.Name, c.Description})
+	var hits []ranked
+	add := func(e slashEntry, idx int) {
+		r, ok := slashRank(q, e)
+		if !ok {
+			return
 		}
+		hits = append(hits, ranked{e: e, rank: r, idx: idx})
 	}
-	if len(out) > slashMenuMax {
-		out = out[:slashMenuMax]
+	for i, e := range builtinSlash() {
+		if e.name == "exit" && q == "" {
+			continue
+		}
+		add(e, i)
+	}
+	base := len(builtinSlash())
+	for i, c := range m.commands {
+		add(slashEntry{name: c.Name, detail: c.Description, group: gCmds, title: c.Name, custom: true}, base+i)
+	}
+	sort.SliceStable(hits, func(i, j int) bool {
+		if hits[i].rank != hits[j].rank {
+			return hits[i].rank < hits[j].rank
+		}
+		return hits[i].idx < hits[j].idx
+	})
+	out := make([]slashEntry, len(hits))
+	for i, h := range hits {
+		out[i] = h.e
 	}
 	return out
+}
+
+// slashRank scores a command against the typed prefix. Lower is better.
+// Empty query keeps catalog order. Name prefix, then substring, then a
+// tight subsequence of the command name — never the description.
+func slashRank(q string, e slashEntry) (int, bool) {
+	if q == "" {
+		return 0, true
+	}
+	ql := strings.ToLower(q)
+	name := strings.ToLower(e.name)
+	switch {
+	case name == ql:
+		return 0, true
+	case strings.HasPrefix(name, ql):
+		return 1, true
+	case strings.Contains(name, ql):
+		return 3, true
+	}
+	r, ok := fuzzyRank(q, e.name)
+	if !ok {
+		return 0, false
+	}
+	if r > len(ql)+1 {
+		return 0, false
+	}
+	return 10 + r, true
+}
+
+func (m ChatModel) slashMenuLimit() int {
+	h := m.height
+	if h <= 0 {
+		h = defaultHeight
+	}
+	limit := h - chatChrome - m.promptRows() - promptFrame - footerRows - 6
+	if limit < 4 {
+		limit = 4
+	}
+	return limit
+}
+
+func (m ChatModel) slashWindow(menu []slashEntry) (int, []slashEntry) {
+	limit := m.slashMenuLimit()
+	if len(menu) <= limit {
+		return 0, menu
+	}
+	sel := min(max(m.slashSel, 0), len(menu)-1)
+	start := 0
+	if sel >= limit {
+		start = sel - limit + 1
+	}
+	return start, menu[start : start+limit]
 }
 
 // lastToken is the draft's final whitespace-separated token; the @-file
@@ -130,19 +172,75 @@ func (m ChatModel) atMenuView(menu []string) string {
 // slashMenuView renders the typeahead rows shown above the prompt.
 func (m ChatModel) slashMenuView(menu []slashEntry) string {
 	sel := min(m.slashSel, len(menu)-1)
-	rows := []string{m.cstyle.overlayTitle("Commands")}
-	for i, e := range menu {
-		marker := "  "
-		if i == sel {
-			marker = m.cstyle.glyph("▍", m.cstyle.accent) + " "
+	start, win := m.slashWindow(menu)
+	w := max(24, m.innerWidth())
+	q := strings.TrimPrefix(m.ta.Value(), "/")
+	grouped := q == ""
+	var rows []string
+	prev := ""
+	for i, e := range win {
+		if grouped && e.group != "" && e.group != prev {
+			if prev != "" {
+				rows = append(rows, "")
+			}
+			label := e.group
+			prefix := "  " + label + " "
+			rule := max(1, w-runeLen(prefix))
+			rows = append(rows, m.cstyle.dimText(prefix+strings.Repeat("─", rule)))
+			prev = e.group
 		}
-		row := marker + "/" + e.name
-		if e.detail != "" {
-			row += "  " + m.cstyle.dimText(e.detail)
-		}
-		rows = append(rows, row)
+		rows = append(rows, m.slashRow(e, start+i == sel, w))
 	}
-	return m.cstyle.modal.Width(min(64, max(20, m.innerWidth()-2))).Render(strings.Join(rows, "\n"))
+	if len(menu) > len(win) {
+		rows = append(rows, m.cstyle.dimText(fmt.Sprintf("  %d/%d", sel+1, len(menu))))
+	}
+	return m.cstyle.modal.Width(w).Padding(0, 0).Render(strings.Join(rows, "\n"))
+}
+
+func (m ChatModel) slashRow(e slashEntry, selected bool, w int) string {
+	avail := max(8, w)
+	mark := "  "
+	if selected {
+		mark = "▸ "
+	}
+	name := "/" + e.name
+	right := ""
+	if e.custom {
+		right = "custom"
+	}
+	leftBudget := avail - runeLen(mark)
+	if right != "" {
+		leftBudget = max(6, avail-runeLen(mark)-runeLen(right)-2)
+	}
+	title := fit(name, min(runeLen(name), leftBudget))
+	left := mark + title
+	rest := leftBudget - runeLen(title)
+	if e.detail != "" && rest >= 4 {
+		left += "  " + fit(e.detail, rest-2)
+	}
+	plain := left
+	if right != "" {
+		plain = padBetween(left, right, avail)
+	} else if pad := avail - runeLen(plain); pad > 0 {
+		plain += strings.Repeat(" ", pad)
+	}
+	if selected {
+		if m.cstyle.on {
+			return lipgloss.NewStyle().Foreground(thCodeFg()).Background(thCodeBg()).Render(plain)
+		}
+		return plain
+	}
+	if !m.cstyle.on {
+		return strings.TrimRight(plain, " ")
+	}
+	styled := mark + m.cstyle.accent.Render(title)
+	if e.detail != "" && rest >= 4 {
+		styled += "  " + m.cstyle.dimText(fit(e.detail, rest-2))
+	}
+	if right == "" {
+		return styled
+	}
+	return padBetween(styled, m.cstyle.dimText(right), avail)
 }
 
 func (m ChatModel) slashMenuRows(menu []slashEntry) int {
@@ -572,20 +670,108 @@ func formatTokens(n int) string {
 	return fmt.Sprintf("%dk", n/1000)
 }
 
-// approvalPromptView fills the composer with OpenCode-style choices so the
-// keys are in the prompt frame, not only on the status line.
+type approvalChoice struct {
+	label    string
+	key      string
+	decision core.ApprovalDecision
+	scope    core.ApprovalScope
+}
+
+var approvalChoices = []approvalChoice{
+	{label: "Allow once", key: "y", decision: core.ApprovalApproved, scope: core.ApprovalOnce},
+	{label: "Allow this session", key: "s", decision: core.ApprovalApproved, scope: core.ApprovalSession},
+	{label: "Reject", key: "n", decision: core.ApprovalDenied, scope: core.ApprovalOnce},
+}
+
+func approvalTitle(a core.Approval) string {
+	r := a.Request
+	sc := r.Capability.Scope
+	switch {
+	case sc.Path != "" && r.Tool == "write_file":
+		return "Write " + sc.Path
+	case sc.Path != "" && r.Tool == "apply_patch":
+		return "Patch " + sc.Path
+	case sc.Path != "":
+		return r.Tool + " " + sc.Path
+	case len(sc.Argv) > 0:
+		return "Run " + strings.Join(sc.Argv, " ")
+	case r.Tool != "":
+		return r.Tool
+	default:
+		return "tool"
+	}
+}
+
+func approvalRiskLabel(a core.Approval) string {
+	r := a.Request
+	parts := []string{r.Tool}
+	if r.Capability.Risk != "" {
+		parts = append(parts, strings.ReplaceAll(string(r.Capability.Risk), "_", " "))
+	}
+	return strings.Join(parts, " · ")
+}
+
+// approvalPromptView is the composer card: action, risk, preview, then a
+// selectable list of decisions. Arrow keys move; y/s/n still work.
 func (m ChatModel) approvalPromptView() string {
-	tool := "tool"
-	if m.pending != nil && m.pending.Request.Tool != "" {
-		tool = m.pending.Request.Tool
+	if m.pending == nil {
+		return ""
 	}
-	choices := "Allow once (y)   session (s)   reject (n)"
+	a := *m.pending
+	var b strings.Builder
+	title := approvalTitle(a)
 	if m.cstyle.on {
-		choices = m.cstyle.accent.Render("Allow once (y)") + "   " +
-			m.cstyle.dimText("session (s)") + "   " +
-			m.cstyle.fail.Render("reject (n)")
+		b.WriteString(m.cstyle.header.Render(title))
+	} else {
+		b.WriteString(title)
 	}
-	return tool + "\n" + choices
+	b.WriteByte('\n')
+	risk := approvalRiskLabel(a)
+	if m.cstyle.on {
+		b.WriteString(m.cstyle.dimText(risk))
+	} else {
+		b.WriteString(risk)
+	}
+	preview := strings.TrimSpace(a.Preview)
+	if preview != "" {
+		b.WriteByte('\n')
+		lines := strings.Split(preview, "\n")
+		if len(lines) > 8 {
+			lines = append(lines[:8], fmt.Sprintf("… (%d more lines)", len(lines)-8))
+		}
+		for _, l := range lines {
+			b.WriteByte('\n')
+			if m.cstyle.on {
+				b.WriteString(m.cstyle.dimText("  " + l))
+			} else {
+				b.WriteString("  " + l)
+			}
+		}
+	}
+	b.WriteByte('\n')
+	sel := m.approvalSel
+	if sel < 0 || sel >= len(approvalChoices) {
+		sel = 0
+	}
+	for i, c := range approvalChoices {
+		mark := "  "
+		if i == sel {
+			mark = "▸ "
+		}
+		line := fmt.Sprintf("%s%s  (%s)", mark, c.label, c.key)
+		b.WriteByte('\n')
+		switch {
+		case i == sel && m.cstyle.on && c.decision == core.ApprovalDenied:
+			b.WriteString(m.cstyle.fail.Render(line))
+		case i == sel && m.cstyle.on:
+			b.WriteString(m.cstyle.accent.Render(line))
+		case m.cstyle.on:
+			b.WriteString(m.cstyle.dimText(line))
+		default:
+			b.WriteString(line)
+		}
+	}
+	return b.String()
 }
 
 // footerView is the persistent key-hint bar under the prompt. It rewrites
@@ -593,14 +779,12 @@ func (m ChatModel) approvalPromptView() string {
 func (m ChatModel) footerView() string {
 	var h string
 	switch {
+	case len(m.slashMatches()) > 0 && m.pending == nil && m.ov == nil && m.question == nil && m.conn == nil:
+		h = "enter run · tab complete · ↑↓ · esc"
 	case m.question != nil:
 		h = "1–9 select · enter confirm · esc skip"
 	case m.pending != nil:
-		tool := "tool"
-		if m.pending.Request.Tool != "" {
-			tool = m.pending.Request.Tool
-		}
-		h = tool + " · y once · s session · n deny"
+		h = "↑↓ choose · enter · y once · s session · n reject · esc reject"
 	case m.ov != nil:
 		h = "type to filter · ↑↓ move · enter selects · esc closes"
 	case m.conn != nil:

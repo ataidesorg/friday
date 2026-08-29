@@ -39,7 +39,7 @@ func TestLoadSevenLayerPrecedence(t *testing.T) {
 	cfg, proj := t.TempDir(), t.TempDir()
 	write(t, filepath.Join(cfg, "config.toml"), "[profile]\nactive = \"work\"\n[sandbox]\nprovider = \"user\"\n[tools]\nallow = [\"only_me\"]\n")
 	write(t, filepath.Join(cfg, "profiles", "work.toml"), "[sandbox]\nprovider = \"profile\"\n")
-	write(t, filepath.Join(proj, ".friday", "config.toml"), "[sandbox]\nprovider = \"project\"\n[memory.retention]\nepisodic_days = 100\n")
+	write(t, filepath.Join(proj, ".friday", "config.toml"), "[sandbox]\nprovider = \"project\"\n[evals]\nmin_pass_rate = 80\n")
 	write(t, filepath.Join(proj, ".friday", "config.local.toml"), "[sandbox]\nprovider = \"project_local\"\n")
 	store := &TrustStore{Path: filepath.Join(t.TempDir(), "trust.toml")}
 	trustAll := func(string, []string) (TrustDecision, error) { return TrustTrusted, nil }
@@ -63,8 +63,8 @@ func TestLoadSevenLayerPrecedence(t *testing.T) {
 			t.Errorf("chain[%d] = %+v", i, e)
 		}
 	}
-	if r.Config.Memory.Retention.EpisodicDays != 100 || r.Config.Memory.Retention.Working != "session" {
-		t.Fatalf("table merge lost siblings: %+v", r.Config.Memory)
+	if r.Config.Evals.MinPassRate != 80 || r.Config.Evals.Gate != "required" {
+		t.Fatalf("table merge lost siblings: %+v", r.Config.Evals)
 	}
 	if !reflect.DeepEqual(r.Config.Tools.Allow, []string{"only_me"}) {
 		t.Fatalf("array must replace: %v", r.Config.Tools.Allow)
@@ -106,14 +106,13 @@ func TestLoadExplicitProfileAndErrors(t *testing.T) {
 }
 
 func TestParseEnv(t *testing.T) {
-	m, err := parseEnv([]string{"HOME=/x", "FRIDAY__MEMORY__RETENTION__EPISODIC_DAYS=1000", "FRIDAY__SANDBOX__PROVIDER=container", "FRIDAY__EVALS__GATE=\"advisory\""})
+	m, err := parseEnv([]string{"HOME=/x", "FRIDAY__EVALS__MIN_PASS_RATE=50", "FRIDAY__SANDBOX__PROVIDER=container", "FRIDAY__EVALS__GATE=\"advisory\""})
 	if err != nil {
 		t.Fatal(err)
 	}
 	want := map[string]any{
-		"memory":  map[string]any{"retention": map[string]any{"episodic_days": int64(1000)}},
 		"sandbox": map[string]any{"provider": "container"},
-		"evals":   map[string]any{"gate": "advisory"},
+		"evals":   map[string]any{"gate": "advisory", "min_pass_rate": int64(50)},
 	}
 	if !reflect.DeepEqual(m, want) {
 		t.Fatalf("parseEnv = %#v", m)
@@ -332,14 +331,14 @@ func TestLoadProjectTrustFlow(t *testing.T) {
 
 func TestLoadProjectLocalLayer(t *testing.T) {
 	proj := t.TempDir()
-	write(t, projectConfigPath(proj), "[memory.retention]\nepisodic_days = 100\n[project]\nname = \"p\"\n")
-	write(t, projectLocalConfigPath(proj), "[memory.retention]\nepisodic_days = 200\n[sandbox]\nprovider = \"container\"\n")
+	write(t, projectConfigPath(proj), "[evals]\nmin_pass_rate = 80\n[project]\nname = \"p\"\n")
+	write(t, projectLocalConfigPath(proj), "[evals]\nmin_pass_rate = 50\n[sandbox]\nprovider = \"container\"\n")
 	r, err := Load(Options{ProjectRoot: proj})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if r.Config.Memory.Retention.EpisodicDays != 200 || r.Config.Project.Name != "p" {
-		t.Fatalf("local layer must override project: %+v", r.Config.Memory)
+	if r.Config.Evals.MinPassRate != 50 || r.Config.Project.Name != "p" {
+		t.Fatalf("local layer must override project: %+v", r.Config.Evals)
 	}
 	if len(r.Sources) != 3 || r.Sources[2].Layer != LayerProjectLocal || r.Sources[2].Path != projectLocalConfigPath(proj) {
 		t.Fatalf("sources: %+v", r.Sources)

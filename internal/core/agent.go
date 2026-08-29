@@ -1,12 +1,12 @@
 package core
 
-// HarnessKind selects the agent harness flavour.
+// HarnessKind is the product surface a task runs under. Friday ships the
+// coding harness only.
 type HarnessKind string
 
 // Harness kinds.
 const (
-	HarnessCode      HarnessKind = "code"
-	HarnessAssistant HarnessKind = "assistant"
+	HarnessCode HarnessKind = "code"
 )
 
 // CommunicationStyle tunes how verbose the agent is with the user.
@@ -29,38 +29,18 @@ const (
 
 // AgentProfile is a named configuration of identity, style, and posture.
 type AgentProfile struct {
-	ID              ProfileID          `json:"id"`
-	Name            string             `json:"name"`
-	Identity        string             `json:"identity,omitempty"`
-	Style           CommunicationStyle `json:"style"`
-	Posture         PolicyPosture      `json:"posture"`
-	MemoryNamespace string             `json:"memory_namespace"`
-	SensitivityCap  Sensitivity        `json:"sensitivity_cap,omitempty"`
-	Harness         HarnessKind        `json:"harness,omitempty"`
+	ID       ProfileID          `json:"id"`
+	Name     string             `json:"name"`
+	Identity string             `json:"identity,omitempty"`
+	Style    CommunicationStyle `json:"style"`
+	Posture  PolicyPosture      `json:"posture"`
 }
 
-// DefaultCodeProfile is the shipped code-harness profile.
+// DefaultCodeProfile is the shipped coding-agent profile.
 func DefaultCodeProfile() AgentProfile {
 	return AgentProfile{
-		Name:            "default",
-		Style:           StyleConcise,
-		Posture:         PostureStrict,
-		MemoryNamespace: "project",
-		SensitivityCap:  SensitivityInternal,
-		Harness:         HarnessCode,
-	}
-}
-
-// DefaultAssistantProfile is the shipped personal-assistant profile:
-// personal memory namespace, retrieval capped at personal (never secret).
-// Calendar and mail integrations are not part of this default.
-func DefaultAssistantProfile() AgentProfile {
-	return AgentProfile{
-		Name:            "assistant",
-		Style:           StyleConcise,
-		Posture:         PostureStrict,
-		MemoryNamespace: "personal",
-		SensitivityCap:  SensitivityPersonal,
-		Harness:         HarnessAssistant,
+		Name:    "default",
+		Style:   StyleConcise,
+		Posture: PostureStrict,
 	}
 }

@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/ataidesorg/friday/internal/core"
 	"github.com/ataidesorg/friday/internal/redact"
@@ -193,5 +194,79 @@ func TestStoreTodosAndDelete(t *testing.T) {
 	}
 	if err := s.Delete("nope"); err == nil {
 		t.Fatal("delete missing must error")
+	}
+}
+
+func TestStoreGoalRoundTripAndNewSessionEmpty(t *testing.T) {
+	s, _ := newStore(t)
+	if _, err := s.Create("s1", at(0)); err != nil {
+		t.Fatal(err)
+	}
+	if _, ok, err := s.LoadGoal("s1"); err != nil || ok {
+		t.Fatalf("new session must have no goal: ok=%v err=%v", ok, err)
+	}
+	g, err := core.NewGoal("finish the tests", at(0))
+	if err != nil {
+		t.Fatal(err)
+	}
+	g.AutomaticTurns = 4
+	if err := s.SaveGoal("s1", g); err != nil {
+		t.Fatal(err)
+	}
+	got, ok, err := s.LoadGoal("s1")
+	if err != nil || !ok {
+		t.Fatalf("reload: ok=%v err=%v", ok, err)
+	}
+	if got.ID != g.ID || got.Objective != "finish the tests" || got.AutomaticTurns != 4 || got.Status != core.GoalActive {
+		t.Fatalf("reload mismatch: %+v", got)
+	}
+	if _, err := s.Create("s2", at(1)); err != nil {
+		t.Fatal(err)
+	}
+	if _, ok, err := s.LoadGoal("s2"); err != nil || ok {
+		t.Fatalf("a new session must not inherit the previous goal: ok=%v err=%v", ok, err)
+	}
+	if err := s.ClearGoal("s1"); err != nil {
+		t.Fatal(err)
+	}
+	if _, ok, err := s.LoadGoal("s1"); err != nil || ok {
+		t.Fatalf("cleared: ok=%v err=%v", ok, err)
+	}
+}
+
+func TestStoreGoalBlockedAndWaitingSurviveReload(t *testing.T) {
+	s, _ := newStore(t)
+	if _, err := s.Create("s1", at(0)); err != nil {
+		t.Fatal(err)
+	}
+	g, err := core.NewGoal("need a login", at(0))
+	if err != nil {
+		t.Fatal(err)
+	}
+	blocked, err := g.Block("auth required", "401 three times", 3, at(1))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := s.SaveGoal("s1", blocked); err != nil {
+		t.Fatal(err)
+	}
+	got, ok, err := s.LoadGoal("s1")
+	if err != nil || !ok {
+		t.Fatalf("reload blocked: ok=%v err=%v", ok, err)
+	}
+	if got.Status != core.GoalBlocked || got.BlockReason != "auth required" || got.ID != g.ID {
+		t.Fatalf("blocked mismatch: %+v", got)
+	}
+
+	waiting, err := g.Wait("CI", at(0).Add(time.Minute), at(0))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := s.SaveGoal("s1", waiting); err != nil {
+		t.Fatal(err)
+	}
+	got, ok, err = s.LoadGoal("s1")
+	if err != nil || !ok || got.Status != core.GoalWaiting || got.WaitReason != "CI" {
+		t.Fatalf("waiting mismatch: %+v ok=%v err=%v", got, ok, err)
 	}
 }

@@ -20,7 +20,7 @@ func TestDefaultsDecode(t *testing.T) {
 	if len(c.Providers) != 0 || len(c.Models.Routes) != 0 {
 		t.Fatalf("defaults must have no providers or routes: %+v", c)
 	}
-	if !reflect.DeepEqual(c.Tools.Allow, []string{"read_file", "list_dir", "search", "ask_user_question", "todo_write"}) || !reflect.DeepEqual(c.Tools.RequireApproval, []string{"write_file", "apply_patch", "run_command"}) || c.Telemetry.Mode != "local" || c.Evals.Gate != "required" {
+	if !reflect.DeepEqual(c.Tools.Allow, []string{"read_file", "list_dir", "search", "ask_user_question", "todo_write", "goal_complete", "goal_blocked", "goal_wait"}) || !reflect.DeepEqual(c.Tools.RequireApproval, []string{"write_file", "apply_patch", "run_command"}) || c.Telemetry.Privacy != "standard" || c.Evals.Gate != "required" {
 		t.Fatalf("unexpected defaults: %+v", c)
 	}
 	m, err := Defaults()
@@ -70,16 +70,8 @@ func TestToAgent(t *testing.T) {
 		t.Fatal(err)
 	}
 	code := c.Profiles["default"].ToAgent("default")
-	if code.Harness != core.HarnessCode || code.MemoryNamespace != "project" || code.SensitivityCap != core.SensitivityInternal {
+	if code.Style != core.StyleConcise || code.Posture != core.PostureStrict || code.Name != "default" {
 		t.Fatalf("default %+v", code)
-	}
-	asst := c.Profiles["assistant"].ToAgent("assistant")
-	want := core.DefaultAssistantProfile()
-	if asst.Harness != want.Harness || asst.MemoryNamespace != want.MemoryNamespace || asst.SensitivityCap != want.SensitivityCap {
-		t.Fatalf("assistant %+v want %+v", asst, want)
-	}
-	if asst.Style != core.StyleConcise || asst.Posture != core.PostureStrict {
-		t.Fatalf("assistant style/posture %+v", asst)
 	}
 }
 

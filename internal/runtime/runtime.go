@@ -56,6 +56,10 @@ type state struct {
 	memories    []core.MemoryCandidate
 	seq         uint64
 	events      int
+	goal        *core.Goal
+	denied      map[string]bool
+	wrote       map[string]bool
+	ranOK       bool
 }
 
 // Run executes in to a terminal state and returns the result. The error is
@@ -67,6 +71,12 @@ func Run(ctx context.Context, d Deps, in Input) (Result, error) {
 	}
 	d = d.withDefaults()
 	s := &state{d: d, in: in, root: in.Workspace.Root, run: core.NewRun(in.Task.ID, 1, d.Clock()), maxCalls: in.Task.Budget.MaxToolCalls}
+	if in.Goal != nil {
+		g := *in.Goal
+		s.goal = &g
+		s.d.Tools = s.d.Tools.WithGoal(s.loadGoal, s.saveGoal)
+		s.bindGoalProof()
+	}
 	if s.maxCalls <= 0 {
 		s.maxCalls = DefaultMaxToolCalls
 	}
@@ -208,7 +218,58 @@ func (s *state) outcome() core.Outcome {
 }
 
 func (s *state) result() Result {
-	return Result{Run: s.run, Outcome: s.outcome(), Usage: s.usage, Cost: s.cost, Summary: s.summary, Memories: s.memories, Events: s.events}
+	res := Result{Run: s.run, Outcome: s.outcome(), Usage: s.usage, Cost: s.cost, Summary: s.summary, Memories: s.memories, Events: s.events}
+	if s.goal != nil {
+		g := *s.goal
+		res.Goal = &g
+		res.ContinueGoal = g.Continues()
+	}
+	return res
+}
+
+func (s *state) loadGoal() (core.Goal, bool) {
+	if s.goal == nil {
+		return core.Goal{}, false
+	}
+	return *s.goal, true
+}
+
+func (s *state) bindGoalProof() {
+	t, ok := s.d.Tools.Get("goal_complete")
+	if !ok {
+		return
+	}
+	g, ok := t.(*tools.GoalComplete)
+	if !ok {
+		return
+	}
+	g.Proof = s.proveGoal
+}
+
+func (s *state) proveGoal(kind core.GoalEvidenceKind, path, _ string) error {
+	switch kind {
+	case core.GoalEvidenceFile:
+		if path == "" {
+			return fmt.Errorf("%w: file evidence needs a path", core.ErrInvalidInput)
+		}
+		if !s.wrote[path] {
+			return fmt.Errorf("%w: file %s was not written this run", core.ErrInvalidInput, path)
+		}
+	case core.GoalEvidenceCommand, core.GoalEvidenceTest:
+		if !s.ranOK {
+			return fmt.Errorf("%w: no successful command ran this run", core.ErrInvalidInput)
+		}
+	}
+	return nil
+}
+
+func (s *state) saveGoal(g core.Goal) error {
+	cp := g
+	s.goal = &cp
+	if s.in.SaveGoal != nil {
+		return s.in.SaveGoal(g)
+	}
+	return nil
 }
 
 func (s *state) now() time.Time { return s.d.Clock() }

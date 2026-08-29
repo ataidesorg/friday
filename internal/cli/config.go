@@ -163,8 +163,44 @@ func configCmd(args []string, stdout, stderr io.Writer, environ []string, getwd 
 // a picker remembers, distinct from the declarative config files. Stored as
 // JSON in the Friday home.
 type settings struct {
-	Theme   string `json:"theme,omitempty"`
-	VimMode bool   `json:"vim_mode,omitempty"`
+	Theme          string `json:"theme,omitempty"`
+	VimMode        bool   `json:"vim_mode,omitempty"`
+	Verbose        bool   `json:"verbose,omitempty"`
+	HideTools      bool   `json:"hide_tools,omitempty"`
+	HideThinking   bool   `json:"hide_thinking,omitempty"`
+	Timestamps     bool   `json:"timestamps,omitempty"`
+	Multiline      bool   `json:"multiline,omitempty"`
+	UsageMeter     bool   `json:"usage_meter,omitempty"`
+	HideAdvisories bool   `json:"hide_advisories,omitempty"`
+}
+
+func (s settings) prefs(hideAdvisories bool) tui.Prefs {
+	hide := hideAdvisories
+	if s.HideAdvisories {
+		hide = true
+	}
+	return tui.Prefs{
+		Verbose:        s.Verbose,
+		ShowTools:      !s.HideTools,
+		ShowThinking:   !s.HideThinking,
+		Timestamps:     s.Timestamps,
+		Multiline:      s.Multiline,
+		UsageMeter:     s.UsageMeter,
+		HideAdvisories: hide,
+		VimMode:        s.VimMode,
+	}
+}
+
+func applyPrefs(st settings, p tui.Prefs) settings {
+	st.Verbose = p.Verbose
+	st.HideTools = !p.ShowTools
+	st.HideThinking = !p.ShowThinking
+	st.Timestamps = p.Timestamps
+	st.Multiline = p.Multiline
+	st.UsageMeter = p.UsageMeter
+	st.HideAdvisories = p.HideAdvisories
+	st.VimMode = p.VimMode
+	return st
 }
 
 func settingsPath(home string) string { return filepath.Join(home, "settings.json") }

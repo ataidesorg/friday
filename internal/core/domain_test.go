@@ -167,16 +167,9 @@ func TestPrivacyFallback(t *testing.T) {
 	}
 }
 
-func TestAssistantProfileDefaults(t *testing.T) {
-	a := DefaultAssistantProfile()
-	if a.Harness != HarnessAssistant || a.MemoryNamespace != "personal" || a.SensitivityCap != SensitivityPersonal {
-		t.Fatalf("assistant %+v", a)
-	}
-	if a.Style != StyleConcise || a.Posture != PostureStrict {
-		t.Fatalf("style/posture %+v", a)
-	}
+func TestCodeProfileDefaults(t *testing.T) {
 	c := DefaultCodeProfile()
-	if c.Harness != HarnessCode || c.MemoryNamespace != "project" || c.SensitivityCap != SensitivityInternal {
+	if c.Style != StyleConcise || c.Posture != PostureStrict || c.Name != "default" {
 		t.Fatalf("code %+v", c)
 	}
 }

@@ -167,6 +167,30 @@ func TestCheckCommands(t *testing.T) {
 	if _, err := evals.Check(context.Background(), core.Expectation{Kind: core.ExpectCommandSucceeds, Argv: argv}, evals.CheckEnv{}); !errors.Is(err, core.ErrInvalidInput) {
 		t.Fatalf("nil executor: %v", err)
 	}
+
+	g, err := core.NewGoal("tests pass", time.Date(2026, 8, 28, 12, 0, 0, 0, time.UTC))
+	if err != nil {
+		t.Fatal(err)
+	}
+	okExec := &fakeExec{code: 0}
+	r, err := evals.Check(context.Background(), core.Expectation{Kind: core.ExpectCommandSucceeds, Argv: argv}, evals.CheckEnv{Exec: okExec, Goal: &g})
+	if err != nil || !r.Passed {
+		t.Fatalf("command_succeeds with goal: %+v %v", r, err)
+	}
+	if g.Status != core.GoalComplete || g.EvidenceKind != core.GoalEvidenceEval {
+		t.Fatalf("command_succeeds must complete the goal: %+v", g)
+	}
+	failing, err := core.NewGoal("still broken", time.Date(2026, 8, 28, 12, 0, 0, 0, time.UTC))
+	if err != nil {
+		t.Fatal(err)
+	}
+	r, err = evals.Check(context.Background(), core.Expectation{Kind: core.ExpectCommandSucceeds, Argv: argv}, evals.CheckEnv{Exec: &fakeExec{code: 1}, Goal: &failing})
+	if err != nil || r.Passed {
+		t.Fatalf("failing command must not complete: %+v %v", r, err)
+	}
+	if failing.Status != core.GoalActive {
+		t.Fatalf("failed check completed the goal: %+v", failing)
+	}
 }
 
 func TestCheckApprovalRequired(t *testing.T) {

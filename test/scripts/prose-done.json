@@ -1,0 +1,10 @@
+{
+  "model": "mock-1",
+  "turns": [
+    {
+      "content": "All done.",
+      "finish": "stop",
+      "usage": {"input_tokens": 10, "output_tokens": 4}
+    }
+  ]
+}

@@ -106,12 +106,17 @@ type harness struct {
 func toolsCfg() config.ToolsConfig {
 	return config.ToolsConfig{
 		DefaultEffect: "deny",
-		Allow:         []string{"read_file", "list_dir", "search", "write_file", "run_command", "ask_user_question", "todo_write"},
+		Allow:         []string{"read_file", "list_dir", "search", "write_file", "run_command", "ask_user_question", "todo_write", "goal_complete", "goal_blocked", "goal_wait"},
 		Commands:      config.CommandsConfig{Allowed: []string{"go test"}},
 	}
 }
 
 func newHarness(t *testing.T, script string, cfg config.ToolsConfig) *harness {
+	t.Helper()
+	return newHarnessAt(t, filepath.Join(scriptDir, script), cfg)
+}
+
+func newHarnessAt(t *testing.T, scriptPath string, cfg config.ToolsConfig) *harness {
 	t.Helper()
 	root, err := filepath.EvalSymlinks(t.TempDir())
 	if err != nil {
@@ -119,7 +124,7 @@ func newHarness(t *testing.T, script string, cfg config.ToolsConfig) *harness {
 	}
 	write(t, filepath.Join(root, "greet.go"), "package sample\n\n// Greet says hello.\nfunc Greet(name string) string { return \"hi \" + name }\n")
 	write(t, filepath.Join(root, "AGENTS.md"), "Keep one exported function per file.\n")
-	sc, err := mock.LoadScript(filepath.Join(scriptDir, script))
+	sc, err := mock.LoadScript(scriptPath)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -456,6 +461,51 @@ func TestNoApproverDeniesRequireApproval(t *testing.T) {
 		}
 	}
 	if _, err := os.Stat(filepath.Join(h.root, "farewell.go")); !errors.Is(err, os.ErrNotExist) {
+		t.Fatalf("denied write landed: %v", err)
+	}
+}
+
+func TestApproverDenyDoesNotWrite(t *testing.T) {
+	body := `{
+  "model": "mock-1",
+  "turns": [
+    {
+      "finish": "tool_calls",
+      "usage": {"input_tokens": 8, "output_tokens": 6},
+      "tool_calls": [
+        {"id": "call-1", "name": "write_file", "arguments": {"path": "hello.txt", "content": "hi\n"}},
+        {"id": "call-2", "name": "write_file", "arguments": {"path": "hello.txt", "content": "hi\n"}}
+      ]
+    },
+    {
+      "content": "stopped",
+      "finish": "stop",
+      "match": "denied",
+      "usage": {"input_tokens": 8, "output_tokens": 2}
+    }
+  ]
+}`
+	script := filepath.Join(t.TempDir(), "deny-write.json")
+	if err := os.WriteFile(script, []byte(body), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	cfg := toolsCfg()
+	cfg.Allow = []string{"read_file", "list_dir", "search", "run_command"}
+	cfg.RequireApproval = []string{"write_file"}
+	h := newHarnessAt(t, script, cfg)
+	asked := 0
+	h.deps.Approve = func(_ context.Context, _ core.Approval) (core.ApprovalResolution, error) {
+		asked++
+		return core.ApprovalResolution{Decision: core.ApprovalDenied, By: core.Principal{Kind: core.PrincipalUser, Name: "owner"}, Scope: core.ApprovalOnce, Note: "no"}, nil
+	}
+	res := h.run(context.Background(), t)
+	if res.Outcome.Kind == core.OutcomeFailed {
+		t.Fatalf("outcome %+v", res.Outcome)
+	}
+	if asked != 1 {
+		t.Fatalf("harness re-asked after deny: %d prompts", asked)
+	}
+	if _, err := os.Stat(filepath.Join(h.root, "hello.txt")); !errors.Is(err, os.ErrNotExist) {
 		t.Fatalf("denied write landed: %v", err)
 	}
 }
@@ -929,6 +979,21 @@ func TestAssembleRendersGlobalAndProjectRules(t *testing.T) {
 	}
 	if !warned {
 		t.Fatal("missing global file must warn, not fail")
+	}
+	if !strings.Contains(sys, "<style>") || !strings.Contains(sys, "Be concise.") {
+		t.Fatalf("default style missing from system prompt:\n%s", sys)
+	}
+}
+
+func TestAssembleInjectsDetailedStyle(t *testing.T) {
+	h := newHarness(t, "add-farewell.json", toolsCfg())
+	capP := &capturingProvider{ModelProvider: h.deps.Provider}
+	h.deps.Provider = capP
+	h.in.Agent.Style = core.StyleDetailed
+	h.run(context.Background(), t)
+	sys := capP.first[0].Content
+	if !strings.Contains(sys, "Be detailed.") || strings.Contains(sys, "Be concise.") {
+		t.Fatalf("detailed style missing:\n%s", sys)
 	}
 }
 

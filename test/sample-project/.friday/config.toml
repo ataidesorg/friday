@@ -7,6 +7,3 @@ instructions = ["AGENTS.md"]
 [project.commands]
 test = "go test ./..."
 build = "go build ./..."
-
-[memory.retention]
-episodic_days = 14

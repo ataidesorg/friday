@@ -38,11 +38,11 @@ Friday is a Go CLI and fullscreen TUI for working with an agent inside a local r
 
 The shape is inspired by tools like [Grok Build](https://github.com/xai-org/grok-build) and [OpenCode](https://github.com/anomalyco/opencode), but Friday's line is local control: no Friday server, no Friday account, no hidden remote state.
 
-## Status
+## Pre-release Warning
 
-Friday is pre-release. The TUI daily-driver slice is gate-green locally, but APIs, config, and persistence formats may still change before the first stable tag.
+> **Pre-release.** Friday is not stable. Commands, config, session formats, provider support, and the TUI can change at any moment without prior notice. Do not treat the current surface as a contract.
 
-Live provider coverage is intentionally conservative. Fireworks is the owner-verified path today. Other provider adapters and OAuth flows exist where documented in the repo, but unverified integrations are not marketed as production support.
+The TUI daily-driver slice is gate-green locally, but nothing is frozen until the first stable tag.
 
 ## Install
 

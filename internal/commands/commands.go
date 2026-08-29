@@ -26,22 +26,6 @@ type Command struct {
 	Body        string // the prompt; $ARGUMENTS expands to the typed arguments
 }
 
-// reserved are the chat's built-in slash commands; a file with one of these
-// names is skipped so customs can never shadow a built-in.
-// reserved must hold every name ChatModel.command dispatches, or a custom
-// file would load and then never run.
-var reserved = map[string]bool{
-	"help": true, "status": true, "copy": true, "export": true,
-	"doctor": true, "history": true, "home": true, "rewind": true,
-	"fork": true, "rename": true, "delete": true, "always-approve": true,
-	"vim-mode": true, "plan": true, "theme": true, "multiline": true,
-	"timestamps": true, "usage": true, "tools": true, "thinking": true,
-	"dashboard": true, "skills": true, "clear": true,
-	"cost": true, "model": true, "agent": true, "new": true, "resume": true,
-	"compact": true, "connect": true, "verbose": true, "quit": true,
-	"exit": true,
-}
-
 var validName = regexp.MustCompile(`^[a-z0-9][a-z0-9._-]*$`)
 
 type frontmatter struct {
@@ -49,8 +33,11 @@ type frontmatter struct {
 	Model       string `toml:"model"`
 }
 
-// Parse builds a Command from one file's content.
-func Parse(name string, b []byte) (Command, error) {
+// Parse builds a Command from one file's content. reserved is the host's
+// built-in slash names; a file with one of those names is rejected so a
+// custom command can never shadow a built-in. The caller supplies that
+// set (the CLI passes names from the TUI command table).
+func Parse(name string, b []byte, reserved map[string]bool) (Command, error) {
 	if !validName.MatchString(name) {
 		return Command{}, fmt.Errorf("%w: command name %q (want lowercase letters, digits, . _ -)", core.ErrInvalidInput, name)
 	}
@@ -83,7 +70,8 @@ const maxCommandSize = 256 * 1024
 // Load reads every *.md under the user then project command directories,
 // name-sorted; a project command replaces a user command with the same name.
 // A bad file is reported on warn and skipped; commands never block a launch.
-func Load(root, home string, warn io.Writer) []Command {
+// reserved is the host's built-in slash names.
+func Load(root, home string, warn io.Writer, reserved map[string]bool) []Command {
 	byName := map[string]Command{}
 	dirs := []string{}
 	if home != "" {
@@ -110,7 +98,7 @@ func Load(root, home string, warn io.Writer) []Command {
 				fmt.Fprintf(warn, "friday: command %s skipped: %v\n", e.Name(), err)
 				continue
 			}
-			c, err := Parse(strings.TrimSuffix(e.Name(), ".md"), b)
+			c, err := Parse(strings.TrimSuffix(e.Name(), ".md"), b, reserved)
 			if err != nil {
 				fmt.Fprintf(warn, "friday: command %s skipped: %v\n", e.Name(), err)
 				continue

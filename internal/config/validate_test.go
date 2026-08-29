@@ -148,7 +148,7 @@ func TestValidateRules(t *testing.T) {
 	}{
 		{"schema", "schema_version = 2\n", "schema_version", "must be 1"},
 		{"unknown", "[sandbox]\nnetwrk = \"x\"\n", "sandbox.netwrk", "unknown key"},
-		{"enum", "[telemetry]\nmode = \"cloud\"\n", "telemetry.mode", "must be one of off | local"},
+		{"enum", "[telemetry]\nprivacy = \"loud\"\n", "telemetry.privacy", "must be one of standard | minimal"},
 		{"profile enum", "[profiles.x]\nstyle = \"loud\"\nposture = \"strict\"\n", "profiles.x.style", "must be one of"},
 		{"route provider", "[models.routes.a]\nprovider = \"nope\"\nmodel = \"m\"\n[models.routing]\ndefault = \"a\"\n", "models.routes.a.provider", "not configured"},
 		{"route default", "[providers.p]\nkind = \"mock\"\nprivacy = \"local\"\n[models.routes.a]\nprovider = \"p\"\nmodel = \"m\"\n", "models.routing.default", "does not exist"},
@@ -201,9 +201,9 @@ func TestValidateRules(t *testing.T) {
 }
 
 func TestExplainAndTOML(t *testing.T) {
-	r := mustLoad(t, Options{Overrides: map[string]string{"memory.retention.episodic_days": "1000"}})
-	ex, ok := r.Explain("memory.retention.episodic_days")
-	if !ok || ex.Value != int64(1000) || ex.Chain[1].Source.Layer != LayerCLI {
+	r := mustLoad(t, Options{Overrides: map[string]string{"evals.min_pass_rate": "50"}})
+	ex, ok := r.Explain("evals.min_pass_rate")
+	if !ok || ex.Value != int64(50) || ex.Chain[1].Source.Layer != LayerCLI {
 		t.Fatalf("explain: %+v", ex)
 	}
 	if _, ok := r.Explain("nope.nope"); ok {
@@ -212,7 +212,7 @@ func TestExplainAndTOML(t *testing.T) {
 	if ex, _ := r.Explain("sandbox"); !strings.HasPrefix(ex.String(), "sandbox = <table, 2 keys>") {
 		t.Fatalf("table explain: %s", ex.String())
 	}
-	if ex, _ := r.Explain("tools.allow"); !strings.Contains(ex.String(), `["read_file", "list_dir", "search", "ask_user_question", "todo_write"]`) {
+	if ex, _ := r.Explain("tools.allow"); !strings.Contains(ex.String(), `"goal_complete"`) {
 		t.Fatalf("array explain: %s", ex.String())
 	}
 	out, err := r.TOML()

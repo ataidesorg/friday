@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "goal_complete",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["goal_id", "kind", "summary"],
+  "properties": {
+    "goal_id": {"type": "string", "description": "The current session goal id. Stale ids are rejected."},
+    "kind": {
+      "type": "string",
+      "description": "How completion was proven. Prose is not evidence.",
+      "enum": ["command", "test", "file", "eval"]
+    },
+    "path": {"type": "string", "description": "Workspace-relative path. Required when kind is file. The harness checks the file was written this run."},
+    "summary": {"type": "string", "description": "The command, test, file, or eval check that proves the goal is done."}
+  }
+}

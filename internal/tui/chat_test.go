@@ -939,10 +939,15 @@ func TestChatCustomCommand(t *testing.T) {
 		t.Fatalf("expanded prompt leaked into scrollback:\n%s", out)
 	}
 
-	for _, it := range chatActions() {
-		if it.id == "deploy" {
-			t.Fatal("custom commands must not appear in Ctrl+P")
+	found := false
+	for _, it := range m.paletteItems() {
+		if it.id == "cmd:deploy" {
+			found = true
+			break
 		}
+	}
+	if !found {
+		t.Fatal("custom commands must appear in Ctrl+P")
 	}
 }
 
@@ -1100,11 +1105,17 @@ func TestChatApprovalKeys(t *testing.T) {
 		t.Fatal("approval not pending")
 	}
 	joined := strings.Join(m.Lines, "\n")
-	if !strings.Contains(joined, "write_file") || !strings.Contains(joined, "+ hi") {
-		t.Fatalf("prompt or preview missing from scrollback: %q", joined)
+	if !strings.Contains(joined, "write_file") {
+		t.Fatalf("prompt missing from scrollback: %q", joined)
 	}
-	if !strings.Contains(m.footerView(), "write_file") {
-		t.Fatalf("footer misses approval prompt: %q", m.footerView())
+	view := m.View()
+	for _, want := range []string{"Write a.txt", "+ hi", "Allow once", "Allow this session", "Reject"} {
+		if !strings.Contains(view, want) {
+			t.Fatalf("approval card missing %q:\n%s", want, view)
+		}
+	}
+	if !strings.Contains(m.footerView(), "choose") {
+		t.Fatalf("footer misses approval keys: %q", m.footerView())
 	}
 	// Draft keys are swallowed while pending.
 	next, _ = m.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("x")})
@@ -1112,12 +1123,31 @@ func TestChatApprovalKeys(t *testing.T) {
 	if m.pending == nil || len(reply) != 0 {
 		t.Fatal("typed rune answered the approval")
 	}
+	next, _ = m.Update(tea.KeyMsg{Type: tea.KeyDown})
+	m = next.(ChatModel)
+	next, _ = m.Update(tea.KeyMsg{Type: tea.KeyDown})
+	m = next.(ChatModel)
+	if m.approvalSel != 2 {
+		t.Fatalf("down to reject: sel=%d", m.approvalSel)
+	}
+	next, _ = m.Update(tea.KeyMsg{Type: tea.KeyEnter})
+	m = next.(ChatModel)
+	if m.pending != nil {
+		t.Fatal("enter left the approval pending")
+	}
+	if r := <-reply; r.Decision != core.ApprovalDenied || r.Scope != core.ApprovalOnce {
+		t.Fatalf("enter on reject resolved %s/%s", r.Decision, r.Scope)
+	}
+
+	replyS := make(chan core.ApprovalResolution, 1)
+	next, _ = m.Update(ApprovalMsg{A: a, Reply: replyS})
+	m = next.(ChatModel)
 	next, _ = m.Update(tea.KeyMsg{Type: tea.KeyRunes, Runes: []rune("s")})
 	m = next.(ChatModel)
 	if m.pending != nil {
 		t.Fatal("s left the approval pending")
 	}
-	r := <-reply
+	r := <-replyS
 	if r.Decision != core.ApprovalApproved || r.Scope != core.ApprovalSession {
 		t.Fatalf("s resolved %s/%s", r.Decision, r.Scope)
 	}
@@ -1587,7 +1617,7 @@ func TestChatFooterRewritesByState(t *testing.T) {
 	m.Running, m.queue = false, nil
 	m.pending = &core.Approval{Request: core.CapabilityRequest{Tool: "write_file"}}
 	perm := m.footerView()
-	for _, want := range []string{"y once", "s session", "n deny"} {
+	for _, want := range []string{"y once", "s session", "n reject"} {
 		if !strings.Contains(perm, want) {
 			t.Fatalf("permission footer missing %q: %s", want, perm)
 		}
@@ -1825,7 +1855,7 @@ func TestChatApprovalRendersInComposer(t *testing.T) {
 	a := core.Approval{ID: core.NewApprovalID(), Request: core.CapabilityRequest{Tool: "write_file"}}
 	next, _ := m.Update(ApprovalMsg{A: a, Reply: make(chan core.ApprovalResolution, 1)})
 	v := next.(ChatModel).View()
-	for _, want := range []string{"Allow once", "session", "reject", "write_file"} {
+	for _, want := range []string{"Allow once", "Allow this session", "Reject", "write_file"} {
 		if !strings.Contains(v, want) {
 			t.Fatalf("composer missing %q:\n%s", want, v)
 		}

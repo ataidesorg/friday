@@ -37,6 +37,8 @@ type (
 	GateID string
 	// PolicyID identifies a policy.
 	PolicyID string
+	// GoalID identifies a session goal.
+	GoalID string
 )
 
 // ValidID reports whether s is a canonical UUID string.
@@ -104,3 +106,6 @@ func NewGateID() GateID { return GateID(mustID()) }
 
 // NewPolicyID returns a fresh PolicyID.
 func NewPolicyID() PolicyID { return PolicyID(mustID()) }
+
+// NewGoalID returns a fresh GoalID.
+func NewGoalID() GoalID { return GoalID(mustID()) }

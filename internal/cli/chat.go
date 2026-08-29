@@ -183,10 +183,16 @@ func chatCmd(args []string, stdout, stderr io.Writer, stdin io.Reader, environ [
 	if rerr != nil && ctx.Err() == nil {
 		return fail(stderr, "chat", exitFailed, rerr)
 	}
-	// cs.id, not the launch id: /new may have rotated the session mid-run.
-	fmt.Fprintf(stderr, "session %s saved under %s\n", cs.id, filepath.Join(store.Root(), cs.id))
+	// Drop an unused shell before announcing a save. close() will try again
+	// on the way out, which is a no-op once the directory is gone.
+	cs.dropIfEmpty(stderr)
+	if _, err := store.Meta(cs.id); err == nil {
+		fmt.Fprintf(stderr, "session %s saved under %s\n", cs.id, filepath.Join(store.Root(), cs.id))
+	}
 	return exitOK
 }
+
+func ptrPrefs(p tui.Prefs) *tui.Prefs { return &p }
 
 // tuiOptions is the chat TUI's wiring table: every callback the chat model
 // needs, bound to this session. Kept off chatCmd so the command reads as a
@@ -220,6 +226,11 @@ func (c *chatSession) tuiOptions(f chatFlags, opts config.Options, home, themeNa
 		SaveCopy:      saveCopyFile,
 		AlwaysApprove: f.yes,
 		VimMode:       loadSettings(home).VimMode,
+		Prefs:         ptrPrefs(loadSettings(home).prefs(c.cfg.TUI.HideAdvisories)),
+		SetPrefs: func(p tui.Prefs) error {
+			st := loadSettings(home)
+			return saveSettings(home, applyPrefs(st, p))
+		},
 		SetVimMode: func(on bool) error {
 			st := loadSettings(home)
 			st.VimMode = on
@@ -236,10 +247,13 @@ func (c *chatSession) tuiOptions(f chatFlags, opts config.Options, home, themeNa
 		DeleteAgent:    c.deleteAgent,
 		DeleteSession:  c.deleteSession,
 		Todos:          c.todosForTUI,
+		Goal:           c.loadGoal,
+		SetGoal:        c.saveGoal,
+		ClearGoal:      c.clearGoal,
 		Compact:        c.compact,
 		SwitchModel:    c.switchRoute,
 		Themes:         loadThemes(home, stderr),
-		HideAdvisories: c.cfg.TUI.HideAdvisories,
+		HideAdvisories: loadSettings(home).prefs(c.cfg.TUI.HideAdvisories).HideAdvisories,
 		ThemeName:      themeName,
 		Keys:           keys,
 		SetTheme: func(name string) error {
@@ -257,7 +271,7 @@ func (c *chatSession) tuiOptions(f chatFlags, opts config.Options, home, themeNa
 			c.baseTools = c.deps.Tools
 			c.applyTools()
 		},
-		Commands:  commandInfos(commands.Load(opts.ProjectRoot, home, stderr)),
+		Commands:  commandInfos(commands.Load(opts.ProjectRoot, home, stderr, reservedSlash())),
 		Skills:    c.skillInfos(),
 		Agents:    agentInfos(c.cfg.Agents),
 		SetAgent:  c.setAgent,
@@ -427,6 +441,15 @@ func sessionsCmd(args []string, stdout, stderr io.Writer, environ []string) int 
 	}
 	_ = tw.Flush()
 	return exitOK
+}
+
+func reservedSlash() map[string]bool {
+	names := tui.SlashNames()
+	out := make(map[string]bool, len(names))
+	for _, n := range names {
+		out[n] = true
+	}
+	return out
 }
 
 // commandInfos projects loaded commands into the TUI's option shape.

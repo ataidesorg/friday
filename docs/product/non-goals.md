@@ -3,8 +3,8 @@
 What Friday refuses to be, and the one reason each. See [vision.md](vision.md) for what it is.
 
 1. **Not a hosted platform.** Friday is a CLI binary (`cmd/friday`) that reads and writes local
-   files; there is no server, no listener, and the default telemetry mode is `local` — nothing is
-   sent anywhere (`internal/config/defaults.toml`).
+   files; there is no server, no listener, and the event trail is local JSONL —
+   nothing is sent anywhere (`internal/config/defaults.toml`).
 
 2. **No multi-tenant model.** Nothing in `internal/core` models an account, an organisation, or a
    tenant; `core.Principal` (`internal/core/task.go`) identifies an actor on one machine, not a

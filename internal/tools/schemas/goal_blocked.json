@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "goal_blocked",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["goal_id", "reason", "evidence", "repeated_turns"],
+  "properties": {
+    "goal_id": {"type": "string", "description": "The current session goal id."},
+    "reason": {"type": "string", "description": "The user or external action required."},
+    "evidence": {"type": "string", "description": "What was tried and failed."},
+    "repeated_turns": {"type": "integer", "minimum": 3, "description": "How many consecutive goal turns hit the same blocker (minimum 3)."}
+  }
+}

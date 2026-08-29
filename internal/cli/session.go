@@ -194,11 +194,7 @@ func (c *chatSession) turnOn(ctx context.Context, id, prompt string, obs runtime
 	if err != nil {
 		return runtime.Result{}, err
 	}
-	harness := c.base.Agent.Harness
-	if harness == "" {
-		harness = core.HarnessCode
-	}
-	task, err := core.NewTask(prompt, harness, c.profile, core.SessionID(id), c.principal)
+	task, err := core.NewTask(prompt, core.HarnessCode, c.profile, core.SessionID(id), c.principal)
 	if err != nil {
 		return runtime.Result{}, err
 	}
@@ -222,6 +218,14 @@ func (c *chatSession) turnOn(ctx context.Context, id, prompt string, obs runtime
 	in.History = sessionstore.History(prior, c.histChars)
 	if todos := c.loadTodos(); len(todos) > 0 {
 		in.History = append([]core.Message{{Role: core.RoleSystem, Content: tools.FormatTodos(todos)}}, in.History...)
+	}
+	if c.store != nil {
+		if g, ok, gerr := c.store.LoadGoal(id); gerr != nil {
+			return runtime.Result{}, gerr
+		} else if ok {
+			in.Goal = &g
+			in.SaveGoal = func(next core.Goal) error { return c.store.SaveGoal(id, next) }
+		}
 	}
 	parts, warns := imageAttachments(c.base.Workspace.Root, prompt)
 	for _, w := range warns {
@@ -309,6 +313,22 @@ func (c *chatSession) close(stderr io.Writer) {
 	defer cancel()
 	if err := c.cleanup(ctx, false); err != nil {
 		fmt.Fprintf(stderr, "warning: workspace cleanup: %v\n", err)
+	}
+	c.dropIfEmpty(stderr)
+}
+
+// dropIfEmpty removes the live session when it has no transcript. Opening
+// Friday and quitting without sending a prompt must not leave a shell behind.
+func (c *chatSession) dropIfEmpty(stderr io.Writer) {
+	if c.store == nil || c.id == "" {
+		return
+	}
+	m, err := c.store.Meta(c.id)
+	if err != nil || m.Turns > 0 {
+		return
+	}
+	if err := c.store.Delete(c.id); err != nil && stderr != nil {
+		fmt.Fprintf(stderr, "warning: drop empty session: %v\n", err)
 	}
 }
 

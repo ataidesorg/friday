@@ -114,6 +114,22 @@ func TestRunAddFarewellVerified(t *testing.T) {
 	}
 }
 
+func TestRunGoalProseDoesNotComplete(t *testing.T) {
+	root := copyFixture(t)
+	home := t.TempDir()
+	trustProject(t, home, root)
+	code, out, errOut := execRunHome(t, home, "", "run", "--project", root, "--script", filepath.Join(scripts, "prose-done.json"), "--no-tui", "--yes", "--goal", "ship the feature", "say you are done")
+	if code != exitOK {
+		t.Fatalf("run: %d\nstdout: %s\nstderr: %s", code, out, errOut)
+	}
+	if strings.Contains(errOut, "goal complete") {
+		t.Fatalf("friday run invented a completion:\n%s", errOut)
+	}
+	if !strings.Contains(errOut, "goal active") {
+		t.Fatalf("want goal active on stderr:\n%s", errOut)
+	}
+}
+
 func TestRunForbiddenRmDenied(t *testing.T) {
 	root := copyFixture(t)
 	home := t.TempDir()

@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/ataidesorg/friday/internal/tui"
 )
 
 func TestSettingsRoundTrip(t *testing.T) {
@@ -31,6 +33,32 @@ func TestSettingsRoundTrip(t *testing.T) {
 	}
 	if got := loadSettings(home); got.Theme != "" {
 		t.Fatalf("corrupt settings returned %+v", got)
+	}
+}
+
+func TestSettingsPersistToggles(t *testing.T) {
+	home := t.TempDir()
+	p := tui.Prefs{Verbose: true, ShowTools: false, ShowThinking: true, Timestamps: true, VimMode: true}
+	st := applyPrefs(loadSettings(home), p)
+	if err := saveSettings(home, st); err != nil {
+		t.Fatal(err)
+	}
+	got := loadSettings(home)
+	if !got.Verbose || !got.HideTools || got.HideThinking || !got.Timestamps || !got.VimMode {
+		t.Fatalf("saved %+v", got)
+	}
+	prefs := got.prefs(false)
+	if !prefs.Verbose || prefs.ShowTools || !prefs.ShowThinking || !prefs.Timestamps || !prefs.VimMode {
+		t.Fatalf("prefs %+v", prefs)
+	}
+	// A theme-only save must not flip tools off.
+	st = loadSettings(home)
+	st.Theme = "ansi"
+	if err := saveSettings(home, st); err != nil {
+		t.Fatal(err)
+	}
+	if got := loadSettings(home); !got.HideTools || got.Theme != "ansi" {
+		t.Fatalf("theme save clobbered toggles: %+v", got)
 	}
 }
 
