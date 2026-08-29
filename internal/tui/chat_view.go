@@ -29,6 +29,7 @@ type slashEntry struct{ name, detail string }
 var builtinSlash = []slashEntry{
 	{"help", "list commands"},
 	{"status", "session, route, tokens"},
+	{"goal", "start, pause, resume, edit, or clear a goal"},
 	{"home", "show the welcome surface"},
 	{"copy", "copy the last assistant reply"},
 	{"model", "show or switch the model route"},

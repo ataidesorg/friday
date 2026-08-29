@@ -74,6 +74,31 @@ func (c *chatSession) saveTodos(items []tools.TodoItem) error {
 	return c.store.SaveTodos(c.sid(), raw)
 }
 
+func (c *chatSession) loadGoal() (core.Goal, bool) {
+	if c.store == nil {
+		return core.Goal{}, false
+	}
+	g, ok, err := c.store.LoadGoal(c.id)
+	if err != nil || !ok {
+		return core.Goal{}, false
+	}
+	return g, true
+}
+
+func (c *chatSession) saveGoal(g core.Goal) error {
+	if c.store == nil {
+		return errors.New("no session store")
+	}
+	return c.store.SaveGoal(c.id, g)
+}
+
+func (c *chatSession) clearGoal() error {
+	if c.store == nil {
+		return errors.New("no session store")
+	}
+	return c.store.ClearGoal(c.id)
+}
+
 func (c *chatSession) todosForTUI() []tui.TodoItem {
 	if c.store == nil {
 		return nil
@@ -369,7 +394,7 @@ func (c *chatSession) setAgent(name string) error {
 	return nil
 }
 
-var readOnlyTools = []string{"read_file", "list_dir", "search", "skill", "ask_user_question", "todo_write"}
+var readOnlyTools = []string{"read_file", "list_dir", "search", "skill", "ask_user_question", "todo_write", "goal_complete", "goal_blocked", "goal_wait"}
 
 func (c *chatSession) setMode(name string) error {
 	ok := false

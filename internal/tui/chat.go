@@ -205,6 +205,11 @@ type ChatModel struct {
 	deleteAgent   func(string) error
 	deleteSession func() (string, error)
 	todosFn       func() []TodoItem
+	goalFn        func() (core.Goal, bool)
+	setGoal       func(core.Goal) error
+	clearGoal     func() error
+	goal          *core.Goal
+	continueGoal  bool
 	editFn        func(string) (string, error)
 	dash          bool
 	dashSel       int
@@ -325,8 +330,12 @@ func NewChat(opts Options, runner Runner) ChatModel {
 		deleteAgent:     opts.DeleteAgent,
 		deleteSession:   opts.DeleteSession,
 		todosFn:         opts.Todos,
+		goalFn:          opts.Goal,
+		setGoal:         opts.SetGoal,
+		clearGoal:       opts.ClearGoal,
 		editFn:          opts.EditPrompt,
 	}
+	m = m.reloadGoal()
 	return m.layout()
 }
 
@@ -344,6 +353,7 @@ func (m ChatModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.ctxUsed, m.ctxMax = d.UsedTokens, d.BudgetTokens
 		}
 		m = m.noteToolEvent(v.E)
+		m = m.noteGoalEvent(v.E)
 		return m.stream(m.append(chatEventLines(v.E, m.verbose, m.showTools, m.hideAdvis)...))
 	case dashEventMsg:
 		return m.handleDashEvent(v)
@@ -460,14 +470,27 @@ func (m ChatModel) sendDisplay(display, prompt string) (tea.Model, tea.Cmd) {
 	return m, m.startTurn(ctx, cancel, prompt)
 }
 
-// dequeue starts the next queued prompt after a turn ends. Empty queue is a no-op.
+// dequeue starts the next queued prompt after a turn ends. Empty queue is a no-op
+// unless an active goal asked to continue from idle.
 func (m ChatModel) dequeue() (tea.Model, tea.Cmd) {
-	if len(m.queue) == 0 {
+	if len(m.queue) > 0 {
+		m.continueGoal = false
+		prompt := m.queue[0]
+		m.queue = append([]queuedPrompt(nil), m.queue[1:]...)
+		return m.sendDisplay(prompt.display, prompt.text)
+	}
+	if !m.continueGoal {
 		return m, nil
 	}
-	prompt := m.queue[0]
-	m.queue = append([]queuedPrompt(nil), m.queue[1:]...)
-	return m.sendDisplay(prompt.display, prompt.text)
+	m.continueGoal = false
+	m.followTail = true
+	m.homeOpen = false
+	m = m.append(tagStatus + " continuing goal")
+	m.Running, m.reply = true, ""
+	m.turnStart = m.now()
+	ctx, cancel := context.WithCancel(m.baseCtx)
+	m.cancel = cancel
+	return m, m.startTurn(ctx, cancel, core.GoalContinuePrompt)
 }
 
 // startTurn runs the turn in the background and begins draining its events.
@@ -526,6 +549,12 @@ func (m ChatModel) finish(v turnDoneMsg) ChatModel {
 	out := replyLines(v.res.Summary)
 	if strings.TrimSpace(v.res.Summary) == "" && v.res.Outcome.Reason != "" {
 		out = append(out, tagWarn+" "+clip(v.res.Outcome.Reason))
+	}
+	if v.res.Goal != nil {
+		g := *v.res.Goal
+		m.goal = &g
+		out = append(out, goalStatusLine(g))
+		m.continueGoal = v.res.ContinueGoal
 	}
 	return m.append(out...)
 }

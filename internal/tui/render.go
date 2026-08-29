@@ -186,6 +186,7 @@ func helpLines(km Keymap) []string {
 		"  /new               start a fresh session after confirmation",
 		"  /resume            reopen a previous session",
 		"  /status            show session id, route, agent, tokens, and mode",
+		"  /goal              start, pause, resume, edit, or clear the session goal",
 		"  /rewind            drop later turns from the transcript",
 		"  /fork              branch a new session from this transcript",
 		"  /compact           summarize older turns into replayable context",

@@ -212,7 +212,7 @@ func TestExplainAndTOML(t *testing.T) {
 	if ex, _ := r.Explain("sandbox"); !strings.HasPrefix(ex.String(), "sandbox = <table, 2 keys>") {
 		t.Fatalf("table explain: %s", ex.String())
 	}
-	if ex, _ := r.Explain("tools.allow"); !strings.Contains(ex.String(), `["read_file", "list_dir", "search", "ask_user_question", "todo_write"]`) {
+	if ex, _ := r.Explain("tools.allow"); !strings.Contains(ex.String(), `"goal_complete"`) {
 		t.Fatalf("array explain: %s", ex.String())
 	}
 	out, err := r.TOML()

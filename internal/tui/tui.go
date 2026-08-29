@@ -148,6 +148,12 @@ type Options struct {
 	DeleteSession func() (string, error)
 	// Todos is the live session task list for the Ctrl+T pane.
 	Todos func() []TodoItem
+	// Goal returns the session goal; ok is false when none is set.
+	Goal func() (core.Goal, bool)
+	// SetGoal persists a session goal mutation from /goal. Nil keeps it in-memory.
+	SetGoal func(core.Goal) error
+	// ClearGoal removes the session goal. Nil clears the in-memory copy only.
+	ClearGoal func() error
 	// EditPrompt is a test seam for /edit-prompt. Nil uses $VISUAL/$EDITOR.
 	EditPrompt func(draft string) (string, error)
 	// Providers are the registry providers the /connect wizard offers; the

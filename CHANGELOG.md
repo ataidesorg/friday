@@ -11,6 +11,10 @@ a minor release. Breaking changes are always listed under **Changed**.
 
 ### Added
 
+- Session-scoped goals (`/goal`, `friday run --goal`) that stay active until
+  `goal_complete` records command, test, file, or eval evidence. Prose "done"
+  does not complete a goal. Turn, no-progress, and token caps pause automatic
+  continuation; `goal_blocked` and `goal_wait` stop the loop for a reason.
 - Fullscreen TUI chat and a headless `friday run` mode for scripts and CI.
 - Typed file, search, and command tools behind a policy and approval layer.
 - Process sandbox with path confinement, environment scrubbing, and timeouts;

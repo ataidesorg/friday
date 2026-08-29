@@ -58,6 +58,7 @@ func Default(exec Executor, allowedArgv [][]string) *Registry {
 		&RunCommand{exec: exec, allowed: cloneArgv(allowedArgv)},
 		&AskUser{},
 		&TodoWrite{},
+		&GoalComplete{}, &GoalBlocked{}, &GoalWait{},
 	)
 	return r
 }
@@ -138,6 +139,24 @@ func (r *Registry) WithAskUser(ask core.AskFunc) *Registry {
 
 type todoBinder interface {
 	bindTodos(load func() []TodoItem, save func([]TodoItem) error) core.Tool
+}
+
+type goalBinder interface {
+	bindGoal(load func() (core.Goal, bool), save func(core.Goal) error) core.Tool
+}
+
+// WithGoal returns a copy whose goal_* tools read and write the session goal.
+func (r *Registry) WithGoal(load func() (core.Goal, bool), save func(core.Goal) error) *Registry {
+	if r == nil {
+		return nil
+	}
+	m := maps.Clone(r.tools)
+	for name, t := range m {
+		if b, ok := t.(goalBinder); ok {
+			m[name] = b.bindGoal(load, save)
+		}
+	}
+	return &Registry{tools: m}
 }
 
 // WithTodos returns a copy whose todo_write tool reads and writes the session list.

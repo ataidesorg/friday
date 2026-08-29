@@ -423,6 +423,7 @@ func chatActions() []overlayItem {
 		itemD(gSession, "rename", "Rename Session", "/rename", "set the session title"),
 		itemD(gSession, "delete", "Delete Session", "/delete", "requires typed confirmation"),
 		itemD(gSession, "status", "Session Info", "/status", "id, route, tokens"),
+		itemD(gSession, "goal", "Session Goal", "/goal", "start, pause, resume, edit, or clear"),
 		itemD(gCtx, "compact", "Compact History", "/compact", "fold older turns into a summary"),
 		itemD(gCtx, "queue", "Prompt Queue", "ctrl+b", "queued prompts waiting to run"),
 		itemD(gCtx, "usage", "Usage Meter", "/usage", "toggle context and spend in the composer"),

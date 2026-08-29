@@ -94,6 +94,38 @@ func TestChatTurnHistoryExcludesCurrentPrompt(t *testing.T) {
 	}
 }
 
+func TestChatTurnLoadsSessionGoal(t *testing.T) {
+	store := newTestStore(t)
+	now := time.Unix(0, 0).UTC()
+	if _, err := store.Create("s1", now); err != nil {
+		t.Fatal(err)
+	}
+	g, err := core.NewGoal("ship it", now)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := store.SaveGoal("s1", g); err != nil {
+		t.Fatal(err)
+	}
+	var saw *core.Goal
+	cs := &chatSession{
+		store: store, id: "s1", model: "m1", clock: func() time.Time { return now },
+		profile:   core.NewProfileID(),
+		sess:      core.SessionID("s1"),
+		principal: core.Principal{Kind: core.PrincipalUser, Name: "tester"},
+		run: func(_ context.Context, _ runtime.Deps, in runtime.Input) (runtime.Result, error) {
+			saw = in.Goal
+			return runtime.Result{Summary: "working", Goal: in.Goal, ContinueGoal: true}, nil
+		},
+	}
+	if _, err := cs.turn(context.Background(), "go", nopObs{}); err != nil {
+		t.Fatal(err)
+	}
+	if saw == nil || saw.ID != g.ID || saw.Objective != "ship it" {
+		t.Fatalf("turn did not load the session goal: %+v", saw)
+	}
+}
+
 // A successful turn appends one metrics line carrying the turn's accounting:
 // session, model, active route, tool-call count (observed from events), and
 // outcome. Metrics are local analytics, separate from the transcript.

@@ -417,7 +417,7 @@ func ruleOAuth(r *Resolved) []ValidationError {
 var builtinToolNames = map[string]bool{
 	"read_file": true, "list_dir": true, "search": true, "write_file": true,
 	"apply_patch": true, "run_command": true, "skill": true, "ask_user_question": true,
-	"todo_write": true,
+	"todo_write": true, "goal_complete": true, "goal_blocked": true, "goal_wait": true,
 }
 
 var customToolName = regexp.MustCompile(`^[a-z][a-z0-9_]*$`)

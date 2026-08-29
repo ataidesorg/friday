@@ -67,6 +67,9 @@ func statusLines(m ChatModel) []string {
 	}
 	out = append(out, "  always-approve "+onOff(m.yolo))
 	out = append(out, "  vim-mode "+onOff(m.vim))
+	if m.goal != nil {
+		out = append(out, "  "+strings.TrimPrefix(goalStatusLine(*m.goal), tagStatus+" "))
+	}
 	out = append(out, costLines(m.Usage, m.Cost)...)
 	return out
 }
@@ -318,6 +321,8 @@ func (m ChatModel) command(line string) (tea.Model, tea.Cmd) {
 		return m.append(helpLines(m.keys)...), nil
 	case "/status":
 		return m.append(statusLines(m)...), nil
+	case "/goal":
+		return m.applyGoal(strings.TrimSpace(strings.TrimPrefix(line, fields[0])))
 	case "/copy":
 		return m.copyCommand(strings.TrimSpace(strings.TrimPrefix(line, fields[0])))
 	case "/export":
@@ -502,6 +507,8 @@ func (m ChatModel) newSession() (tea.Model, tea.Cmd) {
 	m.Lines, m.lineTimes = nil, nil
 	m.Usage, m.Cost = core.Usage{}, core.CostReport{}
 	m.title, m.hist, m.histI = "", nil, -1
+	m.goal, m.continueGoal = nil, false
+	m = m.reloadGoal()
 	m.homeOpen = true
 	return m.append(tagStatus + " new session, history cleared"), nil
 }
@@ -551,7 +558,9 @@ func (m ChatModel) applyResume(id string, turns []HistoryTurn) ChatModel {
 	m.Lines, m.lineTimes = nil, nil
 	m.sessionID = id
 	m.Usage, m.Cost = core.Usage{}, core.CostReport{}
+	m.goal, m.continueGoal = nil, false
 	m = m.reloadTodos()
+	m = m.reloadGoal()
 	for _, t := range turns {
 		if t.Role == "user" {
 			m = m.append(userLines(t.Text)...)

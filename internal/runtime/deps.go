@@ -95,6 +95,11 @@ type Input struct {
 	// Agent is the active profile: style, posture, memory namespace, and
 	// sensitivity cap. Zero means the code-harness defaults.
 	Agent core.AgentProfile
+
+	// Goal is the session goal for this turn; nil means none.
+	Goal *core.Goal
+	// SaveGoal persists mutations from tools and caps. Nil makes goal tools unavailable.
+	SaveGoal func(core.Goal) error
 }
 
 // Result is what a finished run reports; Events counts the events emitted.
@@ -106,6 +111,10 @@ type Result struct {
 	Summary  string
 	Memories []core.MemoryCandidate
 	Events   int
+	// Goal is the session goal after the turn, if one was in play.
+	Goal *core.Goal
+	// ContinueGoal is true when automatic work should keep going.
+	ContinueGoal bool
 }
 
 func (d Deps) validate() error {

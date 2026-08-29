@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/ataidesorg/friday/internal/core"
 	"github.com/ataidesorg/friday/internal/fsutil"
@@ -26,6 +27,8 @@ type CheckEnv struct {
 	Trail    []string
 	Exec     tools.Executor
 	Redactor *redact.Redactor
+	// Goal, when set, is completed with evidence kind eval when command_succeeds passes.
+	Goal *core.Goal
 }
 
 // scanSkip are workspace directories the leak scan leaves out: git objects
@@ -55,6 +58,11 @@ func Check(ctx context.Context, e core.Expectation, env CheckEnv) (core.CheckRes
 	}
 	if err != nil {
 		return core.CheckResult{}, err
+	}
+	if passed && e.Kind == core.ExpectCommandSucceeds && env.Goal != nil {
+		if next, cerr := env.Goal.Complete(core.GoalEvidenceEval, detail, time.Now()); cerr == nil {
+			*env.Goal = next
+		}
 	}
 	return core.CheckResult{Expectation: e, Passed: passed, Detail: detail}, nil
 }

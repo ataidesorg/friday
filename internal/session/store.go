@@ -26,6 +26,7 @@ const (
 	transcriptFile = "transcript.jsonl"
 	metaFile       = "meta.json"
 	todosFile      = "todos.json"
+	goalFile       = "goal.json"
 )
 
 // Turn is one exchange in a conversation: a user prompt or an assistant
@@ -391,6 +392,57 @@ func (s *Store) SaveTodos(id string, items []TodoItem) error {
 		return fmt.Errorf("marshal todos: %w", err)
 	}
 	return os.WriteFile(filepath.Join(s.dir(id), todosFile), append(data, '\n'), filePerm)
+}
+
+// LoadGoal returns the session goal. Missing file is ok=false, not an error.
+// A brand-new session has no goal.
+func (s *Store) LoadGoal(id string) (core.Goal, bool, error) {
+	if _, err := s.loadMeta(id); err != nil {
+		return core.Goal{}, false, err
+	}
+	data, err := os.ReadFile(filepath.Join(s.dir(id), goalFile))
+	if errors.Is(err, os.ErrNotExist) {
+		return core.Goal{}, false, nil
+	}
+	if err != nil {
+		return core.Goal{}, false, fmt.Errorf("read goal: %w", err)
+	}
+	var g core.Goal
+	if err := json.Unmarshal(data, &g); err != nil {
+		return core.Goal{}, false, fmt.Errorf("parse goal: %w", err)
+	}
+	return g, true, nil
+}
+
+// SaveGoal writes the session goal (redacted free text). Images are not a
+// field on core.Goal and are never stored here.
+func (s *Store) SaveGoal(id string, g core.Goal) error {
+	if _, err := s.loadMeta(id); err != nil {
+		return err
+	}
+	safe := g
+	safe.Objective = s.red.Redact(g.Objective)
+	safe.Evidence = s.red.Redact(g.Evidence)
+	safe.WaitReason = s.red.Redact(g.WaitReason)
+	safe.BlockReason = s.red.Redact(g.BlockReason)
+	safe.BlockEvidence = s.red.Redact(g.BlockEvidence)
+	data, err := json.MarshalIndent(safe, "", "  ")
+	if err != nil {
+		return fmt.Errorf("marshal goal: %w", err)
+	}
+	return os.WriteFile(filepath.Join(s.dir(id), goalFile), append(data, '\n'), filePerm)
+}
+
+// ClearGoal removes the session goal file. Missing is success.
+func (s *Store) ClearGoal(id string) error {
+	if _, err := s.loadMeta(id); err != nil {
+		return err
+	}
+	err := os.Remove(filepath.Join(s.dir(id), goalFile))
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
+		return fmt.Errorf("clear goal: %w", err)
+	}
+	return nil
 }
 
 // Delete removes a session directory permanently.

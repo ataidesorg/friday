@@ -128,6 +128,11 @@ func (s *state) assemble(ctx context.Context) (core.Transition, error) {
 	if s.in.AgentPrompt != "" {
 		fmt.Fprintf(&sb, "\n\n<agent-instructions>\n%s\n</agent-instructions>", s.in.AgentPrompt)
 	}
+	if s.goal != nil {
+		if c := s.goal.Contract(); c != "" {
+			fmt.Fprintf(&sb, "\n\n%s", c)
+		}
+	}
 	if len(s.in.Skills) > 0 {
 		sb.WriteString("\n\n<skills>\nThese skills hold detailed instructions; when one's subject matches the task, load it with the skill tool before acting.")
 		for _, sk := range s.in.Skills {
@@ -216,7 +221,15 @@ func (s *state) validate(ctx context.Context) (core.Transition, error) {
 func (s *state) synthesise(ctx context.Context) (core.Transition, error) {
 	s.summary = strings.TrimSpace(s.last.Content)
 	if s.summary == "" {
-		return advance, s.emit(ctx, core.Warning{Message: "model returned no summary"})
+		if err := s.emit(ctx, core.Warning{Message: "model returned no summary"}); err != nil {
+			return core.Transition{}, err
+		}
+	}
+	if s.goal != nil && s.goal.Status == core.GoalActive {
+		next := s.goal.RecordTurn(s.usage, s.summary, s.calls > 0, s.now())
+		if err := s.saveGoal(next); err != nil {
+			return core.Transition{}, err
+		}
 	}
 	return advance, nil
 }

@@ -60,6 +60,7 @@ func TestEveryConstructorProducesValidID(t *testing.T) {
 		string(NewProjectID()), string(NewWorkspaceID()), string(NewSandboxID()), string(NewToolCallID()),
 		string(NewApprovalID()), string(NewCandidateID()), string(NewScenarioID()),
 		string(NewEventID()), string(NewGateID()), string(NewPolicyID()),
+		string(NewGoalID()),
 	}
 	seen := map[string]bool{}
 	for _, id := range ids {

@@ -48,6 +48,8 @@ flags:
   --keep-workspace   keep the ephemeral workspace and sandbox files for inspection
   --worktree NAME    run on the dedicated git worktree NAME (created on first use)
   --graph FILE       run a task graph (JSON) as parallel worktrees, then merge
+  --goal TEXT        start a session goal; prose "done" does not complete it
+  --tokens N         optional goal token budget (100k, 1.5m, or an integer)
 `
 
 // teardownTimeout bounds workspace cleanup and the diff after a run.
@@ -55,8 +57,8 @@ const teardownTimeout = 30 * time.Second
 
 type runFlags struct {
 	globalFlags
-	script, model, worktree, graph string
-	noTUI, yes, keep               bool
+	script, model, worktree, graph, goal, tokens string
+	noTUI, yes, keep                             bool
 }
 
 // sandboxProviders is every backend the CLI can build; config names them.
@@ -74,6 +76,8 @@ func parseRunFlags(args []string, stderr io.Writer) (runFlags, string, bool) {
 	fs.BoolVar(&f.keep, "keep-workspace", false, "keep the ephemeral workspace")
 	fs.StringVar(&f.worktree, "worktree", "", "dedicated git worktree name")
 	fs.StringVar(&f.graph, "graph", "", "task graph JSON file")
+	fs.StringVar(&f.goal, "goal", "", "session goal objective")
+	fs.StringVar(&f.tokens, "tokens", "", "goal token budget")
 	positional, err := parseInterleaved(fs, args)
 	if err != nil || len(positional) != 1 {
 		fmt.Fprint(stderr, runUsage)
@@ -242,7 +246,33 @@ func newSession(ctx context.Context, cfg config.Config, f runFlags, text string,
 	}
 	sink := observability.NewLazyTrail(root, red, core.PrivacyMode(cfg.Telemetry.Privacy))
 	deps.Sink = sink
-	return &session{deps: deps, input: in, sink: sink, cleanup: cleanup, keep: f.keep, target: target, lsp: lspMgr}, nil
+	s := &session{deps: deps, input: in, sink: sink, cleanup: cleanup, keep: f.keep, target: target, lsp: lspMgr}
+	if f.goal != "" || f.tokens != "" {
+		if f.goal == "" {
+			return nil, fmt.Errorf("%w: --tokens requires --goal", core.ErrInvalidInput)
+		}
+		g, err := core.NewGoal(f.goal, time.Now())
+		if err != nil {
+			return nil, err
+		}
+		if f.tokens != "" {
+			n, err := core.ParseTokenBudget(f.tokens)
+			if err != nil {
+				return nil, err
+			}
+			g, err = g.WithTokenBudget(n, time.Now())
+			if err != nil {
+				return nil, err
+			}
+		}
+		s.input.Goal = &g
+		s.input.SaveGoal = func(next core.Goal) error {
+			cp := next
+			s.input.Goal = &cp
+			return nil
+		}
+	}
+	return s, nil
 }
 
 // buildGraph wires what config decides and no single run owns: policy,
@@ -336,6 +366,16 @@ func (s *session) run(ctx context.Context, p tui.Program, stderr io.Writer) int 
 	}
 	next := s.flushWarnings(res, stderr)
 	s.diagnose(res, next, stderr)
+	if res.Goal != nil {
+		fmt.Fprintf(stderr, "goal %s", res.Goal.Status)
+		if res.Goal.PauseCause != "" {
+			fmt.Fprintf(stderr, " (%s)", res.Goal.PauseCause)
+		}
+		if res.Goal.EvidenceKind != "" {
+			fmt.Fprintf(stderr, " %s", res.Goal.EvidenceKind)
+		}
+		fmt.Fprintln(stderr)
+	}
 	fmt.Fprintf(stderr, "run %s: %s\n", res.Run.ID, s.trail(res.Run.ID))
 	return exitFor(res.Outcome)
 }

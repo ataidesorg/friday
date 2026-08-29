@@ -79,7 +79,7 @@ wall_clock_secs = 600
 # Effect for tools not listed below: deny | require_approval | allow.
 default_effect = "deny"
 # Read-only tools that run without approval.
-allow = ["read_file", "list_dir", "search", "ask_user_question", "todo_write"]
+allow = ["read_file", "list_dir", "search", "ask_user_question", "todo_write", "goal_complete", "goal_blocked", "goal_wait"]
 # Tools that always need a human decision (or `friday run --yes`). run_command
 # additionally needs an argv prefix from tools.commands.allowed or project.commands.
 require_approval = ["write_file", "apply_patch", "run_command"]

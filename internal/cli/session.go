@@ -223,6 +223,14 @@ func (c *chatSession) turnOn(ctx context.Context, id, prompt string, obs runtime
 	if todos := c.loadTodos(); len(todos) > 0 {
 		in.History = append([]core.Message{{Role: core.RoleSystem, Content: tools.FormatTodos(todos)}}, in.History...)
 	}
+	if c.store != nil {
+		if g, ok, gerr := c.store.LoadGoal(id); gerr != nil {
+			return runtime.Result{}, gerr
+		} else if ok {
+			in.Goal = &g
+			in.SaveGoal = func(next core.Goal) error { return c.store.SaveGoal(id, next) }
+		}
+	}
 	parts, warns := imageAttachments(c.base.Workspace.Root, prompt)
 	for _, w := range warns {
 		obs.OnEvent(core.Event{Data: core.Warning{Message: w}})

@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "goal_wait",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["goal_id", "reason"],
+  "properties": {
+    "goal_id": {"type": "string", "description": "The current session goal id."},
+    "reason": {"type": "string", "description": "What external event the agent is waiting for."},
+    "resume_after_ms": {"type": "integer", "minimum": 1, "description": "Optional safety deadline in milliseconds."}
+  }
+}

@@ -20,7 +20,7 @@ func TestDefaultsDecode(t *testing.T) {
 	if len(c.Providers) != 0 || len(c.Models.Routes) != 0 {
 		t.Fatalf("defaults must have no providers or routes: %+v", c)
 	}
-	if !reflect.DeepEqual(c.Tools.Allow, []string{"read_file", "list_dir", "search", "ask_user_question", "todo_write"}) || !reflect.DeepEqual(c.Tools.RequireApproval, []string{"write_file", "apply_patch", "run_command"}) || c.Telemetry.Mode != "local" || c.Evals.Gate != "required" {
+	if !reflect.DeepEqual(c.Tools.Allow, []string{"read_file", "list_dir", "search", "ask_user_question", "todo_write", "goal_complete", "goal_blocked", "goal_wait"}) || !reflect.DeepEqual(c.Tools.RequireApproval, []string{"write_file", "apply_patch", "run_command"}) || c.Telemetry.Mode != "local" || c.Evals.Gate != "required" {
 		t.Fatalf("unexpected defaults: %+v", c)
 	}
 	m, err := Defaults()

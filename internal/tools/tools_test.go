@@ -59,7 +59,7 @@ func structured(t *testing.T, out core.ToolOutput, v any) {
 func TestRegistry(t *testing.T) {
 	r := Default(nil, [][]string{{"go", "test"}})
 	specs := r.Specs()
-	want := []string{"apply_patch", "ask_user_question", "list_dir", "read_file", "run_command", "search", "todo_write", "write_file"}
+	want := []string{"apply_patch", "ask_user_question", "goal_blocked", "goal_complete", "goal_wait", "list_dir", "read_file", "run_command", "search", "todo_write", "write_file"}
 	if len(specs) != len(want) {
 		t.Fatalf("specs: %d", len(specs))
 	}

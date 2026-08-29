@@ -133,7 +133,7 @@ func (r *Runner) check(ctx context.Context, s core.EvaluationScenario, root stri
 		return nil, fmt.Errorf("check sandbox: %w", err)
 	}
 	defer func() { _ = sb.Destroy(context.WithoutCancel(ctx)) }()
-	env := CheckEnv{Root: root, Events: events, Trail: lines, Exec: sb, Redactor: red}
+	env := CheckEnv{Root: root, Events: events, Trail: lines, Exec: sb, Redactor: red, Goal: r.Input.Goal}
 	checks := make([]core.CheckResult, 0, len(s.Expectations))
 	for _, e := range s.Expectations {
 		c, err := Check(ctx, e, env)

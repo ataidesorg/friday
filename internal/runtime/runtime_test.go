@@ -106,12 +106,17 @@ type harness struct {
 func toolsCfg() config.ToolsConfig {
 	return config.ToolsConfig{
 		DefaultEffect: "deny",
-		Allow:         []string{"read_file", "list_dir", "search", "write_file", "run_command", "ask_user_question", "todo_write"},
+		Allow:         []string{"read_file", "list_dir", "search", "write_file", "run_command", "ask_user_question", "todo_write", "goal_complete", "goal_blocked", "goal_wait"},
 		Commands:      config.CommandsConfig{Allowed: []string{"go test"}},
 	}
 }
 
 func newHarness(t *testing.T, script string, cfg config.ToolsConfig) *harness {
+	t.Helper()
+	return newHarnessAt(t, filepath.Join(scriptDir, script), cfg)
+}
+
+func newHarnessAt(t *testing.T, scriptPath string, cfg config.ToolsConfig) *harness {
 	t.Helper()
 	root, err := filepath.EvalSymlinks(t.TempDir())
 	if err != nil {
@@ -119,7 +124,7 @@ func newHarness(t *testing.T, script string, cfg config.ToolsConfig) *harness {
 	}
 	write(t, filepath.Join(root, "greet.go"), "package sample\n\n// Greet says hello.\nfunc Greet(name string) string { return \"hi \" + name }\n")
 	write(t, filepath.Join(root, "AGENTS.md"), "Keep one exported function per file.\n")
-	sc, err := mock.LoadScript(filepath.Join(scriptDir, script))
+	sc, err := mock.LoadScript(scriptPath)
 	if err != nil {
 		t.Fatal(err)
 	}
