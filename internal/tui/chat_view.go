@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -25,29 +26,81 @@ func (m ChatModel) promptRows() int {
 }
 
 // slashEntry is one row of the typeahead menu for a drafted /command.
-type slashEntry struct{ name, detail string }
+type slashEntry struct {
+	name, detail, group, title string
+	custom                     bool
+}
 
-// slashMatches is every built-in and custom command whose name extends the
-// draft. Empty unless the draft is a single-line "/prefix" that has not
-// reached its arguments, and always empty under an overlay or a pending
-// approval. The menu view windows this list to the terminal height.
+// slashMatches is the ranked command menu for the current draft. Empty unless
+// the draft is a single-line "/prefix" that has not reached its arguments,
+// and always empty under an overlay or a pending approval.
 func (m ChatModel) slashMatches() []slashEntry {
 	d := m.ta.Value()
 	if m.ov != nil || m.pending != nil || m.question != nil || m.conn != nil || !strings.HasPrefix(d, "/") || strings.ContainsAny(d, " \n") {
 		return nil
 	}
-	var out []slashEntry
-	for _, e := range builtinSlash() {
-		if strings.HasPrefix("/"+e.name, d) {
-			out = append(out, e)
-		}
+	q := strings.TrimPrefix(d, "/")
+	type ranked struct {
+		e    slashEntry
+		rank int
+		idx  int
 	}
-	for _, c := range m.commands {
-		if strings.HasPrefix("/"+c.Name, d) {
-			out = append(out, slashEntry{c.Name, c.Description})
+	var hits []ranked
+	add := func(e slashEntry, idx int) {
+		r, ok := slashRank(q, e)
+		if !ok {
+			return
 		}
+		hits = append(hits, ranked{e: e, rank: r, idx: idx})
+	}
+	for i, e := range builtinSlash() {
+		if e.name == "exit" && q == "" {
+			continue
+		}
+		add(e, i)
+	}
+	base := len(builtinSlash())
+	for i, c := range m.commands {
+		add(slashEntry{name: c.Name, detail: c.Description, group: gCmds, title: c.Name, custom: true}, base+i)
+	}
+	sort.SliceStable(hits, func(i, j int) bool {
+		if hits[i].rank != hits[j].rank {
+			return hits[i].rank < hits[j].rank
+		}
+		return hits[i].idx < hits[j].idx
+	})
+	out := make([]slashEntry, len(hits))
+	for i, h := range hits {
+		out[i] = h.e
 	}
 	return out
+}
+
+// slashRank scores a command against the typed prefix. Lower is better.
+// Empty query keeps catalog order. Name prefix, then substring, then a
+// tight subsequence of the command name — never the description.
+func slashRank(q string, e slashEntry) (int, bool) {
+	if q == "" {
+		return 0, true
+	}
+	ql := strings.ToLower(q)
+	name := strings.ToLower(e.name)
+	switch {
+	case name == ql:
+		return 0, true
+	case strings.HasPrefix(name, ql):
+		return 1, true
+	case strings.Contains(name, ql):
+		return 3, true
+	}
+	r, ok := fuzzyRank(q, e.name)
+	if !ok {
+		return 0, false
+	}
+	if r > len(ql)+1 {
+		return 0, false
+	}
+	return 10 + r, true
 }
 
 func (m ChatModel) slashMenuLimit() int {
@@ -120,22 +173,70 @@ func (m ChatModel) atMenuView(menu []string) string {
 func (m ChatModel) slashMenuView(menu []slashEntry) string {
 	sel := min(m.slashSel, len(menu)-1)
 	start, win := m.slashWindow(menu)
-	rows := []string{m.cstyle.overlayTitle("Commands")}
+	w := max(24, m.innerWidth())
+	q := strings.TrimPrefix(m.ta.Value(), "/")
+	grouped := q == ""
+	var rows []string
+	prev := ""
 	for i, e := range win {
-		marker := "  "
-		if start+i == sel {
-			marker = m.cstyle.glyph("▍", m.cstyle.accent) + " "
+		if grouped && e.group != "" && e.group != prev {
+			label := e.group
+			line := label + " " + strings.Repeat("─", max(1, w-2-runeLen(label)))
+			rows = append(rows, m.cstyle.dimText("  "+line))
+			prev = e.group
 		}
-		row := marker + "/" + e.name
-		if e.detail != "" {
-			row += "  " + m.cstyle.dimText(e.detail)
-		}
-		rows = append(rows, row)
+		rows = append(rows, m.slashRow(e, start+i == sel, w))
 	}
 	if len(menu) > len(win) {
 		rows = append(rows, m.cstyle.dimText(fmt.Sprintf("  %d/%d", sel+1, len(menu))))
 	}
-	return m.cstyle.modal.Width(min(64, max(20, m.innerWidth()-2))).Render(strings.Join(rows, "\n"))
+	return m.cstyle.modal.Width(w).Padding(0, 0).Render(strings.Join(rows, "\n"))
+}
+
+func (m ChatModel) slashRow(e slashEntry, selected bool, w int) string {
+	avail := max(8, w)
+	mark := "  "
+	if selected {
+		mark = "▸ "
+	}
+	name := "/" + e.name
+	right := ""
+	if e.custom {
+		right = "custom"
+	}
+	leftBudget := avail - runeLen(mark)
+	if right != "" {
+		leftBudget = max(6, avail-runeLen(mark)-runeLen(right)-2)
+	}
+	title := fit(name, min(runeLen(name), leftBudget))
+	left := mark + title
+	rest := leftBudget - runeLen(title)
+	if e.detail != "" && rest >= 4 {
+		left += "  " + fit(e.detail, rest-2)
+	}
+	plain := left
+	if right != "" {
+		plain = padBetween(left, right, avail)
+	} else if pad := avail - runeLen(plain); pad > 0 {
+		plain += strings.Repeat(" ", pad)
+	}
+	if selected {
+		if m.cstyle.on {
+			return lipgloss.NewStyle().Foreground(thCodeFg()).Background(thCodeBg()).Render(plain)
+		}
+		return plain
+	}
+	if !m.cstyle.on {
+		return strings.TrimRight(plain, " ")
+	}
+	styled := mark + m.cstyle.accent.Render(title)
+	if e.detail != "" && rest >= 4 {
+		styled += "  " + m.cstyle.dimText(fit(e.detail, rest-2))
+	}
+	if right == "" {
+		return styled
+	}
+	return padBetween(styled, m.cstyle.dimText(right), avail)
 }
 
 func (m ChatModel) slashMenuRows(menu []slashEntry) int {
@@ -674,6 +775,8 @@ func (m ChatModel) approvalPromptView() string {
 func (m ChatModel) footerView() string {
 	var h string
 	switch {
+	case len(m.slashMatches()) > 0 && m.pending == nil && m.ov == nil && m.question == nil && m.conn == nil:
+		h = "enter run · tab complete · ↑↓ · esc"
 	case m.question != nil:
 		h = "1–9 select · enter confirm · esc skip"
 	case m.pending != nil:

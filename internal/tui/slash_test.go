@@ -35,8 +35,8 @@ func TestSlashTypeaheadFiltersAndCaps(t *testing.T) {
 		t.Fatalf("bare / shows %d, want at least the %d built-ins", len(menu), len(builtinSlash()))
 	}
 	m = typeText(m, "/mod")
-	if menu := m.slashMatches(); len(menu) != 1 || menu[0].name != "model" {
-		t.Fatalf("filter /mod got %+v, want model only", menu)
+	if menu := m.slashMatches(); len(menu) == 0 || menu[0].name != "model" {
+		t.Fatalf("filter /mod got %+v, want model first", menu)
 	}
 	m = typeText(m, "/verb")
 	if menu := m.slashMatches(); len(menu) != 1 || menu[0].name != "verbose" {
@@ -53,11 +53,46 @@ func TestSlashTypeaheadFiltersAndCaps(t *testing.T) {
 	}
 }
 
+func TestSlashMenuFuzzyAndGroups(t *testing.T) {
+	m := NewChat(Options{Width: 80, NoColor: true}, nil)
+	next, _ := m.Update(tea.WindowSizeMsg{Width: 80, Height: 24})
+	m = next.(ChatModel)
+	m = typeText(m, "/")
+	v := m.View()
+	for _, want := range []string{"Session", "/new", "▸"} {
+		if !strings.Contains(v, want) {
+			t.Fatalf("bare / menu missing %q:\n%s", want, v)
+		}
+	}
+	if names := m.slashMatches(); len(names) == 0 || names[0].name != "new" {
+		t.Fatalf("catalog order lost: %+v", names)
+	}
+	if !strings.Contains(m.footerView(), "enter run") {
+		t.Fatalf("slash footer: %q", m.footerView())
+	}
+	m = typeText(m, "/mode")
+	menu := m.slashMatches()
+	if len(menu) == 0 || menu[0].name != "model" {
+		t.Fatalf("/mode got %+v, want model first", menu)
+	}
+}
+
+func TestSlashCustomBadge(t *testing.T) {
+	m := NewChat(Options{
+		Width: 80, NoColor: true,
+		Commands: []CommandInfo{{Name: "deploy", Description: "ship it"}},
+	}, nil)
+	next, _ := m.Update(tea.WindowSizeMsg{Width: 80, Height: 24})
+	m = typeText(next.(ChatModel), "/deploy")
+	if v := m.View(); !strings.Contains(v, "custom") || !strings.Contains(v, "/deploy") {
+		t.Fatalf("custom badge missing:\n%s", v)
+	}
+}
+
 // Down moves the selection, tab completes the draft to the selected command.
 func TestSlashTypeaheadTabCompletes(t *testing.T) {
-	m := typeText(NewChat(Options{Width: 80}, nil), "/cos") // cost
-	next, _ := m.Update(tea.KeyMsg{Type: tea.KeyDown})
-	next, _ = next.(ChatModel).Update(tea.KeyMsg{Type: tea.KeyTab})
+	m := typeText(NewChat(Options{Width: 80}, nil), "/cost")
+	next, _ := m.Update(tea.KeyMsg{Type: tea.KeyTab})
 	if got := next.(ChatModel).ta.Value(); got != "/cost " {
 		t.Fatalf("tab completed to %q, want %q", got, "/cost ")
 	}

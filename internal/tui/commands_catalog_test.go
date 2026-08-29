@@ -29,7 +29,7 @@ func TestSlashAndPaletteShareTheCatalog(t *testing.T) {
 	for _, want := range []string{
 		"help", "fork", "export", "timestamps", "advisories", "always-approve",
 		"goal", "queue", "commands", "edit-prompt", "cost", "doctor", "clear",
-		"plan", "rewind", "verbose", "connect",
+		"plan", "rewind", "verbose", "connect", "quit",
 	} {
 		if !got[want] {
 			t.Fatalf("slash typeahead missing /%s", want)

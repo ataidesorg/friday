@@ -67,7 +67,7 @@ func builtinSlash() []slashEntry {
 		if c.slash == "" {
 			continue
 		}
-		out = append(out, slashEntry{c.slash, c.detail})
+		out = append(out, slashEntry{name: c.slash, detail: c.detail, group: c.group, title: c.title})
 	}
 	return out
 }
