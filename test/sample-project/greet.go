@@ -1,4 +1,4 @@
-// Package sample is a tiny fixture project used by Friday's tests and
+// Package sample is a tiny fixture project used by Ink's tests and
 // evaluation scenarios.
 package sample
 

@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ataidesorg/friday/internal/core"
-	"github.com/ataidesorg/friday/internal/runtime"
-	sessionstore "github.com/ataidesorg/friday/internal/session"
+	"github.com/ataidesorg/ink/internal/core"
+	"github.com/ataidesorg/ink/internal/runtime"
+	sessionstore "github.com/ataidesorg/ink/internal/session"
 )
 
 func seededSession(t *testing.T) (*sessionstore.Store, time.Time) {

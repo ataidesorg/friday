@@ -10,8 +10,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ataidesorg/friday/internal/core"
-	"github.com/ataidesorg/friday/internal/models/wire"
+	"github.com/ataidesorg/ink/internal/core"
+	"github.com/ataidesorg/ink/internal/models/wire"
 )
 
 func newResponses(t *testing.T, srv *httptest.Server, mod func(*wire.Options)) *wire.Responses {

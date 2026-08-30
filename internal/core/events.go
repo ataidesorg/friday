@@ -7,7 +7,7 @@ import (
 	"slices"
 	"time"
 
-	"github.com/ataidesorg/friday/internal/redact"
+	"github.com/ataidesorg/ink/internal/redact"
 )
 
 // EventSchemaVersion is bumped on any incompatible change to Event JSON.

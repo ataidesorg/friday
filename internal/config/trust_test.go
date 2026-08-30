@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ataidesorg/friday/internal/core"
+	"github.com/ataidesorg/ink/internal/core"
 )
 
 func TestTrustStatePath(t *testing.T) {
@@ -19,9 +19,9 @@ func TestTrustStatePath(t *testing.T) {
 		env  map[string]string
 		want string
 	}{
-		{map[string]string{"FRIDAY_STATE_DIR": "/explicit", "XDG_STATE_HOME": "/xdg", "HOME": "/home"}, filepath.Join("/explicit", "trust.toml")},
-		{map[string]string{"XDG_STATE_HOME": "/xdg", "HOME": "/home"}, filepath.Join("/xdg", "friday", "trust.toml")},
-		{map[string]string{"HOME": "/home"}, filepath.Join("/home", ".local", "state", "friday", "trust.toml")},
+		{map[string]string{"INK_STATE_DIR": "/explicit", "XDG_STATE_HOME": "/xdg", "HOME": "/home"}, filepath.Join("/explicit", "trust.toml")},
+		{map[string]string{"XDG_STATE_HOME": "/xdg", "HOME": "/home"}, filepath.Join("/xdg", "ink", "trust.toml")},
+		{map[string]string{"HOME": "/home"}, filepath.Join("/home", ".local", "state", "ink", "trust.toml")},
 	}
 	for _, c := range cases {
 		got, err := TrustStatePath(env(c.env))
@@ -46,8 +46,8 @@ func TestTrustStoreRoundTrip(t *testing.T) {
 		t.Fatalf("revoke missing: %v", err)
 	}
 	at := time.Date(2026, 8, 22, 10, 0, 0, 0, time.UTC)
-	a := TrustEntry{Path: "/repo/a/.friday/config.toml", SHA256: fileSHA256([]byte("a")), Decision: TrustTrusted, DecidedAt: at}
-	b := TrustEntry{Path: "/repo/b/.friday/config.toml", SHA256: fileSHA256([]byte("b")), Decision: TrustUntrusted, DecidedAt: at.Add(time.Hour)}
+	a := TrustEntry{Path: "/repo/a/.ink/config.toml", SHA256: fileSHA256([]byte("a")), Decision: TrustTrusted, DecidedAt: at}
+	b := TrustEntry{Path: "/repo/b/.ink/config.toml", SHA256: fileSHA256([]byte("b")), Decision: TrustUntrusted, DecidedAt: at.Add(time.Hour)}
 	for _, e := range []TrustEntry{a, b} {
 		if err := s.Record(e); err != nil {
 			t.Fatal(err)
@@ -89,7 +89,7 @@ func TestTrustStoreRecordIsAtomic(t *testing.T) {
 	}
 	dir := t.TempDir()
 	s := TrustStore{Path: filepath.Join(dir, "trust.toml")}
-	first := TrustEntry{Path: "/repo/.friday/config.toml", SHA256: fileSHA256([]byte("x")), Decision: TrustTrusted, DecidedAt: time.Unix(0, 0).UTC()}
+	first := TrustEntry{Path: "/repo/.ink/config.toml", SHA256: fileSHA256([]byte("x")), Decision: TrustTrusted, DecidedAt: time.Unix(0, 0).UTC()}
 	if err := s.Record(first); err != nil {
 		t.Fatal(err)
 	}

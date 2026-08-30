@@ -1,4 +1,4 @@
-module github.com/ataidesorg/friday
+module github.com/ataidesorg/ink
 
 go 1.27.0
 

@@ -59,14 +59,14 @@ type Result struct {
 	Note string
 }
 
-// Dir resolves the catalog cache directory: $XDG_CACHE_HOME/friday, else
-// $HOME/.cache/friday.
+// Dir resolves the catalog cache directory: $XDG_CACHE_HOME/ink, else
+// $HOME/.cache/ink.
 func Dir(getenv func(string) string) (string, error) {
 	if v := getenv("XDG_CACHE_HOME"); v != "" {
-		return filepath.Join(v, "friday"), nil
+		return filepath.Join(v, "ink"), nil
 	}
 	if home := getenv("HOME"); home != "" {
-		return filepath.Join(home, ".cache", "friday"), nil
+		return filepath.Join(home, ".cache", "ink"), nil
 	}
 	return "", errors.New("cannot place the model catalog cache: neither XDG_CACHE_HOME nor HOME is set")
 }

@@ -3,13 +3,13 @@ package buildinfo
 
 import "runtime/debug"
 
-// Set with -ldflags "-X github.com/ataidesorg/friday/internal/buildinfo.Version=v0.1.0 -X ...Commit=abc123".
+// Set with -ldflags "-X github.com/ataidesorg/ink/internal/buildinfo.Version=v0.1.0 -X ...Commit=abc123".
 var (
 	Version = "dev"
 	Commit  = "unknown"
 )
 
-// Summary renders "friday <version> (commit <commit>)", reading the VCS
+// Summary renders "ink <version> (commit <commit>)", reading the VCS
 // revision from the Go build info when no commit was stamped.
 func Summary() string {
 	commit := Commit
@@ -22,5 +22,5 @@ func Summary() string {
 			}
 		}
 	}
-	return "friday " + Version + " (commit " + commit + ")"
+	return "ink " + Version + " (commit " + commit + ")"
 }

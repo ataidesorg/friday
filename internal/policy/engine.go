@@ -10,8 +10,8 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/ataidesorg/friday/internal/config"
-	"github.com/ataidesorg/friday/internal/core"
+	"github.com/ataidesorg/ink/internal/config"
+	"github.com/ataidesorg/ink/internal/core"
 )
 
 // Rule names recorded in every decision.

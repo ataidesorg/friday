@@ -13,9 +13,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ataidesorg/friday/internal/core"
-	"github.com/ataidesorg/friday/internal/fsutil"
-	"github.com/ataidesorg/friday/internal/sandbox"
+	"github.com/ataidesorg/ink/internal/core"
+	"github.com/ataidesorg/ink/internal/fsutil"
+	"github.com/ataidesorg/ink/internal/sandbox"
 )
 
 // waitDelay bounds how long Wait blocks on pipes held open by orphaned

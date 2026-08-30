@@ -1,4 +1,4 @@
-// Package cli is the friday command line: flag parsing, config loading, and
+// Package cli is the ink command line: flag parsing, config loading, and
 // the wiring that turns a subcommand into a runtime graph.
 package cli
 
@@ -7,18 +7,18 @@ import (
 	"io"
 	"os"
 
-	"github.com/ataidesorg/friday/internal/buildinfo"
-	"github.com/ataidesorg/friday/internal/core"
+	"github.com/ataidesorg/ink/internal/buildinfo"
+	"github.com/ataidesorg/ink/internal/core"
 )
 
-const usageText = `usage: friday <command> [flags]
+const usageText = `usage: ink <command> [flags]
 
 commands:
   version                      print version and commit
   config show                  print the effective configuration as TOML
   config validate              check the effective configuration; "ok" or one error per line
   config explain KEY           show which layer set KEY and every value it passed through
-  run "task text"              run a task (friday run -h for flags; --script FILE drives the mock provider)
+  run "task text"              run a task (ink run -h for flags; --script FILE drives the mock provider)
   trace RUN_ID                 replay a run's event trail (--json for raw lines, --kind K,... to filter)
   eval run|bench SCENARIO.json run a scenario; bench also judges the cheap/fast bar (--script FILE)
   providers                    list model providers; --check probes the ones whose credentials resolve
@@ -26,23 +26,23 @@ commands:
   auth status                  show which providers have credentials; never the values
   model [--set ROUTE]          show or set the default model route (interactive on a terminal)
   models --provider ID         list the provider's advertised models (--refresh bypasses the 24h cache)
-  init                         create .friday/config.toml and git-ignore Friday's local files
+  init                         create .ink/config.toml and git-ignore Ink's local files
   trust [PATH]                 trust a repository config file at its current content (--list, --revoke)
   chat                         open the interactive chat REPL (the default when run on a terminal)
   sessions                     list saved chat sessions, newest first
 
 config flags:
-  --project DIR    project root holding .friday/config.toml (default: current directory)
+  --project DIR    project root holding .ink/config.toml (default: current directory)
   --profile NAME   profile to activate (default: profile.active)
-  --config-dir DIR user config directory (default: $FRIDAY_CONFIG_DIR, $XDG_CONFIG_HOME/friday, ~/.config/friday)
+  --config-dir DIR user config directory (default: $INK_CONFIG_DIR, $XDG_CONFIG_HOME/ink, ~/.config/ink)
   --set key=value  override one key; repeatable
 
-exit codes: 0 ok, 1 error, 2 usage; friday run adds 0 verified, 1 unverified, 3 failed,
+exit codes: 0 ok, 1 error, 2 usage; ink run adds 0 verified, 1 unverified, 3 failed,
   4 escalated, 5 rolled back, 6 not implemented, 7 policy denied, 8 invalid configuration
 `
 
 // Main is the process entrypoint: it loads the user's env file and runs the
-// CLI against the real streams. cmd/friday is a two-line shim over it.
+// CLI against the real streams. cmd/ink is a two-line shim over it.
 func Main() int {
 	loadUserEnv()
 	return Run(os.Args[1:], os.Stdout, os.Stderr, os.Stdin, os.Environ(), os.Getwd)
@@ -91,19 +91,19 @@ func Run(args []string, stdout, stderr io.Writer, stdin io.Reader, environ []str
 	case "--resume", "--continue":
 		return chatCmd(args, stdout, stderr, stdin, environ, getwd)
 	default:
-		fmt.Fprintf(stderr, "friday: unknown command %q\n\n%s", args[0], usageText)
+		fmt.Fprintf(stderr, "ink: unknown command %q\n\n%s", args[0], usageText)
 		return exitUsage
 	}
 }
 
-// fail prints "friday <cmd>: <err>" and returns code, so every command's
+// fail prints "ink <cmd>: <err>" and returns code, so every command's
 // error paths stay one line each.
 func fail(w io.Writer, cmd string, code int, err error) int {
-	fmt.Fprintf(w, "friday %s: %v\n", cmd, err)
+	fmt.Fprintf(w, "ink %s: %v\n", cmd, err)
 	return code
 }
 
-// Exit codes. `friday run` maps the outcome (exitFor); other commands use
+// Exit codes. `ink run` maps the outcome (exitFor); other commands use
 // exitOK, exitError, and exitUsage.
 const (
 	exitOK             = 0 // completed_verified, or success for other commands

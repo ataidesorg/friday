@@ -1,8 +1,8 @@
 blank_issues_enabled: true
 contact_links:
   - name: Security vulnerability
-    url: https://github.com/ataidesorg/friday/security/advisories/new
+    url: https://github.com/ataidesorg/ink/security/advisories/new
     about: Report privately. Never open a public issue for a vulnerability.
   - name: Question or idea
-    url: https://github.com/ataidesorg/friday/discussions
+    url: https://github.com/ataidesorg/ink/discussions
     about: Usage questions, provider setup, and feature ideas.

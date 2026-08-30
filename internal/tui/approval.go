@@ -3,10 +3,10 @@ package tui
 import (
 	tea "github.com/charmbracelet/bubbletea"
 
-	"github.com/ataidesorg/friday/internal/core"
+	"github.com/ataidesorg/ink/internal/core"
 )
 
-// owner is who answers approval prompts; Friday never reads $USER.
+// owner is who answers approval prompts; Ink never reads $USER.
 var owner = core.Principal{Kind: core.PrincipalUser, Name: "owner"}
 
 const (

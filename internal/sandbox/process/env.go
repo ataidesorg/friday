@@ -8,8 +8,8 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/ataidesorg/friday/internal/core"
-	"github.com/ataidesorg/friday/internal/redact"
+	"github.com/ataidesorg/ink/internal/core"
+	"github.com/ataidesorg/ink/internal/redact"
 )
 
 // proxyVars are dropped from the requested environment; egress is disabled

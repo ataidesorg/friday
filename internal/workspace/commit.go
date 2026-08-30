@@ -5,17 +5,17 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/ataidesorg/friday/internal/core"
+	"github.com/ataidesorg/ink/internal/core"
 )
 
 // CommitResult is one local commit attempt. Created is false when the tree
-// was already clean. Hash is always HEAD afterwards. Friday never pushes.
+// was already clean. Hash is always HEAD afterwards. Ink never pushes.
 type CommitResult struct {
 	Hash    string
 	Created bool
 }
 
-// TaskBranch returns the namespaced branch for a task worktree (`friday/<name>`).
+// TaskBranch returns the namespaced branch for a task worktree (`ink/<name>`).
 func TaskBranch(name string) (string, error) {
 	if !worktreeName.MatchString(name) {
 		return "", fmt.Errorf("%w: worktree name %q must match %s", core.ErrInvalidInput, name, worktreeName)

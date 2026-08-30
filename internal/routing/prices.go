@@ -3,8 +3,8 @@ package routing
 import (
 	"fmt"
 
-	"github.com/ataidesorg/friday/internal/config"
-	"github.com/ataidesorg/friday/internal/core"
+	"github.com/ataidesorg/ink/internal/config"
+	"github.com/ataidesorg/ink/internal/core"
 )
 
 // Prices converts the models.pricing config table into a PriceTable. Each

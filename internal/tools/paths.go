@@ -3,7 +3,7 @@ package tools
 import (
 	"path/filepath"
 
-	"github.com/ataidesorg/friday/internal/fsutil"
+	"github.com/ataidesorg/ink/internal/fsutil"
 )
 
 // ErrOutsideWorkspace is returned for any path that would leave the workspace root.

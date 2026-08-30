@@ -10,7 +10,7 @@ import (
 
 	"github.com/BurntSushi/toml"
 
-	"github.com/ataidesorg/friday/internal/core"
+	"github.com/ataidesorg/ink/internal/core"
 )
 
 func mustLoad(t *testing.T, opts Options) *Resolved {
@@ -71,7 +71,7 @@ func TestValidateCommandAuthSource(t *testing.T) {
 		t.Fatalf("user-layer command source: want valid, got: %v", err)
 	}
 	root := t.TempDir()
-	write(t, filepath.Join(root, ".friday", "config.toml"), conf)
+	write(t, filepath.Join(root, ".ink", "config.toml"), conf)
 	err := Validate(mustLoad(t, Options{ProjectRoot: root}))
 	if err == nil || !strings.Contains(err.Error(), "user layer") {
 		t.Fatalf("project-layer command source: want user-layer-only rejection, got: %v", err)
@@ -82,7 +82,7 @@ func TestValidateCommandAuthSource(t *testing.T) {
 		t.Fatalf("user-layer command fallback: want valid, got: %v", err)
 	}
 	root = t.TempDir()
-	write(t, filepath.Join(root, ".friday", "config.toml"), fbConf)
+	write(t, filepath.Join(root, ".ink", "config.toml"), fbConf)
 	err = Validate(mustLoad(t, Options{ProjectRoot: root}))
 	if err == nil || !strings.Contains(err.Error(), "user layer") {
 		t.Fatalf("project-layer command fallback: want user-layer-only rejection, got: %v", err)
@@ -101,7 +101,7 @@ func TestValidateCustomAndFormatUserLayerOnly(t *testing.T) {
 				t.Fatalf("user layer: want valid, got: %v", err)
 			}
 			root := t.TempDir()
-			write(t, filepath.Join(root, ".friday", "config.toml"), conf)
+			write(t, filepath.Join(root, ".ink", "config.toml"), conf)
 			err := Validate(mustLoad(t, Options{ProjectRoot: root}))
 			if err == nil || !strings.Contains(err.Error(), "user layer") {
 				t.Fatalf("project layer: want user-layer-only rejection, got: %v", err)
@@ -116,7 +116,7 @@ func TestValidateOAuthOverrideUserLayerOnly(t *testing.T) {
 		t.Fatalf("user-layer oauth override: want valid, got: %v", err)
 	}
 	root := t.TempDir()
-	write(t, filepath.Join(root, ".friday", "config.toml"), conf)
+	write(t, filepath.Join(root, ".ink", "config.toml"), conf)
 	err := Validate(mustLoad(t, Options{ProjectRoot: root}))
 	if err == nil || !strings.Contains(err.Error(), "user layer") {
 		t.Fatalf("project-layer oauth override: want user-layer-only rejection, got: %v", err)
@@ -130,7 +130,7 @@ func TestValidateRegistryKinds(t *testing.T) {
 		{"assistant profile", "[profile]\nactive = \"assistant\"\n"},
 		{"container sandbox", "[sandbox]\nprovider = \"container\"\n"},
 		{"keyless local", "[providers.l]\nkind = \"ollama\"\nprivacy = \"local\"\n"},
-		{"registry provider with auth override", "[providers.f]\nkind = \"fireworks\"\nprivacy = \"public_cloud\"\n[providers.f.auth]\nsource = \"keyring\"\nservice = \"friday\"\naccount = \"fireworks\"\n"},
+		{"registry provider with auth override", "[providers.f]\nkind = \"fireworks\"\nprivacy = \"public_cloud\"\n[providers.f.auth]\nsource = \"keyring\"\nservice = \"ink\"\naccount = \"fireworks\"\n"},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {

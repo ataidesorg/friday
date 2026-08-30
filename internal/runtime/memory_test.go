@@ -3,7 +3,7 @@ package runtime
 import (
 	"testing"
 
-	"github.com/ataidesorg/friday/internal/core"
+	"github.com/ataidesorg/ink/internal/core"
 )
 
 func TestMemoryTarget(t *testing.T) {

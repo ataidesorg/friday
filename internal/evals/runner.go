@@ -7,11 +7,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ataidesorg/friday/internal/core"
-	"github.com/ataidesorg/friday/internal/observability"
-	"github.com/ataidesorg/friday/internal/redact"
-	"github.com/ataidesorg/friday/internal/runtime"
-	"github.com/ataidesorg/friday/internal/workspace"
+	"github.com/ataidesorg/ink/internal/core"
+	"github.com/ataidesorg/ink/internal/observability"
+	"github.com/ataidesorg/ink/internal/redact"
+	"github.com/ataidesorg/ink/internal/runtime"
+	"github.com/ataidesorg/ink/internal/workspace"
 )
 
 // Runner executes a scenario on a private copy of its fixture and evaluates

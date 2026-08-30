@@ -1,6 +1,6 @@
 // Package models holds provider-level plumbing that sits above the wire
 // adapters: the health probe and its in-memory cache. Health is advisory
-// metadata for routing and `friday providers`; it never gates a call and
+// metadata for routing and `ink providers`; it never gates a call and
 // never carries a credential.
 package models
 
@@ -14,9 +14,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ataidesorg/friday/internal/auth"
-	"github.com/ataidesorg/friday/internal/core"
-	"github.com/ataidesorg/friday/internal/providers"
+	"github.com/ataidesorg/ink/internal/auth"
+	"github.com/ataidesorg/ink/internal/core"
+	"github.com/ataidesorg/ink/internal/providers"
 )
 
 // ProbeTimeout bounds one health probe. Probes are advisory: nothing may

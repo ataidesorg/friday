@@ -25,6 +25,6 @@ fuzz:
         done
     done
 
-# Build the friday binary into bin/.
+# Build the ink binary into bin/.
 build:
-    go build -o bin/friday ./cmd/friday
+    go build -o bin/ink ./cmd/ink

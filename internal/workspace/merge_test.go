@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/ataidesorg/friday/internal/core"
-	"github.com/ataidesorg/friday/internal/workspace"
+	"github.com/ataidesorg/ink/internal/core"
+	"github.com/ataidesorg/ink/internal/workspace"
 )
 
 func TestMergeBranchesClean(t *testing.T) {
@@ -32,7 +32,7 @@ func TestMergeBranchesClean(t *testing.T) {
 	git(t, ui.Root, "add", "ui.go")
 	git(t, ui.Root, "commit", "-q", "-m", "ui")
 
-	res, err := workspace.MergeBranches(context.Background(), root, []string{"friday/api", "friday/ui"})
+	res, err := workspace.MergeBranches(context.Background(), root, []string{"ink/api", "ink/ui"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -65,15 +65,15 @@ func TestMergeBranchesConflict(t *testing.T) {
 	git(t, b.Root, "add", "README.md")
 	git(t, b.Root, "commit", "-q", "-m", "b")
 
-	res, err := workspace.MergeBranches(context.Background(), root, []string{"friday/a", "friday/b"})
+	res, err := workspace.MergeBranches(context.Background(), root, []string{"ink/a", "ink/b"})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if res.OK || res.StoppedAt != "friday/b" {
-		t.Fatalf("want conflict on friday/b, got %+v", res)
+	if res.OK || res.StoppedAt != "ink/b" {
+		t.Fatalf("want conflict on ink/b, got %+v", res)
 	}
-	if len(res.Merged) != 1 || res.Merged[0] != "friday/a" {
-		t.Fatalf("merged %+v, want friday/a kept", res.Merged)
+	if len(res.Merged) != 1 || res.Merged[0] != "ink/a" {
+		t.Fatalf("merged %+v, want ink/a kept", res.Merged)
 	}
 	if len(res.Conflicts) != 1 || res.Conflicts[0] != "README.md" {
 		t.Fatalf("conflicts %+v", res.Conflicts)

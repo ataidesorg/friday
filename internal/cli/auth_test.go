@@ -11,13 +11,13 @@ import (
 	"testing"
 )
 
-// execAuth runs the CLI with a controllable stdin and FRIDAY_NO_KEYRING set
+// execAuth runs the CLI with a controllable stdin and INK_NO_KEYRING set
 // so the OS keychain is never read or written: the secret-store key lands in
 // secrets.key inside the test state dir instead.
 func execAuth(t *testing.T, extra []string, stdin string, args ...string) (int, string, string) {
 	t.Helper()
 	var stdout, stderr bytes.Buffer
-	environ := append([]string{"HOME=" + t.TempDir(), "PATH=/usr/bin", "FRIDAY_NO_KEYRING=1"}, extra...)
+	environ := append([]string{"HOME=" + t.TempDir(), "PATH=/usr/bin", "INK_NO_KEYRING=1"}, extra...)
 	code := Run(args, &stdout, &stderr, strings.NewReader(stdin), environ, func() (string, error) { return t.TempDir(), nil })
 	return code, stdout.String(), stderr.String()
 }
@@ -28,7 +28,7 @@ func execAuth(t *testing.T, extra []string, stdin string, args ...string) (int, 
 func TestAuthRoundTripNeverLeaks(t *testing.T) {
 	const secret = "roundtrip-secret-abc123xyz" // planted test fixture; gitleaks:allow
 	state := t.TempDir()
-	env := []string{"FRIDAY_STATE_DIR=" + state}
+	env := []string{"INK_STATE_DIR=" + state}
 	cfg := t.TempDir()
 
 	code, out, errOut := execAuth(t, env, secret+"\n", "auth", "set", "anthropic", "--config-dir", cfg)
@@ -101,7 +101,7 @@ auth = { source = "secret_store", id = "localok" }
 	if err := os.WriteFile(filepath.Join(cfg, "config.toml"), []byte(conf), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	env := []string{"FRIDAY_STATE_DIR=" + t.TempDir()}
+	env := []string{"INK_STATE_DIR=" + t.TempDir()}
 
 	code, out, errOut := execAuth(t, env, secret+"\n", "auth", "set", "localok", "--check", "--config-dir", cfg)
 	if code != 0 {
@@ -119,7 +119,7 @@ auth = { source = "secret_store", id = "localok" }
 }
 
 func TestAuthSetRefusals(t *testing.T) {
-	env := []string{"FRIDAY_STATE_DIR=" + t.TempDir()}
+	env := []string{"INK_STATE_DIR=" + t.TempDir()}
 	if code, _, errOut := execAuth(t, env, "x\n", "auth", "set", "nosuch-provider"); code != exitError || !strings.Contains(errOut, "unknown provider") {
 		t.Fatalf("unknown provider: %d %q", code, errOut)
 	}
@@ -132,7 +132,7 @@ func TestAuthSetRefusals(t *testing.T) {
 }
 
 func TestAuthOptInRiskWarns(t *testing.T) {
-	env := []string{"FRIDAY_STATE_DIR=" + t.TempDir()}
+	env := []string{"INK_STATE_DIR=" + t.TempDir()}
 	code, _, errOut := execAuth(t, env, "tok\n", "auth", "set", "anthropic-oauth")
 	if code != 0 {
 		t.Fatalf("auth set anthropic-oauth: %d %q", code, errOut)
@@ -146,7 +146,7 @@ func TestAuthLoginNotImplemented(t *testing.T) {
 	// copilot-acp is external_cli with no recorded OAuth endpoints: login
 	// stays safely unavailable. (anthropic-oauth logs in via PKCE paste
 	// mode; TestAuthLoginAnthropicPaste covers it.)
-	env := []string{"FRIDAY_STATE_DIR=" + t.TempDir()}
+	env := []string{"INK_STATE_DIR=" + t.TempDir()}
 	code, _, errOut := execAuth(t, env, "", "auth", "login", "copilot-acp")
 	if code != exitNotImplemented {
 		t.Fatalf("auth login: %d %q", code, errOut)
@@ -156,7 +156,7 @@ func TestAuthLoginNotImplemented(t *testing.T) {
 	}
 }
 
-// TestAuthLoginAnthropicPaste drives `friday auth login anthropic-oauth`:
+// TestAuthLoginAnthropicPaste drives `ink auth login anthropic-oauth`:
 // external_cli with recorded PKCE endpoints logs in via paste mode (the
 // registry redirect_uri is a vendor-hosted code page, so no loopback
 // listener exists). The token endpoint is overridden to a local server;
@@ -182,7 +182,7 @@ func TestAuthLoginAnthropicPaste(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(cfg, "config.toml"), []byte(conf), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	env := []string{"FRIDAY_STATE_DIR=" + t.TempDir()}
+	env := []string{"INK_STATE_DIR=" + t.TempDir()}
 
 	code, out, errOut := execAuth(t, env, "pasted-code-cli-1\n",
 		"auth", "login", "anthropic-oauth", "--no-browser", "--config-dir", cfg)
@@ -207,7 +207,7 @@ func TestAuthLoginAnthropicPaste(t *testing.T) {
 }
 
 func TestAuthStatusEmpty(t *testing.T) {
-	env := []string{"FRIDAY_STATE_DIR=" + t.TempDir()}
+	env := []string{"INK_STATE_DIR=" + t.TempDir()}
 	code, out, errOut := execAuth(t, env, "", "auth", "status")
 	if code != 0 {
 		t.Fatalf("auth status: %d %q", code, errOut)
@@ -245,7 +245,7 @@ client_id = "cli-test-client"
 	if err := os.WriteFile(filepath.Join(cfg, "config.toml"), []byte(conf), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	env := []string{"FRIDAY_STATE_DIR=" + t.TempDir()}
+	env := []string{"INK_STATE_DIR=" + t.TempDir()}
 
 	code, out, errOut := execAuth(t, env, "pasted-code-77\n", "auth", "login", "nous", "--no-browser", "--config-dir", cfg)
 	if code != 0 {
@@ -290,7 +290,7 @@ client_id = "cli-test-client"
 // and key-based providers point at `auth set`. (endpoint-less external_cli
 // stays NotImplemented; TestAuthLoginNotImplemented covers it.)
 func TestAuthLoginFailClosed(t *testing.T) {
-	env := []string{"FRIDAY_STATE_DIR=" + t.TempDir()}
+	env := []string{"INK_STATE_DIR=" + t.TempDir()}
 	code, _, errOut := execAuth(t, env, "", "auth", "login", "nous")
 	if code != exitError {
 		t.Fatalf("nous login: %d %q", code, errOut)
@@ -306,7 +306,7 @@ func TestAuthLoginFailClosed(t *testing.T) {
 	}
 }
 
-// TestAuthLoginDevice drives `friday auth login` for a device-kind provider
+// TestAuthLoginDevice drives `ink auth login` for a device-kind provider
 // end to end against a local IdP: xai-oauth with both endpoints overridden
 // so no real network is touched.
 func TestAuthLoginDevice(t *testing.T) {
@@ -337,7 +337,7 @@ client_id = "cli-dev-client"
 	if err := os.WriteFile(filepath.Join(cfg, "config.toml"), []byte(conf), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	env := []string{"FRIDAY_STATE_DIR=" + t.TempDir()}
+	env := []string{"INK_STATE_DIR=" + t.TempDir()}
 
 	code, out, errOut := execAuth(t, env, "", "auth", "login", "xai-oauth", "--no-browser", "--config-dir", cfg)
 	if code != 0 {
@@ -378,7 +378,7 @@ func TestAuthSetCheckRiskSkipsProbe(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(cfg, "config.toml"), []byte(conf), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	env := []string{"FRIDAY_STATE_DIR=" + t.TempDir()}
+	env := []string{"INK_STATE_DIR=" + t.TempDir()}
 
 	code, out, errOut := execAuth(t, env, "spy-risk-set-1\n",
 		"auth", "set", "anthropic-oauth", "--check", "--config-dir", cfg)

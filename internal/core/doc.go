@@ -1,4 +1,4 @@
-// Package core holds Friday's domain model: identifiers, money, the task
+// Package core holds Ink's domain model: identifiers, money, the task
 // lifecycle state machine, domain types, port interfaces, and the event
 // trail. It performs no I/O, starts no goroutines, and reads no environment.
 //

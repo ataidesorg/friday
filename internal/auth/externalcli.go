@@ -8,9 +8,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/ataidesorg/friday/internal/config"
-	"github.com/ataidesorg/friday/internal/core"
-	"github.com/ataidesorg/friday/internal/providers"
+	"github.com/ataidesorg/ink/internal/config"
+	"github.com/ataidesorg/ink/internal/core"
+	"github.com/ataidesorg/ink/internal/providers"
 )
 
 // claudeKeychainService is the macOS keychain item Claude Code writes its
@@ -36,10 +36,10 @@ func (r *Resolver) resolveExternalCLI(ctx context.Context, entry providers.Entry
 }
 
 // resolveClaudeCode finds a usable Anthropic OAuth token: env overrides,
-// Friday's own oauth store (populated by `friday auth login`), the Claude
+// Ink's own oauth store (populated by `ink auth login`), the Claude
 // Code keychain item, then ~/.claude/.credentials.json. Every hit is
 // registered with the redactor and held in memory only; nothing is copied
-// into Friday's store.
+// into Ink's store.
 func (r *Resolver) resolveClaudeCode(ctx context.Context, entry providers.Entry, cfg *config.ProviderConfig) (*Credential, error) {
 	for _, name := range entry.Auth.EnvNames {
 		if v, ok := r.environ(name); ok && v != "" {
@@ -64,7 +64,7 @@ func (r *Resolver) resolveClaudeCode(ctx context.Context, entry providers.Entry,
 	where := fmt.Sprintf("env %v, secret store %s%s, keychain %q, or ~/.claude/.credentials.json",
 		entry.Auth.EnvNames, oauthStorePrefix, entry.ID, claudeKeychainService)
 	return nil, &ErrNoCredential{Source: "external_cli", Where: where,
-		Hint: "run `friday auth login " + entry.ID + "`, sign in to Claude Code, or export " + entry.Auth.EnvNames[0]}
+		Hint: "run `ink auth login " + entry.ID + "`, sign in to Claude Code, or export " + entry.Auth.EnvNames[0]}
 }
 
 // claudeKeychain reads Claude Code's keychain item. An unavailable keyring
@@ -112,7 +112,7 @@ func (r *Resolver) claudeCredentialsFile() (string, bool, error) {
 func parseClaudeCredentials(raw []byte) (string, error) {
 	var cc claudeCredentials
 	if err := json.Unmarshal(raw, &cc); err != nil {
-		return "", errors.New("malformed JSON; sign in to Claude Code again or use `friday auth login anthropic-oauth`")
+		return "", errors.New("malformed JSON; sign in to Claude Code again or use `ink auth login anthropic-oauth`")
 	}
 	if cc.ClaudeAiOauth.AccessToken == "" {
 		return "", errors.New("no claudeAiOauth.accessToken in the credential store; sign in to Claude Code again")

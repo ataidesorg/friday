@@ -12,8 +12,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ataidesorg/friday/internal/config"
-	"github.com/ataidesorg/friday/internal/providers"
+	"github.com/ataidesorg/ink/internal/config"
+	"github.com/ataidesorg/ink/internal/providers"
 )
 
 func copilotEntry(t *testing.T) providers.Entry {
@@ -123,7 +123,7 @@ func TestCopilotStoreFallbackAndMemoryOnlyBearer(t *testing.T) {
 	mk := func() *Resolver {
 		return NewResolver(spy, envOf(nil),
 			WithGetenv(func(k string) string {
-				if k == "FRIDAY_STATE_DIR" {
+				if k == "INK_STATE_DIR" {
 					return stateDir
 				}
 				return ""
@@ -173,7 +173,7 @@ func TestCopilotNoCredentialAndGhpRejected(t *testing.T) {
 	if !errors.As(err, &missing) {
 		t.Fatalf("want ErrNoCredential, got %v", err)
 	}
-	for _, want := range []string{"friday auth login copilot", "COPILOT_GITHUB_TOKEN"} {
+	for _, want := range []string{"ink auth login copilot", "COPILOT_GITHUB_TOKEN"} {
 		if !strings.Contains(err.Error(), want) {
 			t.Fatalf("error %q must mention %q", err, want)
 		}

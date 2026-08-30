@@ -19,7 +19,7 @@ import (
 type Options struct {
 	ConfigDir   string            // user config directory; empty skips user and profile layers
 	Profile     string            // profile name; empty uses profile.active
-	ProjectRoot string            // directory holding .friday/config.toml; empty skips it
+	ProjectRoot string            // directory holding .ink/config.toml; empty skips it
 	Environ     []string          // typically os.Environ()
 	Overrides   map[string]string // CLI --set key=value pairs
 	Trust       *TrustStore       // repository trust decisions; nil treats every repository file as untrusted

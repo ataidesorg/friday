@@ -2,7 +2,7 @@ package cli
 
 // End-to-end coverage of the no---script path: a real openai_compatible
 // provider served by httptest over SSE, the spy-redactor sweep (a resolved
-// token never lands in .friday/local/**, the trail, or `friday trace`
+// token never lands in .ink/local/**, the trail, or `ink trace`
 // output), and the unreachable-endpoint health diagnosis.
 
 import (
@@ -22,10 +22,10 @@ import (
 	"sync/atomic"
 	"testing"
 
-	"github.com/ataidesorg/friday/internal/config"
-	"github.com/ataidesorg/friday/internal/core"
-	"github.com/ataidesorg/friday/internal/providers"
-	"github.com/ataidesorg/friday/internal/redact"
+	"github.com/ataidesorg/ink/internal/config"
+	"github.com/ataidesorg/ink/internal/core"
+	"github.com/ataidesorg/ink/internal/providers"
+	"github.com/ataidesorg/ink/internal/redact"
 )
 
 // spySecret is the credential the spy-redactor test plants; any file or
@@ -50,7 +50,7 @@ const farewellTestGo = `package sample
 import "testing"
 
 func TestFarewell(t *testing.T) {
-	cases := map[string]string{"": "Goodbye, world!", "Friday": "Goodbye, Friday!"}
+	cases := map[string]string{"": "Goodbye, world!", "Ink": "Goodbye, Ink!"}
 	for in, want := range cases {
 		if got := Farewell(in); got != want {
 			t.Errorf("Farewell(%q) = %q, want %q", in, got, want)
@@ -185,7 +185,7 @@ func execReal(t *testing.T, home string, extra []string, args ...string) (int, s
 // rawTrail returns the run id and the raw bytes of the single trail.
 func rawTrail(t *testing.T, root string) (string, string) {
 	t.Helper()
-	dirs, err := filepath.Glob(filepath.Join(root, ".friday", "local", "runs", "*", "events.jsonl"))
+	dirs, err := filepath.Glob(filepath.Join(root, ".ink", "local", "runs", "*", "events.jsonl"))
 	if err != nil || len(dirs) != 1 {
 		t.Fatalf("want one trail, got %v (err %v)", dirs, err)
 	}
@@ -196,11 +196,11 @@ func rawTrail(t *testing.T, root string) (string, string) {
 	return filepath.Base(filepath.Dir(dirs[0])), string(b)
 }
 
-// scanLocalForSecret walks .friday/local/** and fails on any file whose
+// scanLocalForSecret walks .ink/local/** and fails on any file whose
 // bytes contain the secret.
 func scanLocalForSecret(t *testing.T, root, secret string) {
 	t.Helper()
-	local := filepath.Join(root, ".friday", "local")
+	local := filepath.Join(root, ".ink", "local")
 	err := filepath.WalkDir(local, func(p string, d os.DirEntry, err error) error {
 		if err != nil || d.IsDir() {
 			return err
@@ -248,7 +248,7 @@ func TestRunRealProviderVerified(t *testing.T) {
 	}
 
 	// Spy-redactor sweep: the resolved token must not appear anywhere under
-	// .friday/local/** nor in the trace replay of the run.
+	// .ink/local/** nor in the trace replay of the run.
 	scanLocalForSecret(t, root, spySecret)
 	tcode, tout, terr := execReal(t, home, env, "trace", "--project", root, runID)
 	if tcode != exitOK {

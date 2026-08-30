@@ -9,7 +9,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 
-	"github.com/ataidesorg/friday/internal/core"
+	"github.com/ataidesorg/ink/internal/core"
 )
 
 // startCompact runs /compact like a turn: spinner on, cancellable with
@@ -334,7 +334,7 @@ func (m ChatModel) cycleMode() (tea.Model, tea.Cmd) {
 
 func (m ChatModel) listCustomCommands() (tea.Model, tea.Cmd) {
 	if len(m.commands) == 0 {
-		return m.append(tagStatus + " no custom commands — add .md files under .friday/commands/ or the Friday home commands/ directory"), nil
+		return m.append(tagStatus + " no custom commands — add .md files under .ink/commands/ or the Ink home commands/ directory"), nil
 	}
 	lines := []string{tagStatus + " custom commands"}
 	for _, c := range m.commands {

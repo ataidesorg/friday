@@ -4,11 +4,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ataidesorg/friday/internal/core"
+	"github.com/ataidesorg/ink/internal/core"
 )
 
 // TestAllLoadsEveryMatrixRow: the registry parses, stays sorted by id, and
-// claims verified status only where a real Friday call earned it.
+// claims verified status only where a real Ink call earned it.
 // TestRegistryMatchesMatrix pins which ids ship.
 func TestAllLoadsEveryMatrixRow(t *testing.T) {
 	all := All()
@@ -20,7 +20,7 @@ func TestAllLoadsEveryMatrixRow(t *testing.T) {
 			t.Fatalf("All() not sorted by id: %q before %q", all[i-1].ID, all[i].ID)
 		}
 	}
-	// verified holds the only entries a real Friday call has passed against;
+	// verified holds the only entries a real Ink call has passed against;
 	// everything else stays unverified (non-negotiable: no fabricated support).
 	verified := map[string]bool{
 		"fireworks": true, // run 01a034b1-ac87-7b98 completed_verified on kimi-k2p7-code, 2026-08-24

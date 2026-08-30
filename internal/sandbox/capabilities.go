@@ -1,6 +1,6 @@
 package sandbox
 
-import "github.com/ataidesorg/friday/internal/core"
+import "github.com/ataidesorg/ink/internal/core"
 
 // FileAccess is the optional direct file I/O capability (see core.FileAccess).
 type FileAccess = core.FileAccess

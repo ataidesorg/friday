@@ -1,6 +1,6 @@
 package cli
 
-// The real-provider path for `friday run` without --script: resolve
+// The real-provider path for `ink run` without --script: resolve
 // the default route, let the router decide, and build the wire adapter for
 // the selected provider. Credentials resolve at call time, are registered
 // with redact the moment they resolve, and are zeroed when the run closes.
@@ -17,15 +17,15 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ataidesorg/friday/internal/auth"
-	"github.com/ataidesorg/friday/internal/config"
-	"github.com/ataidesorg/friday/internal/core"
-	"github.com/ataidesorg/friday/internal/models"
-	"github.com/ataidesorg/friday/internal/models/wire"
-	"github.com/ataidesorg/friday/internal/providers"
-	"github.com/ataidesorg/friday/internal/redact"
-	"github.com/ataidesorg/friday/internal/routing"
-	"github.com/ataidesorg/friday/internal/runtime"
+	"github.com/ataidesorg/ink/internal/auth"
+	"github.com/ataidesorg/ink/internal/config"
+	"github.com/ataidesorg/ink/internal/core"
+	"github.com/ataidesorg/ink/internal/models"
+	"github.com/ataidesorg/ink/internal/models/wire"
+	"github.com/ataidesorg/ink/internal/providers"
+	"github.com/ataidesorg/ink/internal/redact"
+	"github.com/ataidesorg/ink/internal/routing"
+	"github.com/ataidesorg/ink/internal/runtime"
 )
 
 // deltaRelay forwards wire stream deltas to the runtime observer. The
@@ -117,7 +117,7 @@ func resolveProvider(cfg config.Config, modelOverride string, red *redact.Redact
 	}
 	routeName := cfg.Models.Routing.Default
 	if routeName == "" {
-		return nil, fmt.Errorf("no default route; set models.routing.default (try `friday model --set ROUTE`) or pass --script FILE")
+		return nil, fmt.Errorf("no default route; set models.routing.default (try `ink model --set ROUTE`) or pass --script FILE")
 	}
 	return resolveRoute(cfg, routeName, modelOverride, red, environ)
 }
@@ -163,7 +163,7 @@ func describeProvider(id string, cfg config.Config) (core.ProviderDescriptor, in
 	pc, configured := cfg.Providers[id]
 	entry, isRegistry := providers.Lookup(id)
 	if !configured && !isRegistry {
-		return core.ProviderDescriptor{}, 0, fmt.Errorf("provider %q is neither configured under [providers] nor a registry id (see `friday providers`)", id)
+		return core.ProviderDescriptor{}, 0, fmt.Errorf("provider %q is neither configured under [providers] nor a registry id (see `ink providers`)", id)
 	}
 	if pc.Kind == "mock" {
 		return core.ProviderDescriptor{}, 0, fmt.Errorf("provider %q is a mock; mock providers run only with --script", id)
@@ -313,7 +313,7 @@ func buildTarget(decision core.RouteDecision, modelOverride string, cfg config.C
 // copilotHeaders identifies the client to the Copilot API. The endpoint
 // serves only known editor integrations; these values are recorded from
 // public Copilot-compatible clients and unverified by
-// Friday.
+// Ink.
 func copilotHeaders() map[string]string {
 	return map[string]string{
 		"Editor-Version":         "vscode/1.98.1",

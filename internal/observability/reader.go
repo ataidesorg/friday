@@ -8,7 +8,7 @@ import (
 	"io/fs"
 	"os"
 
-	"github.com/ataidesorg/friday/internal/core"
+	"github.com/ataidesorg/ink/internal/core"
 )
 
 // maxLine bounds one trail line; an event is small, so a longer line is

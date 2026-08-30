@@ -11,16 +11,16 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ataidesorg/friday/internal/config"
-	"github.com/ataidesorg/friday/internal/core"
-	"github.com/ataidesorg/friday/internal/evals"
-	"github.com/ataidesorg/friday/internal/models/mock"
-	"github.com/ataidesorg/friday/internal/policy"
-	"github.com/ataidesorg/friday/internal/redact"
-	"github.com/ataidesorg/friday/internal/runtime"
-	"github.com/ataidesorg/friday/internal/sandbox"
-	"github.com/ataidesorg/friday/internal/sandbox/process"
-	"github.com/ataidesorg/friday/internal/tools"
+	"github.com/ataidesorg/ink/internal/config"
+	"github.com/ataidesorg/ink/internal/core"
+	"github.com/ataidesorg/ink/internal/evals"
+	"github.com/ataidesorg/ink/internal/models/mock"
+	"github.com/ataidesorg/ink/internal/policy"
+	"github.com/ataidesorg/ink/internal/redact"
+	"github.com/ataidesorg/ink/internal/runtime"
+	"github.com/ataidesorg/ink/internal/sandbox"
+	"github.com/ataidesorg/ink/internal/sandbox/process"
+	"github.com/ataidesorg/ink/internal/tools"
 )
 
 const fixtureRoot = "../../test"
@@ -218,7 +218,7 @@ func TestCheckNoSecretLeak(t *testing.T) {
 	root := t.TempDir()
 	write(t, filepath.Join(root, "a.go"), "package a\n")
 	write(t, filepath.Join(root, ".git", "objects", "x"), secretLiteral())
-	write(t, filepath.Join(root, ".friday", "local", "runs", "r", "events.jsonl"), secretLiteral())
+	write(t, filepath.Join(root, ".ink", "local", "runs", "r", "events.jsonl"), secretLiteral())
 	red := redact.New()
 	env := evals.CheckEnv{Root: root, Trail: []string{`{"kind":"warning"}`}, Redactor: red}
 	r, err := evals.Check(context.Background(), core.Expectation{Kind: core.ExpectNoSecretLeak}, env)
@@ -348,7 +348,7 @@ func TestRunnerRun(t *testing.T) {
 	if _, err := os.Stat(filepath.Join(fx, "farewell.go")); !errors.Is(err, os.ErrNotExist) {
 		t.Fatalf("fixture was modified: %v", err)
 	}
-	if _, err := os.Stat(filepath.Join(fx, ".friday")); !errors.Is(err, os.ErrNotExist) {
+	if _, err := os.Stat(filepath.Join(fx, ".ink")); !errors.Is(err, os.ErrNotExist) {
 		t.Fatalf("fixture holds run state: %v", err)
 	}
 	// A scripted provider is consumed by one run: a second scenario needs a fresh graph.

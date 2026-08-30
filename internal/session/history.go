@@ -1,6 +1,6 @@
 package session
 
-import "github.com/ataidesorg/friday/internal/core"
+import "github.com/ataidesorg/ink/internal/core"
 
 // History projects stored turns into the prior-context messages that seed the
 // next run. Whole turns are dropped from the oldest end until the total text

@@ -25,7 +25,7 @@ type RejectReason string
 // Reject reasons. RejectAllowlist is permanent (opt-in risk flags are user
 // layer only); the others clear once the owner trusts the file at its
 // current content. RejectUntrusted covers "no decision on record" whether or
-// not a prompt could have fired: the remedy (`friday trust`) is the same.
+// not a prompt could have fired: the remedy (`ink trust`) is the same.
 // RejectDeclined means the owner said no to this exact content; editing the
 // file clears it, because the answer no longer describes what is on disk.
 const (

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/ataidesorg/friday/internal/core"
+	"github.com/ataidesorg/ink/internal/core"
 )
 
 // Diff is one gate failure when comparing candidate results to a baseline.

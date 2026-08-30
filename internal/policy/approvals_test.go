@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ataidesorg/friday/internal/core"
-	"github.com/ataidesorg/friday/internal/policy"
+	"github.com/ataidesorg/ink/internal/core"
+	"github.com/ataidesorg/ink/internal/policy"
 )
 
 func pathReq(tool, path string) core.CapabilityRequest {

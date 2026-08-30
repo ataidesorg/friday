@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ataidesorg/friday/internal/runtime"
+	"github.com/ataidesorg/ink/internal/runtime"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
@@ -386,9 +386,9 @@ func (m ChatModel) dashView() string {
 	if waiting > 0 {
 		right += fmt.Sprintf(" · %d awaiting", waiting)
 	}
-	left := "Friday · Dashboard"
+	left := "Ink · Dashboard"
 	if m.cstyle.on {
-		left = m.cstyle.header.Render("Friday") + m.cstyle.dimText(" · Dashboard")
+		left = m.cstyle.header.Render("Ink") + m.cstyle.dimText(" · Dashboard")
 	}
 
 	type vis struct {

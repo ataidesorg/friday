@@ -1,6 +1,6 @@
-# Releasing Friday
+# Releasing Ink
 
-This is the release checklist for publishing Friday from GitHub.
+This is the release checklist for publishing Ink from GitHub.
 
 ## Principles
 
@@ -29,11 +29,11 @@ ls -lh dist
 
 Expected archives:
 
-- `friday_vX.Y.Z_darwin_amd64.tar.gz`
-- `friday_vX.Y.Z_darwin_arm64.tar.gz`
-- `friday_vX.Y.Z_linux_amd64.tar.gz`
-- `friday_vX.Y.Z_linux_arm64.tar.gz`
-- Stable latest aliases named `friday_<os>_<arch>.tar.gz`
+- `ink_vX.Y.Z_darwin_amd64.tar.gz`
+- `ink_vX.Y.Z_darwin_arm64.tar.gz`
+- `ink_vX.Y.Z_linux_amd64.tar.gz`
+- `ink_vX.Y.Z_linux_arm64.tar.gz`
+- Stable latest aliases named `ink_<os>_<arch>.tar.gz`
 - `checksums.txt`
 
 `dist/` also holds GoReleaser's own `artifacts.json`, `metadata.json`,
@@ -49,7 +49,7 @@ git push origin v0.1.0
 
 The `release` workflow builds all archives, uploads them as workflow artifacts,
 and creates a GitHub Release for the tag with generated notes. Do not mark
-that GitHub Release as a pre-release if `install.sh` without `FRIDAY_VERSION`
+that GitHub Release as a pre-release if `install.sh` without `INK_VERSION`
 should work: GitHub's `/releases/latest` ignores pre-releases.
 
 ## Manual Workflow Build
@@ -64,8 +64,8 @@ archives as workflow artifacts.
 After the GitHub Release is live:
 
 ```console
-FRIDAY_VERSION=v0.1.0 curl -fsSL https://raw.githubusercontent.com/ataidesorg/friday/main/install.sh | bash
-friday version
+INK_VERSION=v0.1.0 curl -fsSL https://raw.githubusercontent.com/ataidesorg/ink/main/install.sh | bash
+ink version
 ```
 
 Check the release page:
@@ -80,7 +80,7 @@ Verify build provenance, which proves an archive was produced by this
 repository's `release` workflow rather than uploaded by hand:
 
 ```console
-gh attestation verify friday_v0.1.0_darwin_arm64.tar.gz --repo ataidesorg/friday
+gh attestation verify ink_v0.1.0_darwin_arm64.tar.gz --repo ataidesorg/ink
 ```
 
 `checksums.txt` only proves the download was not corrupted in transit: it

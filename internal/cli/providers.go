@@ -13,16 +13,16 @@ import (
 	"text/tabwriter"
 	"time"
 
-	"github.com/ataidesorg/friday/internal/auth"
-	"github.com/ataidesorg/friday/internal/config"
-	"github.com/ataidesorg/friday/internal/models"
-	"github.com/ataidesorg/friday/internal/models/catalog"
-	"github.com/ataidesorg/friday/internal/providers"
-	"github.com/ataidesorg/friday/internal/redact"
+	"github.com/ataidesorg/ink/internal/auth"
+	"github.com/ataidesorg/ink/internal/config"
+	"github.com/ataidesorg/ink/internal/models"
+	"github.com/ataidesorg/ink/internal/models/catalog"
+	"github.com/ataidesorg/ink/internal/providers"
+	"github.com/ataidesorg/ink/internal/redact"
 	"golang.org/x/term"
 )
 
-// providerRow is one line of `friday providers`: a registry entry or a
+// providerRow is one line of `ink providers`: a registry entry or a
 // custom provider from config. It carries what probing needs but never a
 // credential value.
 type providerRow struct {
@@ -53,7 +53,7 @@ func providersCmd(args []string, stdout, stderr io.Writer, environ []string, get
 		return exitUsage
 	}
 	if len(positional) != 0 {
-		fmt.Fprintln(stderr, "usage: friday providers [--check] [flags]")
+		fmt.Fprintln(stderr, "usage: ink providers [--check] [flags]")
 		return exitUsage
 	}
 	opts, err := g.options(environ, getwd, stderr)
@@ -70,10 +70,10 @@ func providersCmd(args []string, stdout, stderr io.Writer, environ []string, get
 		// The offline listing is registry data and stays available; probing
 		// with credentials from an invalid configuration is not.
 		if check {
-			fmt.Fprintf(stderr, "friday providers: --check needs a valid configuration\n%s\n", out.Redact(verr.Error()))
+			fmt.Fprintf(stderr, "ink providers: --check needs a valid configuration\n%s\n", out.Redact(verr.Error()))
 			return exitError
 		}
-		fmt.Fprintln(stderr, "warning: configuration is invalid; run `friday config validate`")
+		fmt.Fprintln(stderr, "warning: configuration is invalid; run `ink config validate`")
 	}
 
 	rows := providerRows(resolved.Config)
@@ -153,7 +153,7 @@ func customAuthKind(pc config.ProviderConfig) string {
 
 // probeRow resolves the row's credential, probes its endpoint, and renders
 // the health column. Rows without a resolvable credential, a base URL, or a
-// probeable wire stay "not probed" — `friday providers --check` never fails
+// probeable wire stay "not probed" — `ink providers --check` never fails
 // a whole listing over one provider.
 func probeRow(r providerRow, resolver *auth.Resolver, lookup func(string) (string, bool)) string {
 	if r.registry && r.entry.Auth.OptInRisk {
@@ -287,7 +287,7 @@ func modelCmd(args []string, stdout, stderr io.Writer, stdin io.Reader, environ 
 		return exitUsage
 	}
 	if len(positional) != 0 {
-		fmt.Fprintln(stderr, "usage: friday model [--set ROUTE] [flags]")
+		fmt.Fprintln(stderr, "usage: ink model [--set ROUTE] [flags]")
 		return exitUsage
 	}
 	opts, err := g.options(environ, getwd, stderr)
@@ -307,7 +307,7 @@ func modelCmd(args []string, stdout, stderr io.Writer, stdin io.Reader, environ 
 	sort.Strings(routes)
 	current := resolved.Config.Models.Routing.Default
 	if len(routes) == 0 {
-		fmt.Fprintln(stderr, "friday model: no routes configured under [models.routes]")
+		fmt.Fprintln(stderr, "ink model: no routes configured under [models.routes]")
 		return exitError
 	}
 
@@ -332,13 +332,13 @@ func modelCmd(args []string, stdout, stderr io.Writer, stdin io.Reader, environ 
 				r := resolved.Config.Models.Routes[name]
 				fmt.Fprintf(stdout, "%s %s\t%s/%s\n", marker, name, r.Provider, r.Model)
 			}
-			fmt.Fprintln(stdout, "run `friday model --set ROUTE` to change the default")
+			fmt.Fprintln(stdout, "run `ink model --set ROUTE` to change the default")
 			return exitOK
 		}
 	}
 
 	if _, ok := resolved.Config.Models.Routes[set]; !ok {
-		fmt.Fprintf(stderr, "friday model: unknown route %q (have: %s)\n", set, strings.Join(routes, ", "))
+		fmt.Fprintf(stderr, "ink model: unknown route %q (have: %s)\n", set, strings.Join(routes, ", "))
 		return exitError
 	}
 	path, err := writeUserDefaultRoute(opts.ConfigDir, set)
@@ -403,7 +403,7 @@ func modelsCmd(args []string, stdout, stderr io.Writer, environ []string, getwd 
 		return exitUsage
 	}
 	if len(positional) != 0 || provider == "" {
-		fmt.Fprintln(stderr, "usage: friday models --provider ID [--refresh] [flags]")
+		fmt.Fprintln(stderr, "usage: ink models --provider ID [--refresh] [flags]")
 		return exitUsage
 	}
 	opts, err := g.options(environ, getwd, stderr)
@@ -426,7 +426,7 @@ func modelsCmd(args []string, stdout, stderr io.Writer, environ []string, getwd 
 	switch wireName {
 	case providers.WireChatCompletions, providers.WireResponses:
 	default:
-		fmt.Fprintf(stderr, "friday models: provider %s (wire %s) has no /v1/models catalog\n", provider, wireName)
+		fmt.Fprintf(stderr, "ink models: provider %s (wire %s) has no /v1/models catalog\n", provider, wireName)
 		return exitError
 	}
 	id := provider

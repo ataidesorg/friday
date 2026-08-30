@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ataidesorg/friday/internal/core"
+	"github.com/ataidesorg/ink/internal/core"
 )
 
 func write(t *testing.T, path, content string) {
@@ -39,11 +39,11 @@ func TestLoadSevenLayerPrecedence(t *testing.T) {
 	cfg, proj := t.TempDir(), t.TempDir()
 	write(t, filepath.Join(cfg, "config.toml"), "[profile]\nactive = \"work\"\n[sandbox]\nprovider = \"user\"\n[tools]\nallow = [\"only_me\"]\n")
 	write(t, filepath.Join(cfg, "profiles", "work.toml"), "[sandbox]\nprovider = \"profile\"\n")
-	write(t, filepath.Join(proj, ".friday", "config.toml"), "[sandbox]\nprovider = \"project\"\n[evals]\nmin_pass_rate = 80\n")
-	write(t, filepath.Join(proj, ".friday", "config.local.toml"), "[sandbox]\nprovider = \"project_local\"\n")
+	write(t, filepath.Join(proj, ".ink", "config.toml"), "[sandbox]\nprovider = \"project\"\n[evals]\nmin_pass_rate = 80\n")
+	write(t, filepath.Join(proj, ".ink", "config.local.toml"), "[sandbox]\nprovider = \"project_local\"\n")
 	store := &TrustStore{Path: filepath.Join(t.TempDir(), "trust.toml")}
 	trustAll := func(string, []string) (TrustDecision, error) { return TrustTrusted, nil }
-	r, err := Load(Options{ConfigDir: cfg, ProjectRoot: proj, Environ: []string{"FRIDAY__SANDBOX__PROVIDER=env", "PATH=/bin"}, Overrides: map[string]string{"sandbox.provider": "cli"}, Trust: store, Prompt: trustAll})
+	r, err := Load(Options{ConfigDir: cfg, ProjectRoot: proj, Environ: []string{"INK__SANDBOX__PROVIDER=env", "PATH=/bin"}, Overrides: map[string]string{"sandbox.provider": "cli"}, Trust: store, Prompt: trustAll})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -97,7 +97,7 @@ func TestLoadExplicitProfileAndErrors(t *testing.T) {
 	if !reflect.DeepEqual(r.Unknown, []string{"extra.x", "sandbox.netwrk"}) {
 		t.Fatalf("unknown = %v", r.Unknown)
 	}
-	if _, err := Load(Options{Environ: []string{"FRIDAY____X=1"}}); err == nil {
+	if _, err := Load(Options{Environ: []string{"INK____X=1"}}); err == nil {
 		t.Fatal("empty env segment must fail")
 	}
 	if _, err := Load(Options{Overrides: map[string]string{"sandbox": "1"}}); err == nil {
@@ -106,7 +106,7 @@ func TestLoadExplicitProfileAndErrors(t *testing.T) {
 }
 
 func TestParseEnv(t *testing.T) {
-	m, err := parseEnv([]string{"HOME=/x", "FRIDAY__EVALS__MIN_PASS_RATE=50", "FRIDAY__SANDBOX__PROVIDER=container", "FRIDAY__EVALS__GATE=\"advisory\""})
+	m, err := parseEnv([]string{"HOME=/x", "INK__EVALS__MIN_PASS_RATE=50", "INK__SANDBOX__PROVIDER=container", "INK__EVALS__GATE=\"advisory\""})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -117,12 +117,12 @@ func TestParseEnv(t *testing.T) {
 	if !reflect.DeepEqual(m, want) {
 		t.Fatalf("parseEnv = %#v", m)
 	}
-	for _, bad := range []string{"FRIDAY____X=1", "FRIDAY__A=1\x00", "FRIDAY__=1"} {
-		if _, err := parseEnv([]string{bad}); err == nil && bad != "FRIDAY__A=1\x00" {
+	for _, bad := range []string{"INK____X=1", "INK__A=1\x00", "INK__=1"} {
+		if _, err := parseEnv([]string{bad}); err == nil && bad != "INK__A=1\x00" {
 			t.Errorf("%q accepted", bad)
 		}
 	}
-	if _, err := parseEnv([]string{"FRIDAY__A=1", "FRIDAY__A__B=2"}); err == nil {
+	if _, err := parseEnv([]string{"INK__A=1", "INK__A__B=2"}); err == nil {
 		t.Error("value/table conflict accepted")
 	}
 	if v := ParseValue("true"); v != true {
@@ -139,9 +139,9 @@ func TestDir(t *testing.T) {
 		env  map[string]string
 		want string
 	}{
-		{map[string]string{"FRIDAY_CONFIG_DIR": "/explicit", "XDG_CONFIG_HOME": "/xdg", "HOME": "/home"}, "/explicit"},
-		{map[string]string{"XDG_CONFIG_HOME": "/xdg", "HOME": "/home"}, filepath.Join("/xdg", "friday")},
-		{map[string]string{"HOME": "/home"}, filepath.Join("/home", ".config", "friday")},
+		{map[string]string{"INK_CONFIG_DIR": "/explicit", "XDG_CONFIG_HOME": "/xdg", "HOME": "/home"}, "/explicit"},
+		{map[string]string{"XDG_CONFIG_HOME": "/xdg", "HOME": "/home"}, filepath.Join("/xdg", "ink")},
+		{map[string]string{"HOME": "/home"}, filepath.Join("/home", ".config", "ink")},
 	}
 	for _, c := range cases {
 		got, err := Dir(env(c.env))

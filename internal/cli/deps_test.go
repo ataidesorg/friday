@@ -6,9 +6,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ataidesorg/friday/internal/config"
-	"github.com/ataidesorg/friday/internal/core"
-	"github.com/ataidesorg/friday/internal/workspace"
+	"github.com/ataidesorg/ink/internal/config"
+	"github.com/ataidesorg/ink/internal/core"
+	"github.com/ataidesorg/ink/internal/workspace"
 )
 
 func touchFile(t *testing.T, path string) {
@@ -191,8 +191,8 @@ func TestWorktreeLabel(t *testing.T) {
 	if got := worktreeLabel(core.Workspace{Kind: core.WorkspacePrimary, Branch: "main"}); got != "" {
 		t.Fatalf("primary labeled %q", got)
 	}
-	got := worktreeLabel(core.Workspace{Kind: core.WorkspaceWorktree, Branch: "friday/api"})
-	if !strings.Contains(got, "friday/api") {
+	got := worktreeLabel(core.Workspace{Kind: core.WorkspaceWorktree, Branch: "ink/api"})
+	if !strings.Contains(got, "ink/api") {
 		t.Fatalf("label %q misses the branch", got)
 	}
 }

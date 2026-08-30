@@ -12,9 +12,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ataidesorg/friday/internal/core"
-	"github.com/ataidesorg/friday/internal/observability"
-	"github.com/ataidesorg/friday/internal/redact"
+	"github.com/ataidesorg/ink/internal/core"
+	"github.com/ataidesorg/ink/internal/observability"
+	"github.com/ataidesorg/ink/internal/redact"
 )
 
 var (
@@ -64,7 +64,7 @@ func fixtureEvents() []core.Event {
 
 func TestRunDir(t *testing.T) {
 	got := observability.RunDir("/p", runID)
-	want := filepath.Join("/p", ".friday", "local", "runs", string(runID))
+	want := filepath.Join("/p", ".ink", "local", "runs", string(runID))
 	if got != want {
 		t.Fatalf("RunDir = %q, want %q", got, want)
 	}

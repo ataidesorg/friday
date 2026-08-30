@@ -222,7 +222,7 @@ func fileCompleter(root string) func(string) []string {
 }
 
 // splitCommand turns one project command string into argv. Single and double
-// quotes group words; shell operators are rejected because Friday never runs a
+// quotes group words; shell operators are rejected because Ink never runs a
 // shell: a command is exactly its argv. ponytail: no escapes inside quotes.
 func splitCommand(s string) ([]string, error) {
 	var argv []string
@@ -240,7 +240,7 @@ func splitCommand(s string) ([]string, error) {
 		case r == '\'' || r == '"':
 			quote, inWord = r, true
 		case strings.ContainsRune("|&;<>`$()", r):
-			return nil, fmt.Errorf("command %q: shell operator %q is not allowed; Friday runs argv, not a shell", s, r)
+			return nil, fmt.Errorf("command %q: shell operator %q is not allowed; Ink runs argv, not a shell", s, r)
 		case r == ' ' || r == '\t' || r == '\n':
 			if inWord {
 				argv = append(argv, cur.String())

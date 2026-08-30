@@ -15,7 +15,7 @@ case "$arch" in
 esac
 out="$(mktemp -d)"
 trap 'rm -rf "$out"' EXIT
-GOOS=linux GOARCH="$goarch" CGO_ENABLED=0 go build -o "$out/friday" "$root/cmd/friday"
-docker run --rm --network none -v "$out/friday:/friday:ro" alpine:3.20 /friday version
-docker run --rm --network none -v "$out/friday:/friday:ro" alpine:3.20 /friday help >/dev/null
-echo "ok: linux friday runs in alpine ($goarch)"
+GOOS=linux GOARCH="$goarch" CGO_ENABLED=0 go build -o "$out/ink" "$root/cmd/ink"
+docker run --rm --network none -v "$out/ink:/ink:ro" alpine:3.20 /ink version
+docker run --rm --network none -v "$out/ink:/ink:ro" alpine:3.20 /ink help >/dev/null
+echo "ok: linux ink runs in alpine ($goarch)"

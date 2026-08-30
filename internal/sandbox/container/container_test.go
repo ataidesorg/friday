@@ -10,9 +10,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ataidesorg/friday/internal/core"
-	"github.com/ataidesorg/friday/internal/redact"
-	"github.com/ataidesorg/friday/internal/sandbox"
+	"github.com/ataidesorg/ink/internal/core"
+	"github.com/ataidesorg/ink/internal/redact"
+	"github.com/ataidesorg/ink/internal/sandbox"
 )
 
 // secretish is assembled from fragments so the repo never holds a secret-shaped literal.
@@ -401,7 +401,7 @@ func TestSnapshotCommitsImage(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if ref.Provider != Name || !strings.HasPrefix(ref.ID, "friday-snap-") || ref.CreatedAt.IsZero() {
+	if ref.Provider != Name || !strings.HasPrefix(ref.ID, "ink-snap-") || ref.CreatedAt.IsZero() {
 		t.Fatalf("ref = %+v", ref)
 	}
 	commit := cli.last("commit")

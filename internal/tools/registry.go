@@ -9,7 +9,7 @@ import (
 	"maps"
 	"slices"
 
-	"github.com/ataidesorg/friday/internal/core"
+	"github.com/ataidesorg/ink/internal/core"
 )
 
 // Executor runs a command. core.Sandbox satisfies it.

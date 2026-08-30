@@ -1,4 +1,4 @@
-// Package session persists a conversation as a directory under the Friday
+// Package session persists a conversation as a directory under the Ink
 // home: an append-only, redacted transcript.jsonl (one Turn per line) and a
 // meta.json header, so a chat resumes across launches. Nothing leaves the
 // local machine, and the only free text written is passed through
@@ -16,8 +16,8 @@ import (
 	"sort"
 	"time"
 
-	"github.com/ataidesorg/friday/internal/core"
-	"github.com/ataidesorg/friday/internal/redact"
+	"github.com/ataidesorg/ink/internal/core"
+	"github.com/ataidesorg/ink/internal/redact"
 )
 
 const (
@@ -110,7 +110,7 @@ func (s *Store) Append(id string, t Turn, now time.Time) (Meta, error) {
 	if err != nil {
 		return Meta{}, fmt.Errorf("marshal turn: %w", err)
 	}
-	f, err := os.OpenFile(filepath.Join(s.dir(id), transcriptFile), os.O_APPEND|os.O_CREATE|os.O_WRONLY, filePerm) //nolint:gosec // transcript under the Friday home
+	f, err := os.OpenFile(filepath.Join(s.dir(id), transcriptFile), os.O_APPEND|os.O_CREATE|os.O_WRONLY, filePerm) //nolint:gosec // transcript under the Ink home
 	if err != nil {
 		return Meta{}, fmt.Errorf("open transcript: %w", err)
 	}
@@ -270,7 +270,7 @@ func (s *Store) Truncate(id string, keep int, now time.Time) (Meta, error) {
 	}
 	path := filepath.Join(s.dir(id), transcriptFile)
 	tmp := path + ".tmp"
-	f, err := os.OpenFile(tmp, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, filePerm) //nolint:gosec // transcript under the Friday home
+	f, err := os.OpenFile(tmp, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, filePerm) //nolint:gosec // transcript under the Ink home
 	if err != nil {
 		return Meta{}, fmt.Errorf("open truncated transcript: %w", err)
 	}

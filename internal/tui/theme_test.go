@@ -13,19 +13,36 @@ func TestBuiltinThemes(t *testing.T) {
 	for i, th := range themes {
 		names[i] = th.Name
 	}
-	for _, want := range []string{"friday", "dark", "light", "ansi"} {
+	for _, want := range []string{"ink", "dark", "light", "ansi"} {
 		if !strings.Contains(strings.Join(names, " "), want) {
 			t.Fatalf("built-ins %v missing %s", names, want)
 		}
 	}
-	// dark and light are fixed: both variants equal.
+	// ink, dark, and light are fixed: both variants equal.
 	for _, th := range themes {
-		if th.Name != "dark" && th.Name != "light" {
+		if th.Name != "ink" && th.Name != "dark" && th.Name != "light" {
 			continue
 		}
 		if th.Accent.Light != th.Accent.Dark {
 			t.Fatalf("theme %s accent not fixed: %+v", th.Name, th.Accent)
 		}
+	}
+}
+
+func TestInkThemeIsDefaultBlack(t *testing.T) {
+	ink := defaultTheme()
+	if ink.Name != "ink" {
+		t.Fatalf("default theme %q, want ink", ink.Name)
+	}
+	if ink.Accent.Dark != "#C8C8CC" || ink.Accent.Light != "#C8C8CC" {
+		t.Fatalf("ink accent %+v, want graphite #C8C8CC", ink.Accent)
+	}
+	if ink.Bg.Light != "" || ink.Bg.Dark != "" {
+		t.Fatal("ink theme must not paint a canvas")
+	}
+	cs := themedStyles(true, ink)
+	if cs.hasCanvas {
+		t.Fatal("ink styles must not paint a canvas")
 	}
 }
 
@@ -129,16 +146,16 @@ func TestThemePickerPreviewsOnMove(t *testing.T) {
 	m = next.(ChatModel)
 	next, _ = m.Update(keyType(tea.KeyDown))
 	m = next.(ChatModel)
-	if m.themeName != "friday" {
+	if m.themeName != "ink" {
 		t.Fatalf("preview must not persist: themeName=%q", m.themeName)
 	}
-	if m.styledName == "friday" || m.styledName == "" {
+	if m.styledName == "ink" || m.styledName == "" {
 		t.Fatalf("moving the theme cursor must preview another palette, styled=%q", m.styledName)
 	}
 	next, _ = m.Update(keyType(tea.KeyEsc))
 	m = next.(ChatModel)
-	if m.styledName != "friday" || m.ov != nil {
-		t.Fatalf("esc must restore friday, styled=%q ov=%v", m.styledName, m.ov != nil)
+	if m.styledName != "ink" || m.ov != nil {
+		t.Fatalf("esc must restore ink, styled=%q ov=%v", m.styledName, m.ov != nil)
 	}
 }
 
@@ -149,8 +166,8 @@ func TestChatThemeSwitch(t *testing.T) {
 		Themes:   []Theme{{Name: "custom", Accent: ThemeColor{"#111111", "#222222"}}},
 		SetTheme: func(name string) error { saved = name; return nil },
 	}, nil)
-	if m.themeName != "friday" {
-		t.Fatalf("launch theme %q, want friday", m.themeName)
+	if m.themeName != "ink" {
+		t.Fatalf("launch theme %q, want ink", m.themeName)
 	}
 
 	// Palette "Switch theme" opens the picker listing built-ins and the custom.
@@ -162,7 +179,7 @@ func TestChatThemeSwitch(t *testing.T) {
 		t.Fatal("palette Switch theme must open the theme picker")
 	}
 	view := cm.ov.view(newChatStyles(false), 80, 10)
-	for _, want := range []string{"friday", "dark", "ansi", "custom"} {
+	for _, want := range []string{"ink", "dark", "ansi", "custom"} {
 		if !strings.Contains(view, want) {
 			t.Fatalf("theme picker missing %s:\n%s", want, view)
 		}
@@ -187,8 +204,8 @@ func TestChatLaunchesOnSavedTheme(t *testing.T) {
 	}
 	// An unknown saved name falls back to the default instead of failing.
 	m = NewChat(Options{Width: 80, ThemeName: "gone"}, nil)
-	if m.themeName != "friday" {
-		t.Fatalf("unknown theme fell back to %q, want friday", m.themeName)
+	if m.themeName != "ink" {
+		t.Fatalf("unknown theme fell back to %q, want ink", m.themeName)
 	}
 }
 

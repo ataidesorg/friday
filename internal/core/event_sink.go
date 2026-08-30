@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/ataidesorg/friday/internal/redact"
+	"github.com/ataidesorg/ink/internal/redact"
 )
 
 // EventSink receives events. Implementations must be safe for concurrent use.

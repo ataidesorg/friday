@@ -13,7 +13,7 @@ import (
 type chatStyles struct {
 	on bool
 
-	accent    lipgloss.Style // Friday's voice and the app name
+	accent    lipgloss.Style // Ink's voice and the app name
 	user      lipgloss.Style // the human's voice
 	ok        lipgloss.Style
 	warn      lipgloss.Style
@@ -24,7 +24,7 @@ type chatStyles struct {
 	box       lipgloss.Style // the rounded prompt frame (border kept even when off)
 	modal     lipgloss.Style // the centered overlay frame
 	spin      lipgloss.Style
-	canvas    lipgloss.Style // optional full-frame background (light theme)
+	canvas    lipgloss.Style // optional full-frame background (light)
 	hasCanvas bool
 }
 
@@ -390,7 +390,7 @@ func classLabel(class int) string {
 	case classUser:
 		label = "You"
 	case classAssistant:
-		label = "Friday"
+		label = "Ink"
 	case classTool:
 		label = "Tool"
 	case classWarn:
@@ -448,11 +448,11 @@ func (cs chatStyles) selectionLine(s string, start, end int) string {
 // and one example. Vertical placement is paneView's job (pin to composer).
 func (cs chatStyles) welcome(width, height int) string {
 	_ = height
-	mark := fridayMarkLarge
+	mark := inkMarkLarge
 	if width < 34 {
-		mark = fridayMarkSmall
+		mark = inkMarkSmall
 	}
-	title := "Friday"
+	title := "Ink"
 	if cs.on {
 		mark = cs.accent.Render(mark)
 		title = cs.header.Render(title)
@@ -466,7 +466,7 @@ func (cs chatStyles) welcome(width, height int) string {
 	return mark + "\n\n" + title + "\n\n" + fit(ask, max(1, width)) + "\n" + fit(ex, max(1, width))
 }
 
-const fridayMarkLarge = `       ╱╲
+const inkMarkLarge = `       ╱╲
       ╱╱╲
      ╱╱  ╲
     ╱╱    ╲
@@ -475,7 +475,7 @@ const fridayMarkLarge = `       ╱╲
  ╱╱     ╱
 ╱_____╱`
 
-const fridayMarkSmall = `   ╱╱╲
+const inkMarkSmall = `   ╱╱╲
   ╱╱  ╲
  ╱╱  ◉│
 ╱╱   ╱

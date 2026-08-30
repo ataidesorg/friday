@@ -1,6 +1,6 @@
 # Security Policy
 
-Friday is a local-first coding agent harness. It can read files, edit files, run
+Ink is a local-first agent. It can read files, edit files, run
 commands, call model providers, and load local extensions when configured to do
 so. Treat it like a powerful developer tool, not a sandbox boundary.
 
@@ -34,7 +34,7 @@ session history.
 - Repository trust and config layering.
 - Tool approval and policy enforcement.
 - File write, patch, and command execution boundaries.
-- MCP, custom tools, and skills when loaded by Friday.
+- MCP, custom tools, and skills when loaded by Ink.
 - Session store redaction, local event trails, and transcript export.
 - Release artifacts, install script behavior, and checksums.
 
@@ -48,8 +48,8 @@ session history.
 
 ## Known Posture
 
-- Friday does not ship a hosted control plane.
-- Local telemetry is redacted and stored on disk; nothing is sent to a Friday
+- Ink does not ship a hosted control plane.
+- Local telemetry is redacted and stored on disk; nothing is sent to a Ink
   service.
 - Model output, tool output, repository content, webpages, and retrieved memory
   are untrusted inputs.

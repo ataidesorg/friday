@@ -6,13 +6,13 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ataidesorg/friday/internal/core"
-	"github.com/ataidesorg/friday/internal/workspace"
+	"github.com/ataidesorg/ink/internal/core"
+	"github.com/ataidesorg/ink/internal/workspace"
 )
 
 func TestTaskBranch(t *testing.T) {
 	got, err := workspace.TaskBranch("fix-auth")
-	if err != nil || got != "friday/fix-auth" {
+	if err != nil || got != "ink/fix-auth" {
 		t.Fatalf("got %q %v", got, err)
 	}
 	if _, err := workspace.TaskBranch("../etc"); !errors.Is(err, core.ErrInvalidInput) {

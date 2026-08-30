@@ -12,7 +12,7 @@ import (
 
 	"github.com/charmbracelet/lipgloss"
 
-	"github.com/ataidesorg/friday/internal/core"
+	"github.com/ataidesorg/ink/internal/core"
 )
 
 // promptRows is the prompt's height in rows: one for a fresh draft, growing
@@ -616,7 +616,7 @@ func (m ChatModel) headerLeft() string {
 func displayCwd(path string) string {
 	path = strings.TrimSpace(path)
 	if path == "" {
-		return "friday"
+		return "ink"
 	}
 	if home, err := os.UserHomeDir(); err == nil && home != "" {
 		if path == home {

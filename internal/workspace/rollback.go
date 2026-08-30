@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/ataidesorg/friday/internal/core"
-	"github.com/ataidesorg/friday/internal/fsutil"
+	"github.com/ataidesorg/ink/internal/core"
+	"github.com/ataidesorg/ink/internal/fsutil"
 )
 
 // RollbackReport says what Rollback did, by workspace-relative path.

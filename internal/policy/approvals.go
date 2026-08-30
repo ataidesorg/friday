@@ -4,7 +4,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/ataidesorg/friday/internal/core"
+	"github.com/ataidesorg/ink/internal/core"
 )
 
 // Approvals remembers session-scoped human decisions for one run or session.

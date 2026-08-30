@@ -4,8 +4,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ataidesorg/friday/internal/config"
-	"github.com/ataidesorg/friday/internal/core"
+	"github.com/ataidesorg/ink/internal/config"
+	"github.com/ataidesorg/ink/internal/core"
 )
 
 func TestPricesExactMicros(t *testing.T) {

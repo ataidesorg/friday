@@ -2,7 +2,7 @@ package auth
 
 // Azure Entra fallback for azure-foundry: the client-secret grant
 // only. Certificate, federated, and managed-identity credentials are real
-// Azure mechanisms Friday has not implemented; when their env markers are
+// Azure mechanisms Ink has not implemented; when their env markers are
 // present they fail as explicit NotImplemented, never silently skipped.
 // The default scope is recorded from Azure docs and unverified against a
 // live tenant.
@@ -12,7 +12,7 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/ataidesorg/friday/internal/core"
+	"github.com/ataidesorg/ink/internal/core"
 )
 
 const (
@@ -40,7 +40,7 @@ func (r *Resolver) AzureBearer(ctx context.Context) (*Credential, error) {
 		return nil, &ErrNoCredential{
 			Source: "azure chain",
 			Where:  "env AZURE_TENANT_ID + AZURE_CLIENT_ID + AZURE_CLIENT_SECRET",
-			Hint:   "export the app-registration triple, or store a key with `friday auth set azure-foundry`",
+			Hint:   "export the app-registration triple, or store a key with `ink auth set azure-foundry`",
 		}
 	}
 	if tenant == "" || client == "" || secret == "" {

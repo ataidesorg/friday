@@ -2,7 +2,7 @@ package wire
 
 // Bedrock Converse adapter. Auth is SigV4 request signing via
 // Options.Sign — never a bearer. Streaming falls back to one final delta:
-// ConverseStream uses AWS event-stream binary framing that Friday has not
+// ConverseStream uses AWS event-stream binary framing that Ink has not
 // implemented, and fake incremental chunks are worse than an honest lump
 // (a recorded deviation).
 
@@ -14,7 +14,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/ataidesorg/friday/internal/core"
+	"github.com/ataidesorg/ink/internal/core"
 )
 
 // Bedrock speaks the Converse API: POST {base}/model/{modelId}/converse.

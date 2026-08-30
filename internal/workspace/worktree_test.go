@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ataidesorg/friday/internal/core"
-	"github.com/ataidesorg/friday/internal/workspace"
+	"github.com/ataidesorg/ink/internal/core"
+	"github.com/ataidesorg/ink/internal/workspace"
 )
 
 func prepWT(t *testing.T, root, dir, name string) (core.Workspace, workspace.Cleanup, error) {
@@ -30,8 +30,8 @@ func TestWorktreeCreateSelectCleanup(t *testing.T) {
 	if ws.Kind != core.WorkspaceWorktree {
 		t.Fatalf("kind %q, want worktree", ws.Kind)
 	}
-	if ws.Branch != "friday/api" {
-		t.Fatalf("branch %q, want friday/api", ws.Branch)
+	if ws.Branch != "ink/api" {
+		t.Fatalf("branch %q, want ink/api", ws.Branch)
 	}
 	if read(t, ws.Root, "main.go") == "" {
 		t.Fatal("worktree misses the committed tree")
@@ -48,7 +48,7 @@ func TestWorktreeCreateSelectCleanup(t *testing.T) {
 	if _, err := os.Stat(ws.Root); !os.IsNotExist(err) {
 		t.Fatalf("clean worktree not removed: %v", err)
 	}
-	if out := git(t, root, "branch", "--list", "friday/api"); !strings.Contains(out, "friday/api") {
+	if out := git(t, root, "branch", "--list", "ink/api"); !strings.Contains(out, "ink/api") {
 		t.Fatalf("branch gone after cleanup: %q", out)
 	}
 

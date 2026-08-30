@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ataidesorg/friday/internal/redact"
+	"github.com/ataidesorg/ink/internal/redact"
 )
 
 var (

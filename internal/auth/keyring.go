@@ -7,7 +7,7 @@ import (
 	"os/exec"
 	"runtime"
 
-	"github.com/ataidesorg/friday/internal/config"
+	"github.com/ataidesorg/ink/internal/config"
 )
 
 // ErrKeyringUnavailable means no usable OS keyring binary exists; keyring
@@ -19,7 +19,7 @@ var ErrKeyringUnavailable = errors.New("os keyring unavailable")
 func (r *Resolver) resolveKeyring(ctx context.Context, ref config.AuthRef) (*Credential, error) {
 	service, account := ref.Service, ref.Account
 	if service == "" {
-		service = "friday"
+		service = "ink"
 	}
 	if account == "" {
 		account = ref.Name
@@ -40,11 +40,11 @@ func (r *Resolver) resolveKeyring(ctx context.Context, ref config.AuthRef) (*Cre
 // osKeyringLookup shells out to the platform keyring reader: macOS
 // `security find-generic-password -w`, Linux `secret-tool lookup`. A missing
 // binary reports ErrKeyringUnavailable; a missing item is a clean miss.
-// FRIDAY_NO_KEYRING=1 (any non-empty value) reports the keyring unavailable
+// INK_NO_KEYRING=1 (any non-empty value) reports the keyring unavailable
 // without spawning anything: headless machines and tests use it to keep the
 // secret-store key in a file instead of the OS keychain.
 func (r *Resolver) osKeyringLookup(ctx context.Context, service, account string) (string, bool, error) {
-	if r.getenv("FRIDAY_NO_KEYRING") != "" {
+	if r.getenv("INK_NO_KEYRING") != "" {
 		return "", false, ErrKeyringUnavailable
 	}
 	var argv []string
@@ -80,7 +80,7 @@ func (r *Resolver) osKeyringLookup(ctx context.Context, service, account string)
 // keyringStore writes service/account via stdin (macOS `security -i`, Linux
 // `secret-tool store`), so the secret never appears in argv.
 func (r *Resolver) keyringStore(ctx context.Context, service, account, value string) error {
-	if r.getenv("FRIDAY_NO_KEYRING") != "" {
+	if r.getenv("INK_NO_KEYRING") != "" {
 		return ErrKeyringUnavailable
 	}
 	switch runtime.GOOS {
@@ -97,7 +97,7 @@ func (r *Resolver) keyringStore(ctx context.Context, service, account, value str
 		if _, err := exec.LookPath("secret-tool"); err != nil {
 			return ErrKeyringUnavailable
 		}
-		argv := []string{"secret-tool", "store", "--label=friday " + account, "service", service, "account", account}
+		argv := []string{"secret-tool", "store", "--label=ink " + account, "service", service, "account", account}
 		if _, err := r.exec(ctx, argv, value); err != nil {
 			return fmt.Errorf("keyring store %s/%s failed (output withheld)", service, account)
 		}

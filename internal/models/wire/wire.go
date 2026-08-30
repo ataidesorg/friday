@@ -1,4 +1,4 @@
-// Package wire implements HTTP adapters from Friday's provider contract
+// Package wire implements HTTP adapters from Ink's provider contract
 // (core.ModelProvider) to remote model APIs. Each wire maps
 // core.CompletionRequest/Response to one HTTP dialect.
 //
@@ -21,8 +21,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ataidesorg/friday/internal/auth"
-	"github.com/ataidesorg/friday/internal/core"
+	"github.com/ataidesorg/ink/internal/auth"
+	"github.com/ataidesorg/ink/internal/core"
 )
 
 // StreamObserver receives text deltas as they arrive when streaming.

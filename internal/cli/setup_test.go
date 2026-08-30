@@ -9,10 +9,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ataidesorg/friday/internal/auth"
-	"github.com/ataidesorg/friday/internal/config"
-	"github.com/ataidesorg/friday/internal/redact"
-	"github.com/ataidesorg/friday/internal/tui"
+	"github.com/ataidesorg/ink/internal/auth"
+	"github.com/ataidesorg/ink/internal/config"
+	"github.com/ataidesorg/ink/internal/redact"
+	"github.com/ataidesorg/ink/internal/tui"
 )
 
 func TestWriteUserRouteRoundTrips(t *testing.T) {
@@ -213,7 +213,7 @@ func TestConnectProviders(t *testing.T) {
 func TestConnectWriteRegistry(t *testing.T) {
 	dir := t.TempDir()
 	state := t.TempDir()
-	env := []string{"FRIDAY_STATE_DIR=" + state}
+	env := []string{"INK_STATE_DIR=" + state}
 	red := redact.New()
 	provider, route, err := connectWrite(dir, config.Config{}, red, env, tui.ConnectRequest{
 		Provider: "fw", Model: "qwen3", Key: "sk-connect-test",
@@ -248,7 +248,7 @@ func TestConnectWriteRegistry(t *testing.T) {
 // store — a reference, never the credential.
 func TestConnectWriteCustom(t *testing.T) {
 	dir := t.TempDir()
-	env := []string{"FRIDAY_STATE_DIR=" + t.TempDir()}
+	env := []string{"INK_STATE_DIR=" + t.TempDir()}
 	provider, route, err := connectWrite(dir, config.Config{}, redact.New(), env, tui.ConnectRequest{
 		BaseURL: "https://api.groq.com/openai/v1", Model: "m-1", Key: "k-custom",
 	})
@@ -273,7 +273,7 @@ func TestConnectWriteCustom(t *testing.T) {
 // existing default; an identical reconnect reuses its route name.
 func TestConnectWriteExistingRoutes(t *testing.T) {
 	dir := t.TempDir()
-	env := []string{"FRIDAY_STATE_DIR=" + t.TempDir()}
+	env := []string{"INK_STATE_DIR=" + t.TempDir()}
 	if _, err := writeUserRoute(dir, "smart", "openai", "gpt-5", true); err != nil {
 		t.Fatal(err)
 	}
@@ -301,7 +301,7 @@ func TestConnectWriteExistingRoutes(t *testing.T) {
 // Bad requests fail before anything is stored or written.
 func TestConnectWriteRejects(t *testing.T) {
 	dir := t.TempDir()
-	env := []string{"FRIDAY_STATE_DIR=" + t.TempDir()}
+	env := []string{"INK_STATE_DIR=" + t.TempDir()}
 	cases := []tui.ConnectRequest{
 		{Provider: "fireworks", Model: "", Key: "k"},
 		{Provider: "no-such-provider", Model: "m", Key: "k"},
@@ -324,7 +324,7 @@ func TestConnectWriteRejects(t *testing.T) {
 func TestConnectWriteOAuthRouteOnly(t *testing.T) {
 	dir := t.TempDir()
 	state := t.TempDir()
-	env := []string{"FRIDAY_STATE_DIR=" + state}
+	env := []string{"INK_STATE_DIR=" + state}
 	provider, route, err := connectWrite(dir, config.Config{}, redact.New(), env, tui.ConnectRequest{
 		Provider: "codex", Model: "gpt-5-codex",
 	})

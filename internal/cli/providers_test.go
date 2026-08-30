@@ -11,7 +11,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ataidesorg/friday/internal/providers"
+	"github.com/ataidesorg/ink/internal/providers"
 )
 
 func providerLine(t *testing.T, out, id string) string {
@@ -76,7 +76,7 @@ auth = { source = "env", name = "LOCALBAD_KEY" }
 		t.Fatal(err)
 	}
 
-	env := []string{"LOCALOK_KEY=" + secret, "LOCALBAD_KEY=wrong-key", "FRIDAY_STATE_DIR=" + t.TempDir()}
+	env := []string{"LOCALOK_KEY=" + secret, "LOCALBAD_KEY=wrong-key", "INK_STATE_DIR=" + t.TempDir()}
 	code, out, errOut := execEnv(t, env, "providers", "--check", "--config-dir", dir)
 	if code != 0 {
 		t.Fatalf("code %d stderr %q", code, errOut)
@@ -180,15 +180,15 @@ func TestModelSetWritesUserConfig(t *testing.T) {
 func TestModelSetCreatesConfigWhenAbsent(t *testing.T) {
 	// Routes come from a project layer; the user layer does not exist yet.
 	proj := t.TempDir()
-	if err := os.MkdirAll(filepath.Join(proj, ".friday"), 0o750); err != nil {
+	if err := os.MkdirAll(filepath.Join(proj, ".ink"), 0o750); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(filepath.Join(proj, ".friday", "config.toml"), []byte("[models.routes.fast]\nprovider = \"anthropic\"\nmodel = \"claude-haiku-4-5\"\n"), 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(proj, ".ink", "config.toml"), []byte("[models.routes.fast]\nprovider = \"anthropic\"\nmodel = \"claude-haiku-4-5\"\n"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	state := t.TempDir()
-	env := []string{"FRIDAY_STATE_DIR=" + state}
-	if code, _, errOut := execEnv(t, env, "trust", filepath.Join(proj, ".friday", "config.toml")); code != 0 {
+	env := []string{"INK_STATE_DIR=" + state}
+	if code, _, errOut := execEnv(t, env, "trust", filepath.Join(proj, ".ink", "config.toml")); code != 0 {
 		t.Fatalf("trust: %d %q", code, errOut)
 	}
 	dir := t.TempDir() // empty user config dir
@@ -262,7 +262,7 @@ func TestModelsCommandListsAndSendsBearer(t *testing.T) {
 	env := []string{
 		"LOCALLIST_KEY=spy-models-key-1",
 		"XDG_CACHE_HOME=" + cache,
-		"FRIDAY_STATE_DIR=" + t.TempDir(),
+		"INK_STATE_DIR=" + t.TempDir(),
 	}
 	dir := modelsCfgDir(t, srv.URL)
 	code, out, errOut := execEnv(t, env, "models", "--provider", "locallist", "--config-dir", dir)
@@ -275,8 +275,8 @@ func TestModelsCommandListsAndSendsBearer(t *testing.T) {
 	if auth != "Bearer spy-models-key-1" {
 		t.Fatalf("fetch auth = %q", auth)
 	}
-	// Cache landed under XDG_CACHE_HOME/friday with 0600.
-	path := filepath.Join(cache, "friday", "models-locallist.json")
+	// Cache landed under XDG_CACHE_HOME/ink with 0600.
+	path := filepath.Join(cache, "ink", "models-locallist.json")
 	info, err := os.Stat(path)
 	if err != nil {
 		t.Fatal(err)
@@ -305,7 +305,7 @@ func TestModelsCommandMissingCredentialDegradesKeyless(t *testing.T) {
 	defer srv.Close()
 	env := []string{
 		"XDG_CACHE_HOME=" + t.TempDir(),
-		"FRIDAY_STATE_DIR=" + t.TempDir(),
+		"INK_STATE_DIR=" + t.TempDir(),
 	}
 	code, out, errOut := execEnv(t, env, "models", "--provider", "locallist", "--config-dir", modelsCfgDir(t, srv.URL))
 	if code != 0 {
@@ -320,12 +320,12 @@ func TestModelsCommandUsageAndBadProvider(t *testing.T) {
 	if code, _, _ := exec(t, "models"); code != exitUsage {
 		t.Fatalf("no --provider: code %d", code)
 	}
-	code, _, errOut := execEnv(t, []string{"FRIDAY_STATE_DIR=" + t.TempDir()}, "models", "--provider", "no-such-provider")
+	code, _, errOut := execEnv(t, []string{"INK_STATE_DIR=" + t.TempDir()}, "models", "--provider", "no-such-provider")
 	if code != exitError || !strings.Contains(errOut, "no-such-provider") {
 		t.Fatalf("unknown provider: code %d stderr %q", code, errOut)
 	}
 	// A non-OpenAI wire has no /v1/models catalog.
-	code, _, errOut = execEnv(t, []string{"FRIDAY_STATE_DIR=" + t.TempDir()}, "models", "--provider", "anthropic")
+	code, _, errOut = execEnv(t, []string{"INK_STATE_DIR=" + t.TempDir()}, "models", "--provider", "anthropic")
 	if code != exitError || !strings.Contains(errOut, "no /v1/models catalog") {
 		t.Fatalf("anthropic wire: code %d stderr %q", code, errOut)
 	}

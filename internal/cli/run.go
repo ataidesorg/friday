@@ -15,26 +15,26 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ataidesorg/friday/internal/config"
-	"github.com/ataidesorg/friday/internal/core"
-	"github.com/ataidesorg/friday/internal/lsp"
-	"github.com/ataidesorg/friday/internal/models"
-	"github.com/ataidesorg/friday/internal/models/mock"
-	"github.com/ataidesorg/friday/internal/observability"
-	"github.com/ataidesorg/friday/internal/policy"
-	"github.com/ataidesorg/friday/internal/redact"
-	"github.com/ataidesorg/friday/internal/routing"
-	"github.com/ataidesorg/friday/internal/runtime"
-	"github.com/ataidesorg/friday/internal/sandbox"
-	"github.com/ataidesorg/friday/internal/sandbox/container"
-	"github.com/ataidesorg/friday/internal/sandbox/process"
-	"github.com/ataidesorg/friday/internal/skills"
-	"github.com/ataidesorg/friday/internal/tools"
-	"github.com/ataidesorg/friday/internal/tui"
-	"github.com/ataidesorg/friday/internal/workspace"
+	"github.com/ataidesorg/ink/internal/config"
+	"github.com/ataidesorg/ink/internal/core"
+	"github.com/ataidesorg/ink/internal/lsp"
+	"github.com/ataidesorg/ink/internal/models"
+	"github.com/ataidesorg/ink/internal/models/mock"
+	"github.com/ataidesorg/ink/internal/observability"
+	"github.com/ataidesorg/ink/internal/policy"
+	"github.com/ataidesorg/ink/internal/redact"
+	"github.com/ataidesorg/ink/internal/routing"
+	"github.com/ataidesorg/ink/internal/runtime"
+	"github.com/ataidesorg/ink/internal/sandbox"
+	"github.com/ataidesorg/ink/internal/sandbox/container"
+	"github.com/ataidesorg/ink/internal/sandbox/process"
+	"github.com/ataidesorg/ink/internal/skills"
+	"github.com/ataidesorg/ink/internal/tools"
+	"github.com/ataidesorg/ink/internal/tui"
+	"github.com/ataidesorg/ink/internal/workspace"
 )
 
-const runUsage = `usage: friday run [flags] "task text"
+const runUsage = `usage: ink run [flags] "task text"
 
 flags:
   --project DIR      project root (default: current directory)
@@ -110,7 +110,7 @@ func runCmd(args []string, stdout, stderr io.Writer, stdin io.Reader, environ []
 	warnDropped(stderr, resolved)
 	red := redact.New()
 	if verr := config.Validate(resolved); verr != nil {
-		fmt.Fprintf(stderr, "friday run: configuration is invalid\n%s\n", red.Redact(verr.Error()))
+		fmt.Fprintf(stderr, "ink run: configuration is invalid\n%s\n", red.Redact(verr.Error()))
 		return exitConfigInvalid
 	}
 	cfg := resolved.Config
@@ -131,7 +131,7 @@ func runCmd(args []string, stdout, stderr io.Writer, stdin io.Reader, environ []
 	} else {
 		t, err := resolveProvider(cfg, f.model, red, environ)
 		if err != nil {
-			fmt.Fprintf(stderr, "friday run: %s\n", red.Redact(err.Error()))
+			fmt.Fprintf(stderr, "ink run: %s\n", red.Redact(err.Error()))
 			if errors.Is(err, core.ErrNotImplemented) {
 				return exitNotImplemented
 			}
@@ -141,7 +141,7 @@ func runCmd(args []string, stdout, stderr io.Writer, stdin io.Reader, environ []
 		provider, model = t.provider, t.model
 	}
 	if cfg.Sandbox.Provider == "unavailable" {
-		fmt.Fprintln(stderr, "friday run: sandbox.provider is \"unavailable\"; set it to \"process\" to run tasks")
+		fmt.Fprintln(stderr, "ink run: sandbox.provider is \"unavailable\"; set it to \"process\" to run tasks")
 		return exitNotImplemented
 	}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
@@ -189,7 +189,7 @@ func newSession(ctx context.Context, cfg config.Config, f runFlags, text string,
 		deps.Route = &target.decision
 		deps.Streamed = true
 	}
-	if home, herr := config.FridayHome(envLookup(environ)); herr == nil {
+	if home, herr := config.Home(envLookup(environ)); herr == nil {
 		if sk := skills.Load(root, home, os.Stderr); len(sk) > 0 {
 			if reg, werr := deps.Tools.With(skills.Tool(sk)); werr == nil {
 				deps.Tools = reg
@@ -217,7 +217,7 @@ func newSession(ctx context.Context, cfg config.Config, f runFlags, text string,
 	task.Budget = in.Task.Budget
 	in.Task = task
 	in.Project.ID, in.Project.Root = core.NewProjectID(), root
-	rulesHome, _ := config.FridayHome(envLookup(environ))
+	rulesHome, _ := config.Home(envLookup(environ))
 	in.Project.InstructionFiles, in.Project.GlobalInstructionFiles = discoverRules(root, rulesHome, in.Project.InstructionFiles)
 	if vcs, err := workspace.Status(ctx, root); err == nil {
 		in.Project.VCS = &vcs
@@ -353,7 +353,7 @@ func (s *session) run(ctx context.Context, p tui.Program, stderr io.Writer) int 
 		p.Done(res, s.diff())
 	}()
 	if err := p.Start(ctx); err != nil && ctx.Err() == nil {
-		fmt.Fprintf(stderr, "friday run: interface: %v\n", err)
+		fmt.Fprintf(stderr, "ink run: interface: %v\n", err)
 	}
 	cancel()
 	<-done
@@ -438,7 +438,7 @@ func (s *session) diff() string {
 
 func (s *session) trail(id core.RunID) string {
 	if path := s.sink.Path(); path != "" {
-		return "trail " + path + " (replay with `friday trace " + string(id) + "`)"
+		return "trail " + path + " (replay with `ink trace " + string(id) + "`)"
 	}
 	return "no events recorded"
 }
@@ -551,27 +551,27 @@ func runGraphCmd(ctx context.Context, cfg config.Config, f runFlags, text string
 		return nil
 	})
 	if err != nil {
-		fmt.Fprintf(stderr, "friday run: graph: %v\n", err)
+		fmt.Fprintf(stderr, "ink run: graph: %v\n", err)
 		return exitFailed
 	}
 	waves, err := g.Waves()
 	if err != nil {
-		fmt.Fprintf(stderr, "friday run: graph: %v\n", err)
+		fmt.Fprintf(stderr, "ink run: graph: %v\n", err)
 		return exitFailed
 	}
 	ordered := make([]string, 0, len(g.Nodes))
 	for _, wave := range waves {
 		for _, n := range wave {
-			ordered = append(ordered, "friday/"+n.ID)
+			ordered = append(ordered, "ink/"+n.ID)
 		}
 	}
 	res, err := workspace.MergeBranches(ctx, root, ordered)
 	if err != nil {
-		fmt.Fprintf(stderr, "friday run: merge: %v\n", err)
+		fmt.Fprintf(stderr, "ink run: merge: %v\n", err)
 		return exitFailed
 	}
 	if !res.OK {
-		fmt.Fprintf(stderr, "friday run: merge conflict on %s: %v\n", res.StoppedAt, res.Conflicts)
+		fmt.Fprintf(stderr, "ink run: merge conflict on %s: %v\n", res.StoppedAt, res.Conflicts)
 		return exitFailed
 	}
 	fmt.Fprintf(stderr, "graph merged %d branches\n", len(res.Merged))

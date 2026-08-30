@@ -9,15 +9,15 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/ataidesorg/friday/internal/core"
-	"github.com/ataidesorg/friday/internal/providers"
-	"github.com/ataidesorg/friday/internal/redact"
+	"github.com/ataidesorg/ink/internal/core"
+	"github.com/ataidesorg/ink/internal/providers"
+	"github.com/ataidesorg/ink/internal/redact"
 )
 
 // SchemaVersion is the only config schema this build accepts.
 const SchemaVersion = 1
 
-// ProjectLayerGatedPrefixes are the keys a repository's .friday/config.toml
+// ProjectLayerGatedPrefixes are the keys a repository's .ink/config.toml
 // may not set until its owner trusts the file: they reach the network with
 // your prompts, launch commands, downgrade privacy, spend money, or take the
 // sandbox away. Everything else — routes, profiles, evals, project

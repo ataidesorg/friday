@@ -2,18 +2,22 @@
 
 ## Who this is for
 
-One developer, running Friday on their own machine, against their own repositories (and, from
+One developer, running Ink on their own machine, against their own repositories (and, from
 Stage 6, their own calendar, mail, and notes). Not a team tool. Not a hosted product. Not
 multi-user. If a decision would only make sense for a shared deployment, it is out of scope —
 see [non-goals.md](non-goals.md).
 
-## One coding harness
+## What Ink is
 
-Friday is a coding agent. `core.HarnessKind` has one value, `core.HarnessCode` (`"code"`):
-plans, edits, runs commands, and validates inside a project workspace
-(`internal/core/agent.go`). `core.NewTask` records that kind on every task
-(`internal/core/task.go`; `TestNewTask` in `internal/core/domain_test.go`).
-The CLI and TUI (`friday` chat and `friday run`) are that harness.
+Ink is a local agent. It starts as a coding workbench: plans, edits, runs
+commands, and validates inside a project workspace. `core.HarnessKind` has one
+value today, `core.HarnessCode` (`"code"`) (`internal/core/agent.go`).
+`core.NewTask` records that kind on every task (`internal/core/task.go`;
+`TestNewTask` in `internal/core/domain_test.go`). The CLI and TUI (`ink` chat
+and `ink run`) are that workbench.
+
+The name is the job: putting marks down. An assistant mode later is still Ink.
+It is not a character and not a hosted product.
 
 ## Principles, stated as things you can check
 
@@ -33,7 +37,7 @@ Every claim below points at a concrete identifier and the test that enforces it,
    (`internal/core/errors.go`) is returned wherever a path is not built — the `acp` wire
    (`internal/cli/provider.go`), sandbox snapshots (`internal/sandbox/process`), the
    `memory_written` eval expectation (`internal/evals/checks.go`) — and
-   the same honesty reaches the CLI: `friday run` exits 6 instead of fabricating a result
+   the same honesty reaches the CLI: `ink run` exits 6 instead of fabricating a result
    (`internal/cli/run.go`; `internal/cli/run_test.go:TestRunExitCodes`).
 
 4. **Secrets never enter config, logs, or memory.** `internal/redact` scrubs built-in secret
@@ -57,11 +61,11 @@ Every claim below points at a concrete identifier and the test that enforces it,
    `internal/core/domain_test.go:TestPrivacyFallback`).
 
 7. **A repository cannot reach the network or run commands on its own say-so.** The
-   project config layer (`.friday/config.toml`) merges freely except for the keys that
+   project config layer (`.ink/config.toml`) merges freely except for the keys that
    can do real damage — `providers.*`, `mcp.*`, `lsp.*`, `tools.*`, `sandbox.*`,
    `budgets.*`, `telemetry.*` (`config.ProjectLayerGatedPrefixes`) and
    `project.commands.*`. Those merge only after a yes — at the startup prompt or via
-   `friday trust` — on that exact file content; a no binds to that content too, so an
+   `ink trust` — on that exact file content; a no binds to that content too, so an
    edit asks again. Until then they are dropped and recorded as a rejected provenance entry
    (`Entry.Rejected`) rather than silently ignored or applied. `test/invalid-project`
    exists specifically to trip this — see
@@ -69,21 +73,21 @@ Every claim below points at a concrete identifier and the test that enforces it,
 
 ## What "local-first" means, concretely
 
-- **User config** lives at the first of `$FRIDAY_CONFIG_DIR`, `$XDG_CONFIG_HOME/friday`, or
-  `$HOME/.config/friday` that is set (`config.Dir`, `internal/config/paths.go`;
+- **User config** lives at the first of `$INK_CONFIG_DIR`, `$XDG_CONFIG_HOME/ink`, or
+  `$HOME/.config/ink` that is set (`config.Dir`, `internal/config/paths.go`;
   `internal/config/load_test.go:TestDir`).
-- **Project config** lives at `.friday/config.toml` under the project root. The project root
+- **Project config** lives at `.ink/config.toml` under the project root. The project root
   defaults to the current working directory unless `--project` or workspace mode points
-  Friday elsewhere (`internal/config/paths.go`; `internal/cli/config.go`).
-- **No service, no account.** The boundaries Friday talks to are named once, in
+  Ink elsewhere (`internal/config/paths.go`; `internal/cli/config.go`).
+- **No service, no account.** The boundaries Ink talks to are named once, in
   `internal/core/contracts.go`: a model provider, a sandbox, typed tools, a
   policy engine, an evaluation runner. Each is either a local implementation or an explicit
   `Unavailable*` stub. The default `[providers]` table is empty until the user connects
   or configures a provider, and the default sandbox is the local `process` provider
   (`internal/config/defaults.toml`).
 - **Telemetry stays on the machine.** The local JSONL trail is redacted per
-  `telemetry.privacy` (`internal/config/defaults.toml`); Friday has no hosted
+  `telemetry.privacy` (`internal/config/defaults.toml`); Ink has no hosted
   telemetry export path.
 - **Runtime state** — event logs, sessions, compaction state, and local run data —
-  lives under `.friday/local/` or the Friday home directory and is excluded from
+  lives under `.ink/local/` or the Ink home directory and is excluded from
   version control (`.gitignore`).

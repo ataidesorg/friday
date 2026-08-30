@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# Install the latest Friday release for macOS, Linux, WSL, or Git Bash.
+# Install the latest Ink release for macOS, Linux, WSL, or Git Bash.
 set -euo pipefail
 
-repo="${FRIDAY_REPO:-ataidesorg/friday}"
-version="${FRIDAY_VERSION:-latest}"
+repo="${INK_REPO:-ataidesorg/ink}"
+version="${INK_VERSION:-latest}"
 
 fail() {
-  echo "friday install: $*" >&2
+  echo "ink install: $*" >&2
   exit 1
 }
 
@@ -40,7 +40,7 @@ case "$(uname -m)" in
   *) fail "unsupported architecture: $(uname -m)" ;;
 esac
 
-install_dir="${FRIDAY_INSTALL_DIR:-}"
+install_dir="${INK_INSTALL_DIR:-}"
 if [ -z "$install_dir" ] && [ -n "${XDG_BIN_DIR:-}" ]; then
   install_dir="$XDG_BIN_DIR"
 fi
@@ -48,14 +48,14 @@ if [ -z "$install_dir" ]; then
   install_dir="$HOME/bin"
 fi
 if ! mkdir -p "$install_dir" >/dev/null 2>&1; then
-  install_dir="$HOME/.friday/bin"
+  install_dir="$HOME/.ink/bin"
   mkdir -p "$install_dir"
 fi
 
-asset="friday_${version}_${os}_${arch}.tar.gz"
+asset="ink_${version}_${os}_${arch}.tar.gz"
 base="https://github.com/${repo}/releases"
 if [ "$version" = "latest" ]; then
-  asset="friday_${os}_${arch}.tar.gz"
+  asset="ink_${os}_${arch}.tar.gz"
   url="${base}/latest/download/${asset}"
   sums_url="${base}/latest/download/checksums.txt"
 else
@@ -69,7 +69,7 @@ trap 'rm -rf "$tmp"' EXIT
 archive="$tmp/$asset"
 checksums="$tmp/checksums.txt"
 
-echo "Installing Friday ${version} for ${os}/${arch}"
+echo "Installing Ink ${version} for ${os}/${arch}"
 download "$url" "$archive"
 download "$sums_url" "$checksums"
 
@@ -87,9 +87,9 @@ need tar
 mkdir -p "$tmp/unpacked"
 tar -xzf "$archive" -C "$tmp/unpacked"
 
-bin="friday"
+bin="ink"
 
-# Archives contain friday_<version>_<os>_<arch>/$bin. The latest alias
+# Archives contain ink_<version>_<os>_<arch>/$bin. The latest alias
 # tarball keeps that inner directory name, so accept exactly one match.
 matches=("$tmp/unpacked"/*/"$bin")
 if [ "${#matches[@]}" -ne 1 ] || [ ! -f "${matches[0]}" ]; then
@@ -107,5 +107,5 @@ fi
 "$install_dir/$bin" version 2>/dev/null || true
 case ":$PATH:" in
   *":$install_dir:"*) ;;
-  *) echo "Add $install_dir to your PATH, then run: friday version" ;;
+  *) echo "Add $install_dir to your PATH, then run: ink version" ;;
 esac

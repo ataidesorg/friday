@@ -1,14 +1,14 @@
-# Friday provider registry.
+# Ink provider registry.
 #
 # Compiled into the binary. This list is short on purpose: an entry earns its
 # place by being reachable, or by being the only thing that exercises an
 # implemented wire or auth path. Every other vendor is reachable through
-# `openrouter`, or by pointing `openai` at a custom base_url — Friday does not
+# `openrouter`, or by pointing `openai` at a custom base_url — Ink does not
 # need a row per vendor to talk to one.
 #
-# An empty base_url means Friday has not confirmed an endpoint: the entry is
+# An empty base_url means Ink has not confirmed an endpoint: the entry is
 # unusable until the user sets providers.<id>.base_url. status is "unverified"
-# until a Friday test completes a real call (never claim more), then
+# until a Ink test completes a real call (never claim more), then
 # "verified"; an entry that stops working degrades to "broken".
 
 [[provider]]
@@ -20,7 +20,7 @@ base_url_env = "ACTUAL_BASE_URL"
 privacy = "public_cloud"
 status = "unverified"
 auth = { kind = "key", env = ["ACTUAL_API_KEY"], optional = true }
-notes = "the one optional-key cloud row: proves Friday skips a cloud probe with no key rather than treating it as keyless local; loopback deployment (http://127.0.0.1:8080) runs keyless, set privacy local in config for it"
+notes = "the one optional-key cloud row: proves Ink skips a cloud probe with no key rather than treating it as keyless local; loopback deployment (http://127.0.0.1:8080) runs keyless, set privacy local in config for it"
 
 [[provider]]
 id = "anthropic"
@@ -40,7 +40,7 @@ privacy = "public_cloud"
 status = "unverified"
 auth = { kind = "external_cli", env = ["ANTHROPIC_TOKEN", "CLAUDE_CODE_OAUTH_TOKEN"], opt_in_risk = true }
 oauth = { auth_url = "https://claude.ai/oauth/authorize", token_url = "https://console.anthropic.com/v1/oauth/token", client_id = "9d1c250a-e61b-44d9-88ed-5944d1962f5e", scopes = ["org:create_api_key", "user:profile", "user:inference"], redirect_uri = "https://console.anthropic.com/oauth/code/callback" }
-notes = "Claude Code credential reuse; Anthropic's terms explicitly prohibit subscription OAuth tokens in third-party tools (2026-02-20 update); endpoints recorded from public third-party sources, unverified by Friday"
+notes = "Claude Code credential reuse; Anthropic's terms explicitly prohibit subscription OAuth tokens in third-party tools (2026-02-20 update); endpoints recorded from public third-party sources, unverified by Ink"
 
 [[provider]]
 id = "azure-foundry"
@@ -71,7 +71,7 @@ privacy = "public_cloud"
 status = "unverified"
 auth = { kind = "oauth2_pkce" }
 oauth = { auth_url = "https://auth.openai.com/oauth/authorize", token_url = "https://auth.openai.com/oauth/token", client_id = "app_EMoamEEZ73f0CkXaXp7hrann", scopes = ["openid", "profile", "email", "offline_access"], redirect_port = 1455 }
-notes = "ChatGPT sign-in; OpenAI documents the flow publicly (developers.openai.com/codex/auth) and third-party harness use is established practice as of 2026; endpoints and chat base URL recorded from the public codex CLI source, unverified by Friday"
+notes = "ChatGPT sign-in; OpenAI documents the flow publicly (developers.openai.com/codex/auth) and third-party harness use is established practice as of 2026; endpoints and chat base URL recorded from the public codex CLI source, unverified by Ink"
 
 [[provider]]
 id = "copilot"
@@ -183,4 +183,4 @@ privacy = "public_cloud"
 status = "unverified"
 auth = { kind = "oauth2_device" }
 oauth = { auth_url = "https://auth.x.ai/oauth2/authorize", token_url = "https://auth.x.ai/oauth2/token", device_auth_url = "https://auth.x.ai/oauth2/device/code", client_id = "b1a00492-073a-47ea-816f-4c329264a828", scopes = ["openid", "profile", "email", "offline_access", "grok-cli:access", "api:access"] }
-notes = "SuperGrok / X Premium+ sign-in; endpoints from the auth.x.ai OIDC discovery document, client id from xAI's own Grok CLI installer (x.ai/cli/install.sh); refresh tokens rotate on every refresh; unverified by Friday"
+notes = "SuperGrok / X Premium+ sign-in; endpoints from the auth.x.ai OIDC discovery document, client id from xAI's own Grok CLI installer (x.ai/cli/install.sh); refresh tokens rotate on every refresh; unverified by Ink"

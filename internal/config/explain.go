@@ -32,7 +32,7 @@ func (r *Resolved) Explain(key string) (Explanation, bool) {
 //
 //	sandbox.provider = "process"
 //	  defaults → "process"
-//	  project (/repo/.friday/config.toml) → "container"  [rejected: untrusted]
+//	  project (/repo/.ink/config.toml) → "container"  [rejected: untrusted]
 func (e Explanation) String() string {
 	var b strings.Builder
 	fmt.Fprintf(&b, "%s = %s", e.Key, formatValue(e.Value))

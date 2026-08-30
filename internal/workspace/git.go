@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ataidesorg/friday/internal/core"
+	"github.com/ataidesorg/ink/internal/core"
 )
 
 // gitTimeout bounds every git invocation.

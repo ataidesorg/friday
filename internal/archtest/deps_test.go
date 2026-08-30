@@ -1,5 +1,5 @@
 // Package archtest turns the dependency direction into a test:
-// redact ← core ← providers ← {config, fsutil} ← {models, tools, policy, sandbox, observability, workspace} ← runtime ← {tui, evals} ← cli ← cmd/friday.
+// redact ← core ← providers ← {config, fsutil} ← {models, tools, policy, sandbox, observability, workspace} ← runtime ← {tui, evals} ← cli ← cmd/ink.
 // internal/providers is the embedded provider registry: pure vocabulary data
 // (ids, wires, auth kinds), below config so validation can name unknown kinds.
 // New packages must be registered here, and only the sandbox providers and
@@ -14,7 +14,7 @@ import (
 	"testing"
 )
 
-const module = "github.com/ataidesorg/friday"
+const module = "github.com/ataidesorg/ink"
 
 // allowed maps each package to the internal packages it may import.
 var allowed = map[string][]string{
@@ -48,9 +48,9 @@ var allowed = map[string][]string{
 	module + "/internal/tui":               {"internal/core", "internal/runtime"},
 	module + "/internal/evals":             {"internal/core", "internal/fsutil", "internal/redact", "internal/tools", "internal/runtime", "internal/workspace", "internal/observability", "internal/config", "internal/policy", "internal/sandbox", "internal/sandbox/process", "internal/models/mock"},
 	module + "/internal/cli":               {"internal/core", "internal/config", "internal/redact", "internal/buildinfo", "internal/observability", "internal/runtime", "internal/tui", "internal/policy", "internal/tools", "internal/sandbox", "internal/sandbox/process", "internal/sandbox/container", "internal/workspace", "internal/models/mock", "internal/evals", "internal/providers", "internal/auth", "internal/models", "internal/models/wire", "internal/models/catalog", "internal/routing", "internal/session", "internal/commands", "internal/skills", "internal/mcp", "internal/lsp"},
-	// cmd/friday is the process entrypoint and nothing else: two lines
+	// cmd/ink is the process entrypoint and nothing else: two lines
 	// over cli.Main, so the whole CLI stays testable as a library.
-	module + "/cmd/friday": {"internal/cli"},
+	module + "/cmd/ink": {"internal/cli"},
 }
 
 // execAllowed are the only packages (by prefix) whose product code may
@@ -59,7 +59,7 @@ var allowed = map[string][]string{
 // are process spawns by nature; both are user-layer-configured and
 // attributable), internal/mcp, internal/lsp, internal/tui (user-initiated
 // $VISUAL/$EDITOR for /edit-prompt; argv is the editor plus a temp file
-// Friday owns), and internal/cli for the fixed local clipboard helper. internal/workspace runs git argv-only with hooks disabled
+// Ink owns), and internal/cli for the fixed local clipboard helper. internal/workspace runs git argv-only with hooks disabled
 // (no shell, fixed subcommands). Test files are exempt: they spawn git and
 // `go list` to build fixtures.
 var execAllowed = []string{"internal/sandbox/", "internal/workspace", "internal/auth", "internal/mcp", "internal/lsp", "internal/tui", "internal/cli"}

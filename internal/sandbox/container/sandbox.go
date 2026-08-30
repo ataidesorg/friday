@@ -11,9 +11,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ataidesorg/friday/internal/core"
-	"github.com/ataidesorg/friday/internal/fsutil"
-	"github.com/ataidesorg/friday/internal/sandbox"
+	"github.com/ataidesorg/ink/internal/core"
+	"github.com/ataidesorg/ink/internal/fsutil"
+	"github.com/ataidesorg/ink/internal/sandbox"
 )
 
 // Sandbox is one running container plus its bind-mounted tree.
@@ -136,7 +136,7 @@ func (s *Sandbox) Snapshot(ctx context.Context) (core.SnapshotRef, error) {
 	if s.isDestroyed() {
 		return core.SnapshotRef{}, fmt.Errorf("%w: sandbox %s destroyed", core.ErrUnavailable, s.id)
 	}
-	tag := "friday-snap-" + string(core.NewSandboxID())
+	tag := "ink-snap-" + string(core.NewSandboxID())
 	res, err := s.run(ctx, []string{"commit", s.cid, tag}, "")
 	if err != nil {
 		return core.SnapshotRef{}, fmt.Errorf("%w: %s commit: %w", core.ErrUnavailable, s.runtime, err)

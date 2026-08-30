@@ -1,6 +1,6 @@
 package auth
 
-import "github.com/ataidesorg/friday/internal/config"
+import "github.com/ataidesorg/ink/internal/config"
 
 // resolveEnv reads ref.Name from the credential environment.
 func (r *Resolver) resolveEnv(ref config.AuthRef) (*Credential, error) {

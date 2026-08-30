@@ -13,9 +13,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ataidesorg/friday/internal/core"
-	"github.com/ataidesorg/friday/internal/redact"
-	"github.com/ataidesorg/friday/internal/sandbox"
+	"github.com/ataidesorg/ink/internal/core"
+	"github.com/ataidesorg/ink/internal/redact"
+	"github.com/ataidesorg/ink/internal/sandbox"
 )
 
 // secretish is assembled from fragments so the repo never holds a secret-shaped literal.
@@ -148,7 +148,7 @@ func TestCreateFailsClosed(t *testing.T) {
 func TestExecEnvIsScrubbed(t *testing.T) {
 	needSh(t)
 	t.Setenv("HTTPS_PROXY", "http://proxy.example:3128")
-	t.Setenv("FRIDAY_HOST_ONLY", "1")
+	t.Setenv("INK_HOST_ONLY", "1")
 	hostPath := os.Getenv("PATH")
 	sb := create(t, sandbox.Options{}, func(s *core.SandboxSpec) {
 		s.Env = map[string]string{"FOO": "bar", "http_proxy": "http://proxy.example:3128", "HOME": "/tmp/evil"}
@@ -160,7 +160,7 @@ func TestExecEnvIsScrubbed(t *testing.T) {
 			t.Errorf("missing %q in:\n%s", want, out)
 		}
 	}
-	for _, forbid := range []string{"HTTPS_PROXY=", "http_proxy=", "FRIDAY_HOST_ONLY=", "PATH=" + hostPath + "\n", "HOME=/tmp/evil"} {
+	for _, forbid := range []string{"HTTPS_PROXY=", "http_proxy=", "INK_HOST_ONLY=", "PATH=" + hostPath + "\n", "HOME=/tmp/evil"} {
 		if strings.Contains(out, forbid) {
 			t.Errorf("leaked %q in:\n%s", forbid, out)
 		}

@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ataidesorg/friday/internal/tui"
+	"github.com/ataidesorg/ink/internal/tui"
 )
 
 func TestSettingsRoundTrip(t *testing.T) {
@@ -93,24 +93,24 @@ func TestLoadThemes(t *testing.T) {
 
 func TestApplyEnvFileSetsMissingOnly(t *testing.T) {
 	p := filepath.Join(t.TempDir(), "env")
-	body := "# comment\nexport FRIDAY_TEST_A=alpha\nFRIDAY_TEST_B=\"beta value\"\nFRIDAY_TEST_C='gamma'\ninvalid\n=emptyname\n"
+	body := "# comment\nexport INK_TEST_A=alpha\nINK_TEST_B=\"beta value\"\nINK_TEST_C='gamma'\ninvalid\n=emptyname\n"
 	if err := os.WriteFile(p, []byte(body), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	got := map[string]string{"FRIDAY_TEST_B": "keep"}
+	got := map[string]string{"INK_TEST_B": "keep"}
 	set := func(k, v string) error { got[k] = v; return nil }
 	get := func(k string) string { return got[k] }
 	if err := applyEnvFile(p, set, get); err != nil {
 		t.Fatal(err)
 	}
-	if got["FRIDAY_TEST_A"] != "alpha" {
-		t.Errorf("A=%q", got["FRIDAY_TEST_A"])
+	if got["INK_TEST_A"] != "alpha" {
+		t.Errorf("A=%q", got["INK_TEST_A"])
 	}
-	if got["FRIDAY_TEST_B"] != "keep" {
-		t.Errorf("existing must win, B=%q", got["FRIDAY_TEST_B"])
+	if got["INK_TEST_B"] != "keep" {
+		t.Errorf("existing must win, B=%q", got["INK_TEST_B"])
 	}
-	if got["FRIDAY_TEST_C"] != "gamma" {
-		t.Errorf("C=%q", got["FRIDAY_TEST_C"])
+	if got["INK_TEST_C"] != "gamma" {
+		t.Errorf("C=%q", got["INK_TEST_C"])
 	}
 }
 

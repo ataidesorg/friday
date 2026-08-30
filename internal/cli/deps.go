@@ -13,17 +13,17 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ataidesorg/friday/internal/config"
-	"github.com/ataidesorg/friday/internal/core"
-	"github.com/ataidesorg/friday/internal/lsp"
-	"github.com/ataidesorg/friday/internal/runtime"
-	"github.com/ataidesorg/friday/internal/workspace"
+	"github.com/ataidesorg/ink/internal/config"
+	"github.com/ataidesorg/ink/internal/core"
+	"github.com/ataidesorg/ink/internal/lsp"
+	"github.com/ataidesorg/ink/internal/runtime"
+	"github.com/ataidesorg/ink/internal/workspace"
 )
 
 // discoverRules resolves the instruction files a session loads: the configured
 // [project] instructions plus an auto-discovered repo rules file (AGENTS.md,
 // or CLAUDE.md only when no AGENTS.md exists) and the user's global rules at
-// <friday-home>/AGENTS.md. Repo paths stay relative so the runtime confines
+// <ink-home>/AGENTS.md. Repo paths stay relative so the runtime confines
 // them to the project root; the global path is absolute and CLI-owned.
 func discoverRules(root, home string, configured []string) (project, global []string) {
 	project = slices.Clone(configured)
@@ -141,14 +141,14 @@ func lspManager(cfg map[string]config.LSPServerConfig, root string) *lsp.Manager
 }
 
 // worktreeOpts turns a --worktree flag into workspace options: the named
-// worktree lives under <friday-home>/worktrees/<hash-of-root>, outside the
+// worktree lives under <ink-home>/worktrees/<hash-of-root>, outside the
 // checkout, so it never shows up as dirt in the primary tree. An empty name
 // returns o unchanged.
 func worktreeOpts(o workspace.Options, environ []string, name string) (workspace.Options, error) {
 	if name == "" {
 		return o, nil
 	}
-	home, err := config.FridayHome(envLookup(environ))
+	home, err := config.Home(envLookup(environ))
 	if err != nil {
 		return workspace.Options{}, fmt.Errorf("worktree home: %w", err)
 	}

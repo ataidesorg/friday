@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/ataidesorg/friday/internal/core"
-	"github.com/ataidesorg/friday/internal/redact"
+	"github.com/ataidesorg/ink/internal/core"
+	"github.com/ataidesorg/ink/internal/redact"
 )
 
 // DefaultMaxOutputBytes caps each of stdout and stderr per command.

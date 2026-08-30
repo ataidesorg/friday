@@ -1,6 +1,6 @@
 package core
 
-// HarnessKind is the product surface a task runs under. Friday ships the
+// HarnessKind is the product surface a task runs under. Ink ships the
 // coding harness only.
 type HarnessKind string
 

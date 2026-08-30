@@ -1,4 +1,4 @@
-// Package providers holds Friday's embedded provider registry: the Hermes
+// Package providers holds Ink's embedded provider registry: the Hermes
 // Agent parity matrix as data. A provider is a registry entry,
 // not code; the three wire adapters consume entries. The package sits below
 // internal/config so validation can reject unknown provider kinds, and it
@@ -68,7 +68,7 @@ type Auth struct {
 
 // OAuth carries an entry's OAuth endpoints. Populated only when the values
 // are recorded with a source; an empty field means "not
-// verified by Friday" and the flow fails closed until user config supplies
+// verified by Ink" and the flow fails closed until user config supplies
 // it (providers.<id>.oauth). RedirectURI, when set, is a vendor-hosted
 // code-display page: login switches to paste mode instead of a loopback
 // listener. RedirectPort pins the loopback port for IdPs that register an
@@ -102,7 +102,7 @@ type Entry struct {
 	OAuth        OAuth             `toml:"oauth"`
 	Notes        string            `toml:"notes"`
 	// KeyURL is where the vendor issues API keys — a setup hint the connect
-	// wizard shows, never a URL Friday fetches.
+	// wizard shows, never a URL Ink fetches.
 	KeyURL string `toml:"key_url"`
 }
 
@@ -169,7 +169,7 @@ var builtinKinds = []string{"mock", "openai_compatible"}
 // entry, and on a miss suggests the nearest known name.
 func KnownKind(kind string) error {
 	if kind == "" {
-		return fmt.Errorf("provider kind is empty; use a registry id (see `friday providers`), %q, or %q", "openai_compatible", "mock")
+		return fmt.Errorf("provider kind is empty; use a registry id (see `ink providers`), %q, or %q", "openai_compatible", "mock")
 	}
 	for _, b := range builtinKinds {
 		if kind == b {
@@ -183,7 +183,7 @@ func KnownKind(kind string) error {
 	if near := nearest(kind); near != "" {
 		msg += fmt.Sprintf("; did you mean %q?", near)
 	}
-	return fmt.Errorf("%s (see `friday providers` for the registry)", msg)
+	return fmt.Errorf("%s (see `ink providers` for the registry)", msg)
 }
 
 // nearest returns the known name with the smallest edit distance from

@@ -2,7 +2,7 @@ package auth
 
 // AWS credential chain: environment -> shared credentials file ->
 // shared config file -> CLI cache -> IMDS (only when the owner set
-// AWS_EC2_METADATA_SERVICE_ENDPOINT — Friday never probes link-local
+// AWS_EC2_METADATA_SERVICE_ENDPOINT — Ink never probes link-local
 // addresses uninvited). Credentials are memory-only, redact-registered the
 // moment they resolve, and zeroed by the caller after each request.
 

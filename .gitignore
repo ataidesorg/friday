@@ -27,12 +27,12 @@ go.work.sum
 /HANDOVER.md
 /handoff/
 /tasks/
-/.friday
+/.ink
 
 # Local databases and state
 *.db
 *.sqlite*
-.friday/local/
+.ink/local/
 
 # Secrets and environment files — never enter the repository
 .env*
@@ -47,4 +47,4 @@ go.work.sum
 
 # Test artifacts
 coverage.out
-/friday
+/ink

@@ -6,7 +6,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/ataidesorg/friday/internal/core"
+	"github.com/ataidesorg/ink/internal/core"
 )
 
 // Provider replays a Script one turn per Complete call.

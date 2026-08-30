@@ -10,7 +10,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 
-	"github.com/ataidesorg/friday/internal/core"
+	"github.com/ataidesorg/ink/internal/core"
 )
 
 const (
@@ -156,9 +156,9 @@ func (m Model) refresh() Model {
 
 // View implements tea.Model.
 func (m Model) View() string {
-	title := "friday · " + string(m.Phase)
+	title := "ink · " + string(m.Phase)
 	if m.Done {
-		title = "friday · done"
+		title = "ink · done"
 	}
 	parts := []string{m.style.wrap(m.width, m.style.header.Render(title)), m.vp.View(), m.style.wrap(m.width, m.style.dim.Render(m.status()))}
 	switch {

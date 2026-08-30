@@ -12,10 +12,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ataidesorg/friday/internal/core"
-	"github.com/ataidesorg/friday/internal/fsutil"
-	"github.com/ataidesorg/friday/internal/redact"
-	"github.com/ataidesorg/friday/internal/tools"
+	"github.com/ataidesorg/ink/internal/core"
+	"github.com/ataidesorg/ink/internal/fsutil"
+	"github.com/ataidesorg/ink/internal/redact"
+	"github.com/ataidesorg/ink/internal/tools"
 )
 
 // CheckEnv is what a finished run leaves behind for the checks: the
@@ -33,7 +33,7 @@ type CheckEnv struct {
 
 // scanSkip are workspace directories the leak scan leaves out: git objects
 // are compressed and the run state is already covered by env.Trail.
-var scanSkip = map[string]bool{".git": true, filepath.Join(".friday", "local"): true}
+var scanSkip = map[string]bool{".git": true, filepath.Join(".ink", "local"): true}
 
 // Check evaluates one expectation. A false result is a scenario failure; an
 // error means the check itself could not run (bad path, executor failure,

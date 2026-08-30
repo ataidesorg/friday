@@ -1,6 +1,6 @@
 // Package tui shows a run to a human: a Bubble Tea view on a terminal and
 // the identical lines as plain text otherwise. Both paths feed the same
-// Model, so `friday run --no-tui | cat` prints exactly what the terminal
+// Model, so `ink run --no-tui | cat` prints exactly what the terminal
 // shows, minus layout and colour.
 //
 // Nothing here reads the environment or the workspace; everything rendered
@@ -11,8 +11,8 @@ import (
 	"context"
 	"io"
 
-	"github.com/ataidesorg/friday/internal/core"
-	"github.com/ataidesorg/friday/internal/runtime"
+	"github.com/ataidesorg/ink/internal/core"
+	"github.com/ataidesorg/ink/internal/runtime"
 )
 
 // Options configure New.

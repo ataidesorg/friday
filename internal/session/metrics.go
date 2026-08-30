@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/ataidesorg/friday/internal/core"
-	"github.com/ataidesorg/friday/internal/redact"
+	"github.com/ataidesorg/ink/internal/core"
+	"github.com/ataidesorg/ink/internal/redact"
 )
 
 const logsDir = "logs"
@@ -63,7 +63,7 @@ func (l *MetricsLog) Append(m Metric) error {
 	if err := os.MkdirAll(filepath.Dir(l.path), dirPerm); err != nil {
 		return fmt.Errorf("create logs dir: %w", err)
 	}
-	f, err := os.OpenFile(l.path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, filePerm) //nolint:gosec // metrics log under the Friday home
+	f, err := os.OpenFile(l.path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, filePerm) //nolint:gosec // metrics log under the Ink home
 	if err != nil {
 		return fmt.Errorf("open metrics log: %w", err)
 	}
