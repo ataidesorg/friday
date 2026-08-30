@@ -1,9 +1,9 @@
-# Friday compiled defaults. This file is the complete configuration
+# Ink compiled defaults. This file is the complete configuration
 # reference: every schema key lives here. User, profile, and project files
-# override these; FRIDAY__ env vars and CLI --set come last.
+# override these; INK__ env vars and CLI --set come last.
 #
-#   friday config show      effective merged config
-#   friday config explain K  one key and which layer set it
+#   ink config show      effective merged config
+#   ink config explain K  one key and which layer set it
 #
 # Secrets never belong in any of these files. Providers reference
 # credentials through an auth table:
@@ -11,7 +11,7 @@
 #   [providers.example.auth]
 #   source = "env"                 # env | keyring | secret_store | command
 #   name   = "EXAMPLE_API_KEY"     # env var (source = "env")
-#   # service = "friday"  account = "example"   (source = "keyring")
+#   # service = "ink"  account = "example"   (source = "keyring")
 #   # id = "..."                                 (source = "secret_store")
 #   # command = ["op", "read", "..."]            (source = "command"; user layer only)
 
@@ -23,7 +23,7 @@ schema_version = 1
 active = "default"
 
 [profiles.default]
-# Free-text label shown by `friday config show`.
+# Free-text label shown by `ink config show`.
 description = "Strict, concise default profile"
 # How verbose the agent is. Injected into the system prompt as <style>.
 #   concise   = short answers, no preamble (this default)
@@ -97,7 +97,7 @@ wall_clock_secs = 600
 default_effect = "deny"
 # Tools that run with no prompt. Keep this to read-only work.
 allow = ["read_file", "list_dir", "search", "ask_user_question", "todo_write", "goal_complete", "goal_blocked", "goal_wait"]
-# Tools that always need a human yes (or `friday run --yes` / /always-approve).
+# Tools that always need a human yes (or `ink run --yes` / /always-approve).
 # run_command also needs an argv prefix from tools.commands.allowed or
 # project.commands.
 require_approval = ["write_file", "apply_patch", "run_command"]
@@ -116,7 +116,7 @@ deny = []
 allowed = []
 
 [telemetry]
-# Local JSONL event trail under the project (replay with `friday trace`).
+# Local JSONL event trail under the project (replay with `ink trace`).
 # Nothing is ever sent off the machine. This is not product analytics.
 # How much free text the trail keeps after secret redaction.
 #   standard  = secrets scrubbed, prose kept
@@ -124,7 +124,7 @@ allowed = []
 privacy = "standard"
 
 [evals]
-# What `friday eval` does with a failing scenario.
+# What `ink eval` does with a failing scenario.
 #   required  = the eval run fails (this default)
 #   advisory  = report the failure, do not fail the process
 gate = "required"
@@ -132,10 +132,10 @@ gate = "required"
 min_pass_rate = 100
 
 [project]
-# Project display name; usually set in .friday/config.toml.
+# Project display name; usually set in .ink/config.toml.
 name = ""
 # Instruction files read into the project context layer, in order.
-# Example: instructions = ["AGENTS.md", ".friday/instructions.md"]
+# Example: instructions = ["AGENTS.md", ".ink/instructions.md"]
 instructions = []
 
 [project.commands]
@@ -144,8 +144,8 @@ instructions = []
 # Values here are also allowed argv prefixes for run_command once approved.
 
 [tui]
-# Launch theme. Built-ins: friday, dark, light, ansi.
-# Empty = the built-in default. A live /theme pick saved in the Friday home
+# Launch theme. Built-ins: ink, dark, light, ansi.
+# Empty = the built-in default. A live /theme pick saved in the Ink home
 # wins over this.
 theme = ""
 # Hide warnings about guardrails that could not be enforced: an unpriced

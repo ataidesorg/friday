@@ -14,8 +14,8 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 
-	"github.com/ataidesorg/friday/internal/core"
-	"github.com/ataidesorg/friday/internal/runtime"
+	"github.com/ataidesorg/ink/internal/core"
+	"github.com/ataidesorg/ink/internal/runtime"
 )
 
 // Runner executes one conversation turn to completion, forwarding live

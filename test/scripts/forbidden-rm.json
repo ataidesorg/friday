@@ -40,7 +40,7 @@
           "name": "write_file",
           "arguments": {
             "path": "farewell_test.go",
-            "content": "package sample\n\nimport \"testing\"\n\nfunc TestFarewell(t *testing.T) {\n\tcases := map[string]string{\"\": \"Goodbye, world!\", \"Friday\": \"Goodbye, Friday!\"}\n\tfor in, want := range cases {\n\t\tif got := Farewell(in); got != want {\n\t\t\tt.Errorf(\"Farewell(%q) = %q, want %q\", in, got, want)\n\t\t}\n\t}\n}\n"
+            "content": "package sample\n\nimport \"testing\"\n\nfunc TestFarewell(t *testing.T) {\n\tcases := map[string]string{\"\": \"Goodbye, world!\", \"Ink\": \"Goodbye, Ink!\"}\n\tfor in, want := range cases {\n\t\tif got := Farewell(in); got != want {\n\t\t\tt.Errorf(\"Farewell(%q) = %q, want %q\", in, got, want)\n\t\t}\n\t}\n}\n"
           }
         }
       ]

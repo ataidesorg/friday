@@ -18,8 +18,8 @@ import (
 	"time"
 	"unicode"
 
-	"github.com/ataidesorg/friday/internal/config"
-	"github.com/ataidesorg/friday/internal/providers"
+	"github.com/ataidesorg/ink/internal/config"
+	"github.com/ataidesorg/ink/internal/providers"
 )
 
 // oauthStorePrefix namespaces token sets in the encrypted secret store so
@@ -90,7 +90,7 @@ func MergedOAuth(entry providers.Entry, cfg *config.ProviderConfig) providers.OA
 }
 
 // requirePKCEEndpoints fails closed when the merged block is unusable for
-// the authorization-code flow. Friday never guesses endpoints.
+// the authorization-code flow. Ink never guesses endpoints.
 func requirePKCEEndpoints(id string, ep providers.OAuth) error {
 	var missing []string
 	if ep.AuthURL == "" {
@@ -418,7 +418,7 @@ func (r *Resolver) loadTokenSet(id string) (tokenSet, bool, error) {
 	}
 	var ts tokenSet
 	if err := json.Unmarshal([]byte(raw), &ts); err != nil {
-		return tokenSet{}, false, fmt.Errorf("stored oauth token for %s is corrupt; run `friday auth login %s`", id, id)
+		return tokenSet{}, false, fmt.Errorf("stored oauth token for %s is corrupt; run `ink auth login %s`", id, id)
 	}
 	// A fresh process has a fresh redactor: re-register on every load so a
 	// stored token can never print unmasked.
@@ -438,7 +438,7 @@ func (r *Resolver) resolveOAuth2(ctx context.Context, entry providers.Entry, cfg
 	}
 	if !found {
 		return nil, &ErrNoCredential{Source: "oauth", Where: "secret store " + oauthStorePrefix + entry.ID,
-			Hint: "run `friday auth login " + entry.ID + "`"}
+			Hint: "run `ink auth login " + entry.ID + "`"}
 	}
 	if ts.expired(r.now()) {
 		ts, err = r.refreshTokenSet(ctx, entry.ID, MergedOAuth(entry, cfg), ts)
@@ -452,10 +452,10 @@ func (r *Resolver) resolveOAuth2(ctx context.Context, entry providers.Entry, cfg
 // refreshTokenSet exchanges the refresh token and persists the new set.
 func (r *Resolver) refreshTokenSet(ctx context.Context, id string, ep providers.OAuth, ts tokenSet) (tokenSet, error) {
 	if ts.RefreshToken == "" {
-		return tokenSet{}, fmt.Errorf("oauth token for %s expired and no refresh token is stored; run `friday auth login %s`", id, id)
+		return tokenSet{}, fmt.Errorf("oauth token for %s expired and no refresh token is stored; run `ink auth login %s`", id, id)
 	}
 	if ep.TokenURL == "" || ep.ClientID == "" {
-		return tokenSet{}, fmt.Errorf("oauth token for %s expired and the token endpoint is unverified; set providers.%s.oauth.{token_url,client_id} or run `friday auth login %s`", id, id, id)
+		return tokenSet{}, fmt.Errorf("oauth token for %s expired and the token endpoint is unverified; set providers.%s.oauth.{token_url,client_id} or run `ink auth login %s`", id, id, id)
 	}
 	r.register.AddLiteral(ts.RefreshToken)
 	form := url.Values{

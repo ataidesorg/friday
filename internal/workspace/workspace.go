@@ -14,8 +14,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/ataidesorg/friday/internal/core"
-	"github.com/ataidesorg/friday/internal/fsutil"
+	"github.com/ataidesorg/ink/internal/core"
+	"github.com/ataidesorg/ink/internal/fsutil"
 )
 
 // Mode selects how the workspace is materialised.
@@ -49,7 +49,7 @@ type Options struct {
 type Cleanup func(ctx context.Context, keep bool) error
 
 // Ephemeral copies leave out per-machine run state.
-var copyExclude = []string{".friday/local"}
+var copyExclude = []string{".ink/local"}
 
 // Prepare resolves o.Root, inspects its git state, and returns the workspace
 // a run may write to plus the cleanup that releases it.
@@ -85,7 +85,7 @@ func Prepare(ctx context.Context, o Options) (core.Workspace, Cleanup, error) {
 }
 
 func ephemeral(ctx context.Context, ws core.Workspace) (core.Workspace, Cleanup, error) {
-	tmp, err := os.MkdirTemp("", "friday-ws-*")
+	tmp, err := os.MkdirTemp("", "ink-ws-*")
 	if err != nil {
 		return core.Workspace{}, nil, err
 	}

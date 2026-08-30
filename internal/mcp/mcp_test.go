@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ataidesorg/friday/internal/core"
+	"github.com/ataidesorg/ink/internal/core"
 )
 
 // fakeServer speaks just enough MCP over pipes: initialize, tools/list with

@@ -11,19 +11,19 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/ataidesorg/friday/internal/buildinfo"
-	"github.com/ataidesorg/friday/internal/config"
-	"github.com/ataidesorg/friday/internal/core"
-	"github.com/ataidesorg/friday/internal/evals"
-	"github.com/ataidesorg/friday/internal/models/mock"
-	"github.com/ataidesorg/friday/internal/observability"
-	"github.com/ataidesorg/friday/internal/redact"
+	"github.com/ataidesorg/ink/internal/buildinfo"
+	"github.com/ataidesorg/ink/internal/config"
+	"github.com/ataidesorg/ink/internal/core"
+	"github.com/ataidesorg/ink/internal/evals"
+	"github.com/ataidesorg/ink/internal/models/mock"
+	"github.com/ataidesorg/ink/internal/observability"
+	"github.com/ataidesorg/ink/internal/redact"
 )
 
-const evalUsage = `usage: friday eval run|bench SCENARIO.json --script FILE [flags]
+const evalUsage = `usage: ink eval run|bench SCENARIO.json --script FILE [flags]
 
 Runs the scenario's task on a private copy of its fixture (the fixture is the
-project root; its .friday/config.toml applies) and checks every expectation.
+project root; its .ink/config.toml applies) and checks every expectation.
 Writes and allow-listed commands are pre-approved; nothing else is.
 
   run    print per-check results; exit 0 only if every expectation passed
@@ -87,12 +87,12 @@ func evalCmd(args []string, stdout, stderr io.Writer, environ []string, getwd fu
 	warnDropped(stderr, resolved)
 	red := redact.New()
 	if verr := config.Validate(resolved); verr != nil {
-		fmt.Fprintf(stderr, "friday eval: configuration is invalid\n%s\n", red.Redact(verr.Error()))
+		fmt.Fprintf(stderr, "ink eval: configuration is invalid\n%s\n", red.Redact(verr.Error()))
 		return exitConfigInvalid
 	}
 	cfg := resolved.Config
 	if f.script == "" {
-		fmt.Fprintln(stderr, "friday eval: no provider configured; pass --script FILE to run a scripted model")
+		fmt.Fprintln(stderr, "ink eval: no provider configured; pass --script FILE to run a scripted model")
 		return exitFailed
 	}
 	script, err := mock.LoadScript(f.script)
@@ -100,7 +100,7 @@ func evalCmd(args []string, stdout, stderr io.Writer, environ []string, getwd fu
 		return fail(stderr, "eval", exitFailed, err)
 	}
 	if cfg.Sandbox.Provider == "unavailable" {
-		fmt.Fprintln(stderr, "friday eval: sandbox.provider is \"unavailable\"; set it to \"process\" to run scenarios")
+		fmt.Fprintln(stderr, "ink eval: sandbox.provider is \"unavailable\"; set it to \"process\" to run scenarios")
 		return exitNotImplemented
 	}
 	model := f.model
@@ -120,7 +120,7 @@ func evalCmd(args []string, stdout, stderr io.Writer, environ []string, getwd fu
 	case errors.Is(err, core.ErrNotImplemented):
 		return fail(stderr, "eval", exitNotImplemented, err)
 	case err != nil:
-		fmt.Fprintf(stderr, "friday eval: %v\n", red.Redact(err.Error()))
+		fmt.Fprintf(stderr, "ink eval: %v\n", red.Redact(err.Error()))
 		return exitFailed
 	}
 	printEvaluation(stdout, res)
@@ -186,19 +186,19 @@ func traceCmd(args []string, stdout, stderr io.Writer, getwd func() (string, err
 		return exitUsage
 	}
 	if fs.NArg() != 1 {
-		fmt.Fprintln(stderr, "usage: friday trace [--project DIR] [--json] [--kind K,...] RUN_ID")
+		fmt.Fprintln(stderr, "usage: ink trace [--project DIR] [--json] [--kind K,...] RUN_ID")
 		return exitUsage
 	}
 	id := fs.Arg(0)
 	if !core.ValidID(id) {
-		fmt.Fprintf(stderr, "friday: run not found: %q is not a run id\n", id)
+		fmt.Fprintf(stderr, "ink: run not found: %q is not a run id\n", id)
 		return exitUsage
 	}
 	root := *project
 	if root == "" {
 		wd, err := getwd()
 		if err != nil {
-			fmt.Fprintf(stderr, "friday: %v\n", err)
+			fmt.Fprintf(stderr, "ink: %v\n", err)
 			return exitError
 		}
 		root = wd
@@ -206,10 +206,10 @@ func traceCmd(args []string, stdout, stderr io.Writer, getwd func() (string, err
 	events, err := observability.ReadTrail(observability.TrailPath(root, core.RunID(id)))
 	switch {
 	case errors.Is(err, core.ErrNotFound):
-		fmt.Fprintf(stderr, "friday: run not found: %s\n", id)
+		fmt.Fprintf(stderr, "ink: run not found: %s\n", id)
 		return exitUsage
 	case err != nil:
-		fmt.Fprintf(stderr, "friday: %v\n", err)
+		fmt.Fprintf(stderr, "ink: %v\n", err)
 		return exitError
 	}
 	var opts observability.TraceOptions
@@ -220,7 +220,7 @@ func traceCmd(args []string, stdout, stderr io.Writer, getwd func() (string, err
 		}
 	}
 	if err := observability.Trace(stdout, events, opts); err != nil {
-		fmt.Fprintf(stderr, "friday: %v\n", err)
+		fmt.Fprintf(stderr, "ink: %v\n", err)
 		if errors.Is(err, core.ErrInvalidInput) {
 			return exitUsage
 		}

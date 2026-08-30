@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ataidesorg/friday/internal/core"
+	"github.com/ataidesorg/ink/internal/core"
 )
 
 func pin(args string) core.ToolInput {

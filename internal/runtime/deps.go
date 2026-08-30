@@ -9,9 +9,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/ataidesorg/friday/internal/core"
-	"github.com/ataidesorg/friday/internal/policy"
-	"github.com/ataidesorg/friday/internal/tools"
+	"github.com/ataidesorg/ink/internal/core"
+	"github.com/ataidesorg/ink/internal/policy"
+	"github.com/ataidesorg/ink/internal/tools"
 )
 
 // DefaultMaxToolCalls bounds the tool loop when the task budget leaves

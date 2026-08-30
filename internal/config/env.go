@@ -6,11 +6,11 @@ import (
 
 	"github.com/BurntSushi/toml"
 
-	"github.com/ataidesorg/friday/internal/core"
+	"github.com/ataidesorg/ink/internal/core"
 )
 
-// EnvPrefix marks environment overrides: FRIDAY__SANDBOX__NETWORK=allowlist.
-const EnvPrefix = "FRIDAY__"
+// EnvPrefix marks environment overrides: INK__SANDBOX__NETWORK=allowlist.
+const EnvPrefix = "INK__"
 
 const keySeparator = "__"
 
@@ -21,7 +21,7 @@ func errKeyConflict(key string) error {
 // splitKey splits a dotted key into its segments.
 func splitKey(key string) []string { return strings.Split(key, ".") }
 
-// validSegments rejects empty segments such as FRIDAY____X or "a..b".
+// validSegments rejects empty segments such as INK____X or "a..b".
 func validSegments(parts []string, raw string) error {
 	for _, p := range parts {
 		if p == "" {
@@ -31,7 +31,7 @@ func validSegments(parts []string, raw string) error {
 	return nil
 }
 
-// parseEnv turns FRIDAY__A__B=value pairs into a nested map. Keys are
+// parseEnv turns INK__A__B=value pairs into a nested map. Keys are
 // lowercased; values are parsed as TOML scalars or arrays, else kept as
 // strings. Variables without the prefix are ignored.
 func parseEnv(environ []string) (map[string]any, error) {

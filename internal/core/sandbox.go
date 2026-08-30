@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/ataidesorg/friday/internal/redact"
+	"github.com/ataidesorg/ink/internal/redact"
 )
 
 // Mount maps a host path into the sandbox.

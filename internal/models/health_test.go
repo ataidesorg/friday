@@ -8,10 +8,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ataidesorg/friday/internal/auth"
-	"github.com/ataidesorg/friday/internal/core"
-	"github.com/ataidesorg/friday/internal/models"
-	"github.com/ataidesorg/friday/internal/providers"
+	"github.com/ataidesorg/ink/internal/auth"
+	"github.com/ataidesorg/ink/internal/core"
+	"github.com/ataidesorg/ink/internal/models"
+	"github.com/ataidesorg/ink/internal/providers"
 )
 
 type noopRegistrar struct{}

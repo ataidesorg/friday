@@ -5,7 +5,7 @@ import (
 	"maps"
 	"path/filepath"
 
-	"github.com/ataidesorg/friday/internal/core"
+	"github.com/ataidesorg/ink/internal/core"
 )
 
 // Diagnoser reports post-edit diagnostics for one absolute path; empty means

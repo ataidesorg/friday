@@ -12,16 +12,16 @@ import (
 	"text/tabwriter"
 	"time"
 
-	"github.com/ataidesorg/friday/internal/auth"
-	"github.com/ataidesorg/friday/internal/config"
-	"github.com/ataidesorg/friday/internal/core"
-	"github.com/ataidesorg/friday/internal/models"
-	"github.com/ataidesorg/friday/internal/providers"
-	"github.com/ataidesorg/friday/internal/redact"
+	"github.com/ataidesorg/ink/internal/auth"
+	"github.com/ataidesorg/ink/internal/config"
+	"github.com/ataidesorg/ink/internal/core"
+	"github.com/ataidesorg/ink/internal/models"
+	"github.com/ataidesorg/ink/internal/providers"
+	"github.com/ataidesorg/ink/internal/redact"
 	"golang.org/x/term"
 )
 
-const authUsage = "usage: friday auth <set PROVIDER [--check] | status | login PROVIDER [--no-browser] | logout PROVIDER> [flags]"
+const authUsage = "usage: ink auth <set PROVIDER [--check] | status | login PROVIDER [--no-browser] | logout PROVIDER> [flags]"
 
 func authCmd(args []string, stdout, stderr io.Writer, stdin io.Reader, environ []string, getwd func() (string, error)) int {
 	if len(args) == 0 {
@@ -38,7 +38,7 @@ func authCmd(args []string, stdout, stderr io.Writer, stdin io.Reader, environ [
 	case "logout":
 		return authLogout(args[1:], stdout, stderr, environ)
 	default:
-		fmt.Fprintf(stderr, "friday auth: unknown subcommand %q\n%s\n", args[0], authUsage)
+		fmt.Fprintf(stderr, "ink auth: unknown subcommand %q\n%s\n", args[0], authUsage)
 		return exitUsage
 	}
 }
@@ -77,7 +77,7 @@ func authSet(args []string, stdout, stderr io.Writer, stdin io.Reader, environ [
 	entry, isRegistry := providers.Lookup(id)
 	pc, isCustom := resolved.Config.Providers[id]
 	if !isRegistry && !isCustom {
-		fmt.Fprintf(stderr, "friday auth set: unknown provider %q; `friday providers` lists them\n", id)
+		fmt.Fprintf(stderr, "ink auth set: unknown provider %q; `ink providers` lists them\n", id)
 		return exitError
 	}
 	name := id
@@ -96,7 +96,7 @@ func authSet(args []string, stdout, stderr io.Writer, stdin io.Reader, environ [
 		fmt.Fprintf(stderr, "warning: "+format+"\n", a...)
 	}))
 	if err := resolver.StoreSet(name, value); err != nil {
-		fmt.Fprintf(stderr, "friday auth set: %v\n", out.Redact(err.Error()))
+		fmt.Fprintf(stderr, "ink auth set: %v\n", out.Redact(err.Error()))
 		return exitError
 	}
 	storePath, _ := config.StateFilePath(envLookup(environ), "secrets.enc")
@@ -209,7 +209,7 @@ func authStatus(args []string, stdout, stderr io.Writer, environ []string, getwd
 		return fail(stderr, "auth status", exitError, err)
 	}
 	if shown == 0 {
-		fmt.Fprintln(stdout, "no credentials configured; run `friday auth set <provider>`")
+		fmt.Fprintln(stdout, "no credentials configured; run `ink auth set <provider>`")
 		return exitOK
 	}
 	fmt.Fprint(stdout, out.Redact(b.String()))
@@ -278,7 +278,7 @@ func authLogin(args []string, stdout, stderr io.Writer, stdin io.Reader, environ
 
 	entry, ok := providers.Lookup(positional[0])
 	if !ok {
-		fmt.Fprintf(stderr, "friday auth login: unknown provider %q; `friday providers` lists them\n", positional[0])
+		fmt.Fprintf(stderr, "ink auth login: unknown provider %q; `ink providers` lists them\n", positional[0])
 		return exitError
 	}
 	warnOptInRisk(stderr, entry)
@@ -293,7 +293,7 @@ func authLogin(args []string, stdout, stderr io.Writer, stdin io.Reader, environ
 			return fail(stderr, "auth login", exitNotImplemented, nerr)
 		}
 	default:
-		fmt.Fprintf(stderr, "friday auth login: %s uses auth kind %q, not an OAuth login; `friday auth set %s` stores its key\n", entry.ID, entry.Auth.Kind, entry.ID)
+		fmt.Fprintf(stderr, "ink auth login: %s uses auth kind %q, not an OAuth login; `ink auth set %s` stores its key\n", entry.ID, entry.Auth.Kind, entry.ID)
 		return exitError
 	}
 
@@ -312,7 +312,7 @@ func authLogin(args []string, stdout, stderr io.Writer, stdin io.Reader, environ
 		login = resolver.LoginDevice
 	}
 	if err := login(context.Background(), entry.ID, auth.MergedOAuth(entry, pc), o); err != nil {
-		fmt.Fprintf(stderr, "friday auth login: %s\n", out.Redact(err.Error()))
+		fmt.Fprintf(stderr, "ink auth login: %s\n", out.Redact(err.Error()))
 		return exitError
 	}
 	storePath, _ := config.StateFilePath(envLookup(environ), "secrets.enc")
@@ -342,7 +342,7 @@ func authLogout(args []string, stdout, stderr io.Writer, environ []string) int {
 	}))
 	found, err := resolver.Logout(id)
 	if err != nil {
-		fmt.Fprintf(stderr, "friday auth logout: %s\n", out.Redact(err.Error()))
+		fmt.Fprintf(stderr, "ink auth logout: %s\n", out.Redact(err.Error()))
 		return exitError
 	}
 	if !found {

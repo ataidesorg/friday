@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/ataidesorg/friday/internal/core"
+	"github.com/ataidesorg/ink/internal/core"
 )
 
 // AskUser is the model's multiple-choice prompt to the human. It never

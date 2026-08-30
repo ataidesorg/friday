@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ataidesorg/friday/internal/core"
+	"github.com/ataidesorg/ink/internal/core"
 )
 
 func TestDefaultsDecode(t *testing.T) {
@@ -103,7 +103,7 @@ func TestToCore(t *testing.T) {
 }
 
 func TestProviderAuthRefs(t *testing.T) {
-	fb := []AuthRef{{Source: "keyring", Service: "friday", Account: "alt"}}
+	fb := []AuthRef{{Source: "keyring", Service: "ink", Account: "alt"}}
 	cases := []struct {
 		name string
 		p    ProviderConfig

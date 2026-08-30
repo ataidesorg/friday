@@ -8,8 +8,8 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 
-	"github.com/ataidesorg/friday/internal/core"
-	"github.com/ataidesorg/friday/internal/runtime"
+	"github.com/ataidesorg/ink/internal/core"
+	"github.com/ataidesorg/ink/internal/runtime"
 )
 
 // teaProgram runs the Model under Bubble Tea. Messages sent before Start

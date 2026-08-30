@@ -1,6 +1,6 @@
 package cli
 
-// The interactive chat REPL: bare `friday` on a terminal opens a
+// The interactive chat REPL: bare `ink` on a terminal opens a
 // multi-turn conversation that persists to the session store and resumes
 // across launches. One heavy graph (provider, sandbox, workspace, policy) is
 // built per launch and reused across every turn; each turn runs one
@@ -20,19 +20,19 @@ import (
 	"text/tabwriter"
 	"time"
 
-	"github.com/ataidesorg/friday/internal/commands"
-	"github.com/ataidesorg/friday/internal/config"
-	"github.com/ataidesorg/friday/internal/core"
-	"github.com/ataidesorg/friday/internal/redact"
-	"github.com/ataidesorg/friday/internal/runtime"
-	sessionstore "github.com/ataidesorg/friday/internal/session"
-	"github.com/ataidesorg/friday/internal/skills"
-	"github.com/ataidesorg/friday/internal/tui"
+	"github.com/ataidesorg/ink/internal/commands"
+	"github.com/ataidesorg/ink/internal/config"
+	"github.com/ataidesorg/ink/internal/core"
+	"github.com/ataidesorg/ink/internal/redact"
+	"github.com/ataidesorg/ink/internal/runtime"
+	sessionstore "github.com/ataidesorg/ink/internal/session"
+	"github.com/ataidesorg/ink/internal/skills"
+	"github.com/ataidesorg/ink/internal/tui"
 )
 
-const chatUsage = `usage: friday [chat] [flags]
+const chatUsage = `usage: ink [chat] [flags]
 
-Open the interactive chat REPL (the default when friday is run on a terminal).
+Open the interactive chat REPL (the default when ink is run on a terminal).
 
 flags:
   --project DIR      project root (default: current directory)
@@ -81,11 +81,11 @@ func chatCmd(args []string, stdout, stderr io.Writer, stdin io.Reader, environ [
 		return exitUsage
 	}
 	if !isTerminal(stdin) || !isTerminal(stdout) {
-		fmt.Fprintln(stderr, "friday chat: needs a terminal (run `friday` interactively, or use `friday run` for one-shot tasks)")
+		fmt.Fprintln(stderr, "ink chat: needs a terminal (run `ink` interactively, or use `ink run` for one-shot tasks)")
 		return exitUsage
 	}
 	if f.resume && f.continueID != "" {
-		fmt.Fprintln(stderr, "friday chat: --resume and --continue are mutually exclusive")
+		fmt.Fprintln(stderr, "ink chat: --resume and --continue are mutually exclusive")
 		return exitUsage
 	}
 	opts, err := f.options(environ, getwd, stderr)
@@ -107,28 +107,28 @@ func chatCmd(args []string, stdout, stderr io.Writer, stdin io.Reader, environ [
 	warnDropped(stderr, resolved)
 	red := redact.New()
 	if verr := config.Validate(resolved); verr != nil {
-		fmt.Fprintf(stderr, "friday chat: configuration is invalid\n%s\n", red.Redact(verr.Error()))
+		fmt.Fprintf(stderr, "ink chat: configuration is invalid\n%s\n", red.Redact(verr.Error()))
 		return exitConfigInvalid
 	}
 	cfg := resolved.Config
 	if cfg.Sandbox.Provider == "unavailable" {
-		fmt.Fprintln(stderr, "friday chat: sandbox.provider is \"unavailable\"; set it to \"process\" to run tasks")
+		fmt.Fprintln(stderr, "ink chat: sandbox.provider is \"unavailable\"; set it to \"process\" to run tasks")
 		return exitNotImplemented
 	}
 	if needsModelSetup(cfg) {
 		if _, serr := firstRunSetup(cfg, opts, inF, outF, stderr, environ); serr != nil {
 			if errors.Is(serr, errSetupAborted) {
-				fmt.Fprintln(stderr, "friday chat: "+serr.Error())
+				fmt.Fprintln(stderr, "ink chat: "+serr.Error())
 				return exitUsage
 			}
-			fmt.Fprintf(stderr, "friday chat: %s\n", red.Redact(serr.Error()))
+			fmt.Fprintf(stderr, "ink chat: %s\n", red.Redact(serr.Error()))
 			return exitError
 		}
 		if resolved, err = config.Load(opts); err != nil {
 			return fail(stderr, "chat", exitConfigInvalid, err)
 		}
 		if verr := config.Validate(resolved); verr != nil {
-			fmt.Fprintf(stderr, "friday chat: configuration is invalid\n%s\n", red.Redact(verr.Error()))
+			fmt.Fprintf(stderr, "ink chat: configuration is invalid\n%s\n", red.Redact(verr.Error()))
 			return exitConfigInvalid
 		}
 		cfg = resolved.Config
@@ -152,7 +152,7 @@ func chatCmd(args []string, stdout, stderr io.Writer, stdin io.Reader, environ [
 		routeName = cfg.Models.Routing.Default
 	}
 	if err != nil {
-		fmt.Fprintf(stderr, "friday chat: %s\n", red.Redact(err.Error()))
+		fmt.Fprintf(stderr, "ink chat: %s\n", red.Redact(err.Error()))
 		if errors.Is(err, core.ErrNotImplemented) {
 			return exitNotImplemented
 		}
@@ -165,7 +165,7 @@ func chatCmd(args []string, stdout, stderr io.Writer, stdin io.Reader, environ [
 		return fail(stderr, "chat", exitFailed, err)
 	}
 	defer cs.close(stderr)
-	home, _ := config.FridayHome(envLookup(environ))
+	home, _ := config.Home(envLookup(environ))
 	keys, err := tui.ParseKeymap(cfg.TUI.Keys)
 	if err != nil {
 		return fail(stderr, "chat", exitError, err)
@@ -286,9 +286,9 @@ func (c *chatSession) tuiOptions(f chatFlags, opts config.Options, home, themeNa
 	}
 }
 
-// openStore roots the session store at the Friday home.
+// openStore roots the session store at the Ink home.
 func openStore(environ []string, red *redact.Redactor) (*sessionstore.Store, error) {
-	home, err := config.FridayHome(envLookup(environ))
+	home, err := config.Home(envLookup(environ))
 	if err != nil {
 		return nil, err
 	}
@@ -412,14 +412,14 @@ func chatApprover(yes bool) runtime.ApprovalFunc {
 	by := core.Principal{Kind: core.PrincipalUser, Name: "chat"}
 	return func(_ context.Context, _ core.Approval) (core.ApprovalResolution, error) {
 		return core.ApprovalResolution{Decision: core.ApprovalDenied, By: by, At: time.Now(), Scope: core.ApprovalOnce,
-			Note: "chat runs read-only; restart with `friday --yes` to allow writes and allow-listed commands"}, nil
+			Note: "chat runs read-only; restart with `ink --yes` to allow writes and allow-listed commands"}, nil
 	}
 }
 
 // sessionsCmd lists persisted sessions, newest first.
 func sessionsCmd(args []string, stdout, stderr io.Writer, environ []string) int {
 	if len(args) != 0 {
-		fmt.Fprintln(stderr, "usage: friday sessions")
+		fmt.Fprintln(stderr, "usage: ink sessions")
 		return exitUsage
 	}
 	store, err := openStore(environ, redact.New())
@@ -464,7 +464,7 @@ func commandInfos(list []commands.Command) []tui.CommandInfo {
 func skillSource(path string) string {
 	n := filepath.ToSlash(path)
 	switch {
-	case strings.Contains(n, "/.friday/skills/"):
+	case strings.Contains(n, "/.ink/skills/"):
 		return "user"
 	case path == "":
 		return ""

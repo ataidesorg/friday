@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ataidesorg/friday/internal/core"
+	"github.com/ataidesorg/ink/internal/core"
 )
 
 func write(t *testing.T, dir, body string) {

@@ -5,8 +5,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ataidesorg/friday/internal/core"
-	"github.com/ataidesorg/friday/internal/runtime"
+	"github.com/ataidesorg/ink/internal/core"
+	"github.com/ataidesorg/ink/internal/runtime"
 )
 
 // Line tags; every rendered line starts with one so plain output greps.
@@ -28,7 +28,7 @@ const (
 	tagCost     = "[cost]"
 	tagSummary  = "[summary]"
 	tagUser     = "[you]"
-	tagReply    = "[friday]"
+	tagReply    = "[ink]"
 	tagStatus   = "[status]"
 	tagDiff     = "[diff]"
 	tagToolOut  = "[tool-out]"
@@ -174,11 +174,11 @@ func doneLines(r runtime.Result, diff string) []string {
 // helpLines lists the chat slash commands and the effective key bindings.
 func helpLines(km Keymap) []string {
 	return []string{
-		tagStatus + " FRIDAY(1)",
+		tagStatus + " INK(1)",
 		"  Local coding-agent chat for this repository.",
 		"",
 		"USAGE",
-		"  Type a prompt and press enter. While Friday is working, enter queues the",
+		"  Type a prompt and press enter. While Ink is working, enter queues the",
 		"  draft as the next prompt above the text box.",
 		"",
 		"SESSION",
@@ -233,12 +233,12 @@ func helpLines(km Keymap) []string {
 		"  ctrl+g             edit the current draft in $VISUAL",
 		"  " + km.ScrollUp.String() + "/" + km.ScrollDown.String() + "       scroll the conversation",
 		"  esc                cancel a running turn; twice clears an empty draft",
-		"  ctrl+c, ctrl+q     press twice to quit Friday",
+		"  ctrl+c, ctrl+q     press twice to quit Ink",
 		"",
 		"DIAGNOSTICS",
 		"  /doctor            terminal and clipboard checks",
 		"  /cost              session token and cost totals",
-		"  /quit              leave Friday (/exit works too)",
+		"  /quit              leave Ink (/exit works too)",
 	}
 }
 

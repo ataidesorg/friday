@@ -10,8 +10,8 @@ import (
 	"context"
 	"strings"
 
-	"github.com/ataidesorg/friday/internal/config"
-	"github.com/ataidesorg/friday/internal/providers"
+	"github.com/ataidesorg/ink/internal/config"
+	"github.com/ataidesorg/ink/internal/providers"
 )
 
 // GitHub Copilot auth: a stored GitHub OAuth token (device flow or env) is
@@ -23,7 +23,7 @@ import (
 // user-to-server tokens (ghu_), and fine-grained PATs (github_pat_) pass.
 func copilotTokenGate(token string) error {
 	if strings.HasPrefix(token, "ghp_") {
-		return fmt.Errorf("classic GitHub personal access token (ghp_) cannot mint a Copilot bearer; run `friday auth login copilot` or supply a gho_/ghu_/github_pat_ token")
+		return fmt.Errorf("classic GitHub personal access token (ghp_) cannot mint a Copilot bearer; run `ink auth login copilot` or supply a gho_/ghu_/github_pat_ token")
 	}
 	return nil
 }
@@ -96,7 +96,7 @@ func (r *Resolver) vendorToken(ctx context.Context, entry providers.Entry) (stri
 		return v, nil
 	}
 	where := fmt.Sprintf("env %v, secret store %s%s, or `gh auth token`", entry.Auth.EnvNames, oauthStorePrefix, entry.ID)
-	hint := "run `friday auth login " + entry.ID + "`"
+	hint := "run `ink auth login " + entry.ID + "`"
 	if len(entry.Auth.EnvNames) > 0 {
 		hint += " or export " + entry.Auth.EnvNames[0]
 	}

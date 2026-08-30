@@ -14,7 +14,7 @@ import (
 
 	"github.com/BurntSushi/toml"
 
-	"github.com/ataidesorg/friday/internal/core"
+	"github.com/ataidesorg/ink/internal/core"
 )
 
 // TrustDecision is the owner's answer for one repository config file.
@@ -50,21 +50,21 @@ type trustFile struct {
 
 const (
 	trustFileName = "trust.toml"
-	stateDirEnv   = "FRIDAY_STATE_DIR"
+	stateDirEnv   = "INK_STATE_DIR"
 )
 
-// StateFilePath resolves name inside the Friday state directory:
-// $FRIDAY_STATE_DIR, then $XDG_STATE_HOME/friday, then
-// $HOME/.local/state/friday.
+// StateFilePath resolves name inside the Ink state directory:
+// $INK_STATE_DIR, then $XDG_STATE_HOME/ink, then
+// $HOME/.local/state/ink.
 func StateFilePath(getenv func(string) string, name string) (string, error) {
 	if dir := getenv(stateDirEnv); dir != "" {
 		return filepath.Join(dir, name), nil
 	}
 	if xdg := getenv("XDG_STATE_HOME"); xdg != "" {
-		return filepath.Join(xdg, "friday", name), nil
+		return filepath.Join(xdg, "ink", name), nil
 	}
 	if home := getenv("HOME"); home != "" {
-		return filepath.Join(home, ".local", "state", "friday", name), nil
+		return filepath.Join(home, ".local", "state", "ink", name), nil
 	}
 	return "", fmt.Errorf("%w: none of %s, XDG_STATE_HOME, HOME is set", core.ErrInvalidInput, stateDirEnv)
 }

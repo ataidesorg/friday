@@ -42,7 +42,7 @@ func (m ChatModel) applyEditor(v editorDoneMsg) (tea.Model, tea.Cmd) {
 	if v.err != nil {
 		return m.append(tagWarn + " editor: " + clip(v.err.Error())), nil
 	}
-	b, err := os.ReadFile(v.path) //nolint:gosec // temp file Friday created
+	b, err := os.ReadFile(v.path) //nolint:gosec // temp file Ink created
 	if err != nil {
 		return m.append(tagWarn + " editor: " + clip(err.Error())), nil
 	}
@@ -52,7 +52,7 @@ func (m ChatModel) applyEditor(v editorDoneMsg) (tea.Model, tea.Cmd) {
 }
 
 func editorCmd(draft string) (string, *exec.Cmd, error) {
-	f, err := os.CreateTemp("", "friday-prompt-*.md")
+	f, err := os.CreateTemp("", "ink-prompt-*.md")
 	if err != nil {
 		return "", nil, err
 	}

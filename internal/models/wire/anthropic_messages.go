@@ -8,7 +8,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/ataidesorg/friday/internal/core"
+	"github.com/ataidesorg/ink/internal/core"
 )
 
 // anthropicVersion is the API version header every request must carry.

@@ -13,14 +13,14 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ataidesorg/friday/internal/config"
-	"github.com/ataidesorg/friday/internal/observability"
+	"github.com/ataidesorg/ink/internal/config"
+	"github.com/ataidesorg/ink/internal/observability"
 )
 
-// ignoredPaths are the repository-local files Friday writes that must never be committed.
+// ignoredPaths are the repository-local files Ink writes that must never be committed.
 var ignoredPaths = []string{config.ProjectLocalConfigRelPath, observability.LocalDir + "/"}
 
-// initCmd creates .friday/config.toml when absent and adds Friday's local
+// initCmd creates .ink/config.toml when absent and adds Ink's local
 // paths to .gitignore when absent. It never overwrites anything.
 func initCmd(args []string, stdout, stderr io.Writer, getwd func() (string, error)) int {
 	var project string
@@ -28,7 +28,7 @@ func initCmd(args []string, stdout, stderr io.Writer, getwd func() (string, erro
 	fs.SetOutput(stderr)
 	fs.StringVar(&project, "project", "", "project root (default: current directory)")
 	if err := fs.Parse(args); err != nil || fs.NArg() != 0 {
-		fmt.Fprintln(stderr, "usage: friday init [--project DIR]")
+		fmt.Fprintln(stderr, "usage: ink init [--project DIR]")
 		return exitUsage
 	}
 	root := project
@@ -63,7 +63,7 @@ func initProject(root string, stdout io.Writer) error {
 
 // writeIfAbsent creates path with content; an existing file is left alone.
 func writeIfAbsent(path, content string) error {
-	f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600) //nolint:gosec // path is the project's own .friday/config.toml
+	f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600) //nolint:gosec // path is the project's own .ink/config.toml
 	if errors.Is(err, fs.ErrExist) {
 		return nil
 	}
@@ -110,10 +110,10 @@ func ensureIgnored(path string, lines []string) error {
 	return f.Close()
 }
 
-const trustUsage = "usage: friday trust [--list | --revoke] [--project DIR] [PATH]\n"
+const trustUsage = "usage: ink trust [--list | --revoke] [--project DIR] [PATH]\n"
 
 // trustCmd manages the per-repository trust store. Without flags it trusts
-// PATH (default: the project's .friday/config.toml) at its current content.
+// PATH (default: the project's .ink/config.toml) at its current content.
 func trustCmd(args []string, stdout, stderr io.Writer, environ []string, getwd func() (string, error)) int {
 	var list, revoke bool
 	var project string
@@ -159,7 +159,7 @@ func trustCmd(args []string, stdout, stderr io.Writer, environ []string, getwd f
 	}
 	keys, err := config.GatedKeys(data)
 	if err != nil {
-		fmt.Fprintf(stderr, "friday trust: %s: %v\n", path, err)
+		fmt.Fprintf(stderr, "ink trust: %s: %v\n", path, err)
 		return exitError
 	}
 	if len(keys) == 0 {
@@ -228,7 +228,7 @@ func warnDropped(stderr io.Writer, r *config.Resolved) {
 	})
 	for _, g := range groups {
 		sort.Strings(keys[g])
-		remedy := fmt.Sprintf("run `friday trust %s` to apply them", g.path)
+		remedy := fmt.Sprintf("run `ink trust %s` to apply them", g.path)
 		if g.reason == config.RejectAllowlist {
 			remedy = "repository files may never set them"
 		}
@@ -241,13 +241,13 @@ func warnDropped(stderr io.Writer, r *config.Resolved) {
 const trustBlurb = "These keys control sandboxing, tools, providers, and telemetry.\nAn answer applies to this exact content: editing the file asks again."
 
 // trustPromptTUI asks the trust question through the same Bubble Tea picker
-// the rest of the pre-chat setup uses, so `friday chat` never drops to a raw
+// the rest of the pre-chat setup uses, so `ink chat` never drops to a raw
 // [y/N] line above its own UI. Aborting is the safe answer: no.
 func trustPromptTUI(in, out *os.File) config.TrustPrompt {
 	return func(path string, keys []string) (config.TrustDecision, error) {
 		title := fmt.Sprintf("%s wants to set %s.\n%s\n\nTrust this file?\n", path, strings.Join(keys, ", "), trustBlurb)
 		items := []listItem{
-			{label: "No", note: "keep the defaults; `friday trust` applies them later"},
+			{label: "No", note: "keep the defaults; `ink trust` applies them later"},
 			{label: "Yes, trust it", note: "apply these keys"},
 		}
 		choice, ok, err := selectList(in, out, title, items, 0)
@@ -258,7 +258,7 @@ func trustPromptTUI(in, out *os.File) config.TrustPrompt {
 	}
 }
 
-// trustPrompt is the plain-terminal form, for `friday run`, whose output may
+// trustPrompt is the plain-terminal form, for `ink run`, whose output may
 // be a pipe. It reads one byte at a time so the caller keeps the rest of stdin.
 func trustPrompt(in io.Reader, out io.Writer) config.TrustPrompt {
 	return func(path string, keys []string) (config.TrustDecision, error) {

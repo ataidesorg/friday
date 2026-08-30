@@ -1,6 +1,6 @@
 # sample
 
-Tiny Go module used as a Friday fixture.
+Tiny Go module used as a Ink fixture.
 
 - Build: `go build ./...`
 - Test: `go test ./...`

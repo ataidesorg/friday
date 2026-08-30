@@ -1,6 +1,6 @@
 package cli
 
-// The interactive chat REPL: bare `friday` on a terminal opens a
+// The interactive chat REPL: bare `ink` on a terminal opens a
 // multi-turn conversation that persists to the session store and resumes
 // across launches. One heavy graph (provider, sandbox, workspace, policy) is
 // built per launch and reused across every turn; each turn runs one
@@ -10,12 +10,12 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/ataidesorg/friday/internal/core"
-	"github.com/ataidesorg/friday/internal/runtime"
-	sessionstore "github.com/ataidesorg/friday/internal/session"
-	"github.com/ataidesorg/friday/internal/skills"
-	"github.com/ataidesorg/friday/internal/tools"
-	"github.com/ataidesorg/friday/internal/tui"
+	"github.com/ataidesorg/ink/internal/core"
+	"github.com/ataidesorg/ink/internal/runtime"
+	sessionstore "github.com/ataidesorg/ink/internal/session"
+	"github.com/ataidesorg/ink/internal/skills"
+	"github.com/ataidesorg/ink/internal/tools"
+	"github.com/ataidesorg/ink/internal/tui"
 )
 
 // switchRoute swaps the active route live (TUI /model NAME), persisting the

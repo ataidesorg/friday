@@ -13,7 +13,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/ataidesorg/friday/internal/config"
+	"github.com/ataidesorg/ink/internal/config"
 )
 
 const (
@@ -21,7 +21,7 @@ const (
 	keyFileName    = "secrets.key"
 	storeVersion   = 0x01
 	nonceLen       = 12
-	keyringService = "friday"
+	keyringService = "ink"
 	keyringKeyName = "secret-store-key"
 )
 
@@ -39,7 +39,7 @@ func (r *Resolver) resolveStore(name string) (*Credential, error) {
 
 // storeKey picks the store entry name from an AuthRef: name, then
 // account, then id (the shape `{ source = "secret_store", id = "x" }`
-// that `friday auth set x` stores under).
+// that `ink auth set x` stores under).
 func storeKey(ref config.AuthRef) string {
 	if ref.Name != "" {
 		return ref.Name
@@ -77,7 +77,7 @@ func (r *Resolver) storeGet(name string) (string, bool, error) {
 }
 
 // StoreSet writes name into the encrypted secret store (atomic, 0600).
-// `friday auth set` is the intended caller; the value must arrive via
+// `ink auth set` is the intended caller; the value must arrive via
 // prompt or stdin, never argv.
 func (r *Resolver) StoreSet(name, value string) error {
 	path, err := config.StateFilePath(r.getenv, storeFileName)
@@ -166,7 +166,7 @@ func (r *Resolver) storeEncryptionKey(create bool) ([]byte, error) {
 		return nil, fmt.Errorf("read secret store key %s: %w", keyPath, err)
 	}
 	if !create {
-		return nil, fmt.Errorf("secret store key missing (looked in keyring %s/%s and %s); run `friday auth set <provider>` to create the store", keyringService, keyringKeyName, keyPath)
+		return nil, fmt.Errorf("secret store key missing (looked in keyring %s/%s and %s); run `ink auth set <provider>` to create the store", keyringService, keyringKeyName, keyPath)
 	}
 	key := make([]byte, 32)
 	if _, err := rand.Read(key); err != nil {

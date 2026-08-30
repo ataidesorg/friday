@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ataidesorg/friday/internal/core"
+	"github.com/ataidesorg/ink/internal/core"
 )
 
 func TestParse(t *testing.T) {
@@ -66,9 +66,9 @@ func TestLoadProjectWins(t *testing.T) {
 	}
 	write(filepath.Join(home, "commands"), "greet.md", "user greeting\n")
 	write(filepath.Join(home, "commands"), "solo.md", "only in home\n")
-	write(filepath.Join(root, ".friday", "commands"), "greet.md", "project greeting\n")
-	write(filepath.Join(root, ".friday", "commands"), "broken.md", "---\nnever closed\n")
-	write(filepath.Join(root, ".friday", "commands"), "notes.txt", "not a command\n")
+	write(filepath.Join(root, ".ink", "commands"), "greet.md", "project greeting\n")
+	write(filepath.Join(root, ".ink", "commands"), "broken.md", "---\nnever closed\n")
+	write(filepath.Join(root, ".ink", "commands"), "notes.txt", "not a command\n")
 
 	var warn strings.Builder
 	got := Load(root, home, &warn, nil)
@@ -91,7 +91,7 @@ func TestLoadNoDirs(t *testing.T) {
 
 func TestLoadSkipsReserved(t *testing.T) {
 	root := t.TempDir()
-	dir := filepath.Join(root, ".friday", "commands")
+	dir := filepath.Join(root, ".ink", "commands")
 	if err := os.MkdirAll(dir, 0o700); err != nil {
 		t.Fatal(err)
 	}

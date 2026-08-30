@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ataidesorg/friday/internal/core"
+	"github.com/ataidesorg/ink/internal/core"
 )
 
 func azureResolver(t *testing.T, spy *spyRegistrar, env, getenv map[string]string) *Resolver {
@@ -86,7 +86,7 @@ func TestAzureMissNamesTriple(t *testing.T) {
 	if !errors.As(err, &miss) {
 		t.Fatalf("err = %v, want ErrNoCredential", err)
 	}
-	for _, want := range []string{"AZURE_TENANT_ID", "AZURE_CLIENT_ID", "AZURE_CLIENT_SECRET", "friday auth set azure-foundry"} {
+	for _, want := range []string{"AZURE_TENANT_ID", "AZURE_CLIENT_ID", "AZURE_CLIENT_SECRET", "ink auth set azure-foundry"} {
 		if !strings.Contains(err.Error(), want) {
 			t.Errorf("miss lacks %q", want)
 		}

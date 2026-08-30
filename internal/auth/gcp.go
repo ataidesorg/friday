@@ -3,7 +3,7 @@ package auth
 // GCP credential chain for Vertex: an explicit service-account or
 // authorized-user JSON file exchanged for a short-lived bearer. Order:
 // VERTEX_CREDENTIALS_PATH, GOOGLE_APPLICATION_CREDENTIALS, then the gcloud
-// ADC file. Never a metadata-server probe: Friday runs on workstations, and
+// ADC file. Never a metadata-server probe: Ink runs on workstations, and
 // unsolicited network probes are off the table.
 
 import (

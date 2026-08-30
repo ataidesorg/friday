@@ -10,7 +10,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/ataidesorg/friday/internal/core"
+	"github.com/ataidesorg/ink/internal/core"
 )
 
 // Turn is one scripted assistant reply.

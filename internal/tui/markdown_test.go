@@ -33,11 +33,11 @@ func TestPaintMarkdownStripsMarkers(t *testing.T) {
 func TestPaintMarkdownInConversation(t *testing.T) {
 	cs := newChatStyles(false)
 	out := cs.conversation([]string{
-		"[friday] ## Title",
-		"[friday] Use **todo_write** and `read_file`.",
-		"[friday] - first",
-		"[friday] - second",
-		"[friday] > quoted",
+		"[ink] ## Title",
+		"[ink] Use **todo_write** and `read_file`.",
+		"[ink] - first",
+		"[ink] - second",
+		"[ink] > quoted",
 	}, 60, -1)
 	for _, want := range []string{"Title", "todo_write", "read_file", "first", "second", "quoted"} {
 		if !strings.Contains(out, want) {

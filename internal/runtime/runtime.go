@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/ataidesorg/friday/internal/core"
-	"github.com/ataidesorg/friday/internal/tools"
+	"github.com/ataidesorg/ink/internal/core"
+	"github.com/ataidesorg/ink/internal/tools"
 )
 
 // failure carries the category a phase wants recorded on the outcome.

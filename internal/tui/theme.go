@@ -7,7 +7,7 @@ import (
 	"github.com/BurntSushi/toml"
 	"github.com/charmbracelet/lipgloss"
 
-	"github.com/ataidesorg/friday/internal/core"
+	"github.com/ataidesorg/ink/internal/core"
 )
 
 // ThemeColor is one palette slot with a variant per terminal background.
@@ -30,7 +30,7 @@ func (c ThemeColor) paint() lipgloss.TerminalColor {
 // Theme is a named palette the chat styles resolve from at View time.
 type Theme struct {
 	Name   string
-	Accent ThemeColor // Friday's voice and the app name
+	Accent ThemeColor // Ink's voice and the app name
 	User   ThemeColor // the human's voice
 	OK     ThemeColor
 	Warn   ThemeColor
@@ -40,21 +40,22 @@ type Theme struct {
 	Bg     ThemeColor // empty = use the terminal background
 }
 
-// builtinThemes are always selectable. The first is the default: the
-// terminal-adaptive palette Friday shipped with.
+// builtinThemes are always selectable. The first is the default: Ink's
+// quiet black palette. Each built-in must keep a distinct accent so
+// /theme switching is visible.
 func builtinThemes() []Theme {
 	hex := func(h string) ThemeColor { return ThemeColor{h, h} }
-	friday := Theme{
-		Name: "friday",
-		// Neutral base, one magenta accent — same job as a night pager
-		// theme, original tokens, not a Charm tutorial palette.
-		Accent: ThemeColor{"#9B2D5C", "#E85A9A"},
-		User:   ThemeColor{"#2E2E32", "#D0D0D4"},
-		OK:     ThemeColor{"#1E874B", "#3FDC86"},
-		Warn:   ThemeColor{"#B25E00", "#FFB454"},
-		Fail:   ThemeColor{"#C4271A", "#FF6B5E"},
-		Dim:    ThemeColor{"#6B6B70", "#8A8A90"},
-		Rule:   ThemeColor{"#C4C4C8", "#5C5C64"},
+	ink := Theme{
+		Name: "ink",
+		// Quiet black on the terminal's own field. No canvas: trailing
+		// padding would travel with every copied transcript row.
+		Accent: hex("#C8C8CC"),
+		User:   hex("#F5F5F7"),
+		OK:     hex("#30D158"),
+		Warn:   hex("#FF9F0A"),
+		Fail:   hex("#FF453A"),
+		Dim:    hex("#8E8E93"),
+		Rule:   hex("#3A3A3C"),
 	}
 	dark := Theme{
 		Name:   "dark",
@@ -68,7 +69,7 @@ func builtinThemes() []Theme {
 	}
 	light := Theme{
 		Name:   "light",
-		Accent: hex("#9B2D5C"),
+		Accent: hex("#1D1D1F"),
 		User:   hex("#1C1917"),
 		OK:     hex("#1A7F37"),
 		Warn:   hex("#9A6700"),
@@ -79,7 +80,7 @@ func builtinThemes() []Theme {
 	}
 	ansi := Theme{
 		Name:   "ansi",
-		Accent: ThemeColor{"5", "5"},
+		Accent: ThemeColor{"4", "4"},
 		User:   ThemeColor{"7", "7"},
 		OK:     ThemeColor{"2", "2"},
 		Warn:   ThemeColor{"3", "3"},
@@ -87,7 +88,7 @@ func builtinThemes() []Theme {
 		Dim:    ThemeColor{"8", "8"},
 		Rule:   ThemeColor{"8", "8"},
 	}
-	return []Theme{friday, dark, light, ansi}
+	return []Theme{ink, dark, light, ansi}
 }
 
 func defaultTheme() Theme { return builtinThemes()[0] }

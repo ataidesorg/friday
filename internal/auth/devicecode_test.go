@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ataidesorg/friday/internal/providers"
+	"github.com/ataidesorg/ink/internal/providers"
 )
 
 // fakeDeviceIDP scripts an RFC 8628 server: the device-auth grant, then one

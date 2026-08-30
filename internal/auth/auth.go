@@ -13,9 +13,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ataidesorg/friday/internal/config"
-	"github.com/ataidesorg/friday/internal/core"
-	"github.com/ataidesorg/friday/internal/providers"
+	"github.com/ataidesorg/ink/internal/config"
+	"github.com/ataidesorg/ink/internal/core"
+	"github.com/ataidesorg/ink/internal/providers"
 )
 
 // Registrar receives secret literals for redaction; *redact.Redactor
@@ -24,7 +24,7 @@ type Registrar interface {
 	AddLiteral(literals ...string)
 }
 
-// ErrNoCredential says where Friday looked and how to fix it — never the
+// ErrNoCredential says where Ink looked and how to fix it — never the
 // value.
 type ErrNoCredential struct {
 	Source string // env | keyring | secret_store | command | oauth
@@ -35,7 +35,7 @@ type ErrNoCredential struct {
 func (e *ErrNoCredential) Error() string {
 	hint := e.Hint
 	if hint == "" {
-		hint = "run `friday auth set <provider>` or export the key"
+		hint = "run `ink auth set <provider>` or export the key"
 	}
 	return fmt.Sprintf("no credential in %s (%s); %s", e.Source, e.Where, hint)
 }
@@ -71,7 +71,7 @@ type Resolver struct {
 // logging).
 type Option func(*Resolver)
 
-// WithGetenv sets the state-directory lookup (FRIDAY_STATE_DIR et al).
+// WithGetenv sets the state-directory lookup (INK_STATE_DIR et al).
 func WithGetenv(getenv func(string) string) Option {
 	return func(r *Resolver) { r.getenv = getenv }
 }

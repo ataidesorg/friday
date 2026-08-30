@@ -14,7 +14,7 @@ state merged.
   `ci/`.
 
 There is no `develop` and no `release/*`. Git-flow exists to maintain several
-release trains at once; Friday ships one version at a time from one branch, and
+release trains at once; Ink ships one version at a time from one branch, and
 a second long-lived branch would only add merge debt.
 
 ## Change flow

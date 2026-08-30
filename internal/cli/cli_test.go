@@ -10,10 +10,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ataidesorg/friday/internal/config"
-	"github.com/ataidesorg/friday/internal/core"
-	"github.com/ataidesorg/friday/internal/observability"
-	"github.com/ataidesorg/friday/internal/redact"
+	"github.com/ataidesorg/ink/internal/config"
+	"github.com/ataidesorg/ink/internal/core"
+	"github.com/ataidesorg/ink/internal/observability"
+	"github.com/ataidesorg/ink/internal/redact"
 )
 
 func exec(t *testing.T, args ...string) (int, string, string) {
@@ -30,7 +30,7 @@ var (
 )
 
 func TestVersionAndUsage(t *testing.T) {
-	if code, out, _ := exec(t, "version"); code != 0 || !strings.HasPrefix(out, "friday dev (commit ") {
+	if code, out, _ := exec(t, "version"); code != 0 || !strings.HasPrefix(out, "ink dev (commit ") {
 		t.Fatalf("version: %d %q", code, out)
 	}
 	if code, _, errOut := exec(t); code != exitUsage || !strings.Contains(errOut, "usage:") {
@@ -167,9 +167,9 @@ func execEnv(t *testing.T, extra []string, args ...string) (int, string, string)
 
 func TestTrustCommand(t *testing.T) {
 	state := t.TempDir()
-	env := []string{"FRIDAY_STATE_DIR=" + state}
+	env := []string{"INK_STATE_DIR=" + state}
 	proj := t.TempDir()
-	cfgPath := filepath.Join(proj, ".friday", "config.toml")
+	cfgPath := filepath.Join(proj, ".ink", "config.toml")
 	if err := os.MkdirAll(filepath.Dir(cfgPath), 0o750); err != nil {
 		t.Fatal(err)
 	}
@@ -178,7 +178,7 @@ func TestTrustCommand(t *testing.T) {
 	}
 	// Untrusted: validate passes but warns, naming the key, the reason, and the remedy.
 	code, out, errOut := execEnv(t, env, "config", "validate", "--project", proj)
-	if code != 0 || out != "ok\n" || !strings.Contains(errOut, "warning: "+cfgPath+": dropped sandbox.provider (untrusted)") || !strings.Contains(errOut, "friday trust") {
+	if code != 0 || out != "ok\n" || !strings.Contains(errOut, "warning: "+cfgPath+": dropped sandbox.provider (untrusted)") || !strings.Contains(errOut, "ink trust") {
 		t.Fatalf("untrusted validate: %d %q %q", code, out, errOut)
 	}
 	if code, out, _ := execEnv(t, env, "config", "show", "--project", proj); code != 0 || !strings.Contains(out, `provider = "process"`) {
@@ -247,15 +247,15 @@ func TestInitCommand(t *testing.T) {
 		t.Fatalf("init: %d %q %q", code, out, errOut)
 	}
 	ignore, err := os.ReadFile(filepath.Join(proj, ".gitignore")) //nolint:gosec // test-owned temp dir
-	if err != nil || !strings.Contains(string(ignore), ".friday/config.local.toml\n") || !strings.Contains(string(ignore), ".friday/local/\n") {
+	if err != nil || !strings.Contains(string(ignore), ".ink/config.local.toml\n") || !strings.Contains(string(ignore), ".ink/local/\n") {
 		t.Fatalf("gitignore: %q %v", ignore, err)
 	}
-	cfg, err := os.ReadFile(filepath.Join(proj, ".friday", "config.toml")) //nolint:gosec // test-owned temp dir
+	cfg, err := os.ReadFile(filepath.Join(proj, ".ink", "config.toml")) //nolint:gosec // test-owned temp dir
 	if err != nil || !strings.Contains(string(cfg), "name = "+strconv.Quote(filepath.Base(proj))) {
 		t.Fatalf("config: %q %v", cfg, err)
 	}
 	// Second run changes nothing: lines are added only when absent, files never overwritten.
-	if err := os.WriteFile(filepath.Join(proj, ".friday", "config.toml"), []byte("[project]\nname = \"mine\"\n"), 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(proj, ".ink", "config.toml"), []byte("[project]\nname = \"mine\"\n"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	if code, _, _ := exec(t, "init", "--project", proj); code != 0 {
@@ -265,7 +265,7 @@ func TestInitCommand(t *testing.T) {
 	if string(again) != string(ignore) {
 		t.Fatalf("gitignore changed on second run:\n%s", again)
 	}
-	if cfg, _ := os.ReadFile(filepath.Join(proj, ".friday", "config.toml")); string(cfg) != "[project]\nname = \"mine\"\n" { //nolint:gosec // test-owned temp dir
+	if cfg, _ := os.ReadFile(filepath.Join(proj, ".ink", "config.toml")); string(cfg) != "[project]\nname = \"mine\"\n" { //nolint:gosec // test-owned temp dir
 		t.Fatalf("config overwritten: %q", cfg)
 	}
 	if code, _, _ := exec(t, "init", "extra"); code != exitUsage {
@@ -278,7 +278,7 @@ func TestInitCommand(t *testing.T) {
 func TestWarnDroppedRiskFlag(t *testing.T) {
 	r := &config.Resolved{Provenance: config.Provenance{
 		"providers.codex.accept_third_party_oauth_risk": {{
-			Source:   config.Source{Layer: config.LayerProject, Path: ".friday/config.toml"},
+			Source:   config.Source{Layer: config.LayerProject, Path: ".ink/config.toml"},
 			Value:    true,
 			Rejected: true,
 			Reason:   config.RejectAllowlist,
@@ -287,7 +287,7 @@ func TestWarnDroppedRiskFlag(t *testing.T) {
 	var buf bytes.Buffer
 	warnDropped(&buf, r)
 	out := buf.String()
-	for _, want := range []string{".friday/config.toml", "accept_third_party_oauth_risk", "repository files may never set them"} {
+	for _, want := range []string{".ink/config.toml", "accept_third_party_oauth_risk", "repository files may never set them"} {
 		if !strings.Contains(out, want) {
 			t.Fatalf("warning %q must contain %q", out, want)
 		}

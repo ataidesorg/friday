@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/ataidesorg/friday/internal/core"
+	"github.com/ataidesorg/ink/internal/core"
 )
 
 // dayLayout formats the ledger's calendar day.
@@ -124,7 +124,7 @@ func (s *Spend) DayTotal(day string) (total core.USDMicros, corrupt int, err err
 }
 
 // Commit appends one run's line to the ledger: a single O_APPEND write of
-// a whole line with 0600 permissions, so concurrent friday processes never
+// a whole line with 0600 permissions, so concurrent ink processes never
 // interleave records and the file stays owner-only.
 func (s *Spend) Commit(e SpendEntry) error {
 	s.mu.Lock()

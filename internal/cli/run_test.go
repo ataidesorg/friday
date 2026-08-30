@@ -12,11 +12,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ataidesorg/friday/internal/config"
-	"github.com/ataidesorg/friday/internal/core"
-	"github.com/ataidesorg/friday/internal/observability"
-	"github.com/ataidesorg/friday/internal/runtime"
-	"github.com/ataidesorg/friday/internal/sandbox"
+	"github.com/ataidesorg/ink/internal/config"
+	"github.com/ataidesorg/ink/internal/core"
+	"github.com/ataidesorg/ink/internal/observability"
+	"github.com/ataidesorg/ink/internal/runtime"
+	"github.com/ataidesorg/ink/internal/sandbox"
 )
 
 var scripts = filepath.Join("..", "..", "test", "scripts")
@@ -31,7 +31,7 @@ func copyFixture(t *testing.T) string {
 			return err
 		}
 		rel, _ := filepath.Rel(sample, p)
-		if rel == filepath.Join(".friday", "local") {
+		if rel == filepath.Join(".ink", "local") {
 			return filepath.SkipDir // trails left by manual runs are not fixture data
 		}
 		target := filepath.Join(dst, rel)
@@ -65,11 +65,11 @@ func execRun(t *testing.T, stdin string, args ...string) (int, string, string) {
 	return execRunHome(t, t.TempDir(), stdin, args...)
 }
 
-// trustProject records root's .friday/config.toml as trusted in HOME's
-// state store, the way an owner runs `friday trust` before a run.
+// trustProject records root's .ink/config.toml as trusted in HOME's
+// state store, the way an owner runs `ink trust` before a run.
 func trustProject(t *testing.T, home, root string) {
 	t.Helper()
-	cfg, err := filepath.Abs(filepath.Join(root, ".friday", "config.toml"))
+	cfg, err := filepath.Abs(filepath.Join(root, ".ink", "config.toml"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -123,7 +123,7 @@ func TestRunGoalProseDoesNotComplete(t *testing.T) {
 		t.Fatalf("run: %d\nstdout: %s\nstderr: %s", code, out, errOut)
 	}
 	if strings.Contains(errOut, "goal complete") {
-		t.Fatalf("friday run invented a completion:\n%s", errOut)
+		t.Fatalf("ink run invented a completion:\n%s", errOut)
 	}
 	if !strings.Contains(errOut, "goal active") {
 		t.Fatalf("want goal active on stderr:\n%s", errOut)
@@ -162,7 +162,7 @@ func TestRunUntrustedCommandsDropped(t *testing.T) {
 	if !strings.Contains(out, `command "go test ./..." is not in tools.commands.allowed`) {
 		t.Fatalf("go test not denied:\n%s", out)
 	}
-	if !strings.Contains(errOut, "project.commands.test") || !strings.Contains(errOut, "friday trust") {
+	if !strings.Contains(errOut, "project.commands.test") || !strings.Contains(errOut, "ink trust") {
 		t.Fatalf("no dropped-keys warning: %q", errOut)
 	}
 	var denied bool
@@ -282,7 +282,7 @@ func TestYesApprover(t *testing.T) {
 func TestTrustPromptAndReadLine(t *testing.T) {
 	var out bytes.Buffer
 	in := strings.NewReader("y\nrest")
-	dec, err := trustPrompt(in, &out)("/p/.friday/config.toml", []string{"sandbox.provider"})
+	dec, err := trustPrompt(in, &out)("/p/.ink/config.toml", []string{"sandbox.provider"})
 	if err != nil || dec != config.TrustTrusted || !strings.Contains(out.String(), "sandbox.provider") {
 		t.Fatalf("yes: %v %v %q", dec, err, out.String())
 	}

@@ -10,12 +10,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ataidesorg/friday/internal/config"
-	"github.com/ataidesorg/friday/internal/core"
-	"github.com/ataidesorg/friday/internal/models/mock"
-	"github.com/ataidesorg/friday/internal/policy"
-	"github.com/ataidesorg/friday/internal/runtime"
-	"github.com/ataidesorg/friday/internal/tools"
+	"github.com/ataidesorg/ink/internal/config"
+	"github.com/ataidesorg/ink/internal/core"
+	"github.com/ataidesorg/ink/internal/models/mock"
+	"github.com/ataidesorg/ink/internal/policy"
+	"github.com/ataidesorg/ink/internal/runtime"
+	"github.com/ataidesorg/ink/internal/tools"
 )
 
 const scriptDir = "../../test/scripts"

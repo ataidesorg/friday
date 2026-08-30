@@ -1,25 +1,25 @@
 #!/usr/bin/env bash
-# One bounded live turn against deepseek-v4-flash. Loads ~/.friday/env and
+# One bounded live turn against deepseek-v4-flash. Loads ~/.ink/env and
 # never prints it. Not a go test: this hits the real provider.
 set -euo pipefail
 root="$(cd "$(dirname "$0")/.." && pwd)"
-envf="${HOME}/.friday/env"
+envf="${HOME}/.ink/env"
 if [[ ! -f "$envf" ]]; then
-  echo "skip: missing ~/.friday/env" >&2
+  echo "skip: missing ~/.ink/env" >&2
   exit 0
 fi
 set -a
 # shellcheck disable=SC1090
 source "$envf"
 set +a
-bin="$root/bin/friday"
+bin="$root/bin/ink"
 mkdir -p "$root/bin"
-go build -o "$bin" "$root/cmd/friday"
+go build -o "$bin" "$root/cmd/ink"
 proj="$(mktemp -d)"
 trap 'rm -rf "$proj"' EXIT
 git -C "$proj" init -q
 git -C "$proj" config user.email "bench@localhost"
-git -C "$proj" config user.name "friday-bench"
+git -C "$proj" config user.name "ink-bench"
 printf 'package p\nfunc Hi() string { return "hi" }\n' > "$proj/hi.go"
 git -C "$proj" add hi.go
 git -C "$proj" commit -q -m init

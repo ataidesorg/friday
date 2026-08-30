@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ataidesorg/friday/internal/core"
+	"github.com/ataidesorg/ink/internal/core"
 )
 
 // GoalComplete records evidence-backed done for the session goal.

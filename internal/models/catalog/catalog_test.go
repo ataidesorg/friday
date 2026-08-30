@@ -204,11 +204,11 @@ func TestUntrustedIDsValidated(t *testing.T) {
 func TestDir(t *testing.T) {
 	env := map[string]string{"XDG_CACHE_HOME": "/x/cache", "HOME": "/home/u"}
 	lookup := func(k string) string { return env[k] }
-	if d, err := Dir(lookup); err != nil || d != filepath.Join("/x/cache", "friday") {
+	if d, err := Dir(lookup); err != nil || d != filepath.Join("/x/cache", "ink") {
 		t.Fatalf("Dir = %q, %v", d, err)
 	}
 	delete(env, "XDG_CACHE_HOME")
-	if d, err := Dir(lookup); err != nil || d != filepath.Join("/home/u", ".cache", "friday") {
+	if d, err := Dir(lookup); err != nil || d != filepath.Join("/home/u", ".cache", "ink") {
 		t.Fatalf("Dir = %q, %v", d, err)
 	}
 	delete(env, "HOME")

@@ -18,9 +18,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/ataidesorg/friday/internal/core"
-	"github.com/ataidesorg/friday/internal/fsutil"
-	"github.com/ataidesorg/friday/internal/sandbox"
+	"github.com/ataidesorg/ink/internal/core"
+	"github.com/ataidesorg/ink/internal/fsutil"
+	"github.com/ataidesorg/ink/internal/sandbox"
 )
 
 // Name is the provider's registry key (`sandbox.provider = "container"`).
@@ -94,7 +94,7 @@ func (p *Provider) Create(ctx context.Context, spec core.SandboxSpec) (core.Sand
 	case !st.IsDir():
 		return nil, fmt.Errorf("%w: work_dir %s is not a directory", core.ErrInvalidInput, spec.WorkDir)
 	}
-	home, err := os.MkdirTemp("", "friday-sbx-*")
+	home, err := os.MkdirTemp("", "ink-sbx-*")
 	if err != nil {
 		return nil, err
 	}
@@ -151,7 +151,7 @@ func (p *Provider) start(ctx context.Context, spec core.SandboxSpec, env map[str
 func (p *Provider) runArgv(id core.SandboxID, spec core.SandboxSpec, env map[string]string, host string) []string {
 	argv := []string{
 		"run", "-d",
-		"--name", "friday-sbx-" + string(id),
+		"--name", "ink-sbx-" + string(id),
 		"--network", "none",
 		"--memory", fmt.Sprintf("%dm", spec.Limits.MemoryMB),
 		"--cpus", strconv.Itoa(spec.Limits.CPUCores),

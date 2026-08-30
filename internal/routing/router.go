@@ -13,8 +13,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ataidesorg/friday/internal/config"
-	"github.com/ataidesorg/friday/internal/core"
+	"github.com/ataidesorg/ink/internal/config"
+	"github.com/ataidesorg/ink/internal/core"
 )
 
 const microsPerMTok = 1_000_000

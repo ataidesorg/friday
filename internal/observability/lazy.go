@@ -6,8 +6,8 @@ import (
 	"io"
 	"sync"
 
-	"github.com/ataidesorg/friday/internal/core"
-	"github.com/ataidesorg/friday/internal/redact"
+	"github.com/ataidesorg/ink/internal/core"
+	"github.com/ataidesorg/ink/internal/redact"
 )
 
 // LazyTrail opens the JSONL trail under root on the first event, once the

@@ -10,9 +10,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/ataidesorg/friday/internal/config"
-	"github.com/ataidesorg/friday/internal/redact"
-	"github.com/ataidesorg/friday/internal/tui"
+	"github.com/ataidesorg/ink/internal/config"
+	"github.com/ataidesorg/ink/internal/redact"
+	"github.com/ataidesorg/ink/internal/tui"
 )
 
 // multiFlag collects repeated --set key=value flags.
@@ -99,12 +99,12 @@ func envLookup(environ []string) func(string) string {
 
 func configCmd(args []string, stdout, stderr io.Writer, environ []string, getwd func() (string, error)) int {
 	if len(args) == 0 {
-		fmt.Fprintln(stderr, "usage: friday config <show|validate|explain KEY> [flags]")
+		fmt.Fprintln(stderr, "usage: ink config <show|validate|explain KEY> [flags]")
 		return exitUsage
 	}
 	sub := args[0]
 	if sub != "show" && sub != "validate" && sub != "explain" {
-		fmt.Fprintf(stderr, "friday config: unknown subcommand %q\n", sub)
+		fmt.Fprintf(stderr, "ink config: unknown subcommand %q\n", sub)
 		return exitUsage
 	}
 	g, positional, err := parseGlobal(sub, args[1:], stderr)
@@ -112,7 +112,7 @@ func configCmd(args []string, stdout, stderr io.Writer, environ []string, getwd 
 		return exitUsage
 	}
 	if (sub == "explain" && len(positional) != 1) || (sub != "explain" && len(positional) != 0) {
-		fmt.Fprintln(stderr, "usage: friday config <show|validate|explain KEY> [flags]")
+		fmt.Fprintln(stderr, "usage: ink config <show|validate|explain KEY> [flags]")
 		return exitUsage
 	}
 	opts, err := g.options(environ, getwd, stderr)
@@ -137,7 +137,7 @@ func configCmd(args []string, stdout, stderr io.Writer, environ []string, getwd 
 	if sub == "show" {
 		// Never dump a configuration that failed validation: it may hold a secret literal.
 		if verr != nil {
-			fmt.Fprintf(stderr, "friday config: invalid configuration\n%s\n", out.Redact(verr.Error()))
+			fmt.Fprintf(stderr, "ink config: invalid configuration\n%s\n", out.Redact(verr.Error()))
 			return exitError
 		}
 		text, err := resolved.TOML()
@@ -149,19 +149,19 @@ func configCmd(args []string, stdout, stderr io.Writer, environ []string, getwd 
 	}
 	ex, ok := resolved.Explain(positional[0])
 	if !ok {
-		fmt.Fprintf(stderr, "friday config explain: unknown key %q\n", positional[0])
+		fmt.Fprintf(stderr, "ink config explain: unknown key %q\n", positional[0])
 		return exitError
 	}
 	fmt.Fprintln(stdout, out.Redact(ex.String()))
 	if verr != nil {
-		fmt.Fprintf(stderr, "warning: configuration is invalid; run `friday config validate`\n")
+		fmt.Fprintf(stderr, "warning: configuration is invalid; run `ink config validate`\n")
 	}
 	return exitOK
 }
 
-// settings are Friday's user-state knobs the TUI persists live — the choices
+// settings are Ink's user-state knobs the TUI persists live — the choices
 // a picker remembers, distinct from the declarative config files. Stored as
-// JSON in the Friday home.
+// JSON in the Ink home.
 type settings struct {
 	Theme          string `json:"theme,omitempty"`
 	VimMode        bool   `json:"vim_mode,omitempty"`
@@ -225,7 +225,7 @@ func saveSettings(home string, s settings) error {
 		return fmt.Errorf("encode settings: %w", err)
 	}
 	if err := os.MkdirAll(home, 0o700); err != nil {
-		return fmt.Errorf("create friday home: %w", err)
+		return fmt.Errorf("create ink home: %w", err)
 	}
 	if err := os.WriteFile(settingsPath(home), append(b, '\n'), 0o600); err != nil {
 		return fmt.Errorf("save settings: %w", err)
@@ -247,14 +247,14 @@ func loadThemes(home string, warn io.Writer) []tui.Theme {
 		if e.IsDir() || !strings.HasSuffix(e.Name(), ".toml") {
 			continue
 		}
-		b, err := os.ReadFile(filepath.Join(dir, e.Name())) //nolint:gosec // the user's own theme files under the Friday home
+		b, err := os.ReadFile(filepath.Join(dir, e.Name())) //nolint:gosec // the user's own theme files under the Ink home
 		if err != nil {
-			fmt.Fprintf(warn, "friday: theme %s skipped: %v\n", e.Name(), err)
+			fmt.Fprintf(warn, "ink: theme %s skipped: %v\n", e.Name(), err)
 			continue
 		}
 		th, err := tui.ParseTheme(strings.TrimSuffix(e.Name(), ".toml"), b)
 		if err != nil {
-			fmt.Fprintf(warn, "friday: %v\n", err)
+			fmt.Fprintf(warn, "ink: %v\n", err)
 			continue
 		}
 		out = append(out, th)
@@ -262,12 +262,12 @@ func loadThemes(home string, warn io.Writer) []tui.Theme {
 	return out
 }
 
-// loadUserEnv pulls KEY=value pairs from <friday-home>/env into the process
+// loadUserEnv pulls KEY=value pairs from <ink-home>/env into the process
 // environment when the key is not already set. Existing exports win. The
-// file is never printed. main() calls this so `friday` works without a
-// manual `source ~/.friday/env`; tests call run() and skip it.
+// file is never printed. main() calls this so `ink` works without a
+// manual `source ~/.ink/env`; tests call run() and skip it.
 func loadUserEnv() {
-	home, err := config.FridayHome(os.Getenv)
+	home, err := config.Home(os.Getenv)
 	if err != nil {
 		return
 	}
@@ -275,7 +275,7 @@ func loadUserEnv() {
 }
 
 func applyEnvFile(path string, setenv func(string, string) error, getenv func(string) string) error {
-	f, err := os.Open(path) //nolint:gosec // operator-owned ~/.friday/env
+	f, err := os.Open(path) //nolint:gosec // operator-owned ~/.ink/env
 	if err != nil {
 		if os.IsNotExist(err) {
 			return nil

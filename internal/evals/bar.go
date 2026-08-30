@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ataidesorg/friday/internal/core"
+	"github.com/ataidesorg/ink/internal/core"
 )
 
 // Bar is a cheap/fast/quality ceiling. Zero fields are ignored except
@@ -59,7 +59,7 @@ func Judge(res core.EvaluationResult, bar Bar) Verdict {
 	return Verdict{Met: len(reasons) == 0, Reasons: reasons}
 }
 
-// FormatVerdict is a one-block report for `friday eval bench`.
+// FormatVerdict is a one-block report for `ink eval bench`.
 func FormatVerdict(v Verdict, res core.EvaluationResult) string {
 	mark := "MET"
 	if !v.Met {

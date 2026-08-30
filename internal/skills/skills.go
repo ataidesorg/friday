@@ -16,8 +16,8 @@ import (
 
 	"github.com/BurntSushi/toml"
 
-	"github.com/ataidesorg/friday/internal/core"
-	"github.com/ataidesorg/friday/internal/fmatter"
+	"github.com/ataidesorg/ink/internal/core"
+	"github.com/ataidesorg/ink/internal/fmatter"
 )
 
 // Skill is one discovered skill.
@@ -63,7 +63,7 @@ func Load(root, home string, warn io.Writer) []Skill {
 				if os.IsNotExist(err) {
 					continue // a directory without SKILL.md is not a skill
 				}
-				fmt.Fprintf(warn, "friday: skill %s skipped: %v\n", e.Name(), err)
+				fmt.Fprintf(warn, "ink: skill %s skipped: %v\n", e.Name(), err)
 				continue
 			}
 			byName[s.Name] = s

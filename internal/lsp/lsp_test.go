@@ -179,7 +179,7 @@ func TestDiagnoseCrashAfterInitWarnsOnce(t *testing.T) {
 
 func TestDiagnoseMissingBinaryWarnsOnce(t *testing.T) {
 	root := t.TempDir()
-	m := NewManager(root, []Server{{Name: "ghost", Command: []string{"/nonexistent/friday-lsp"}, Extensions: []string{".go"}}})
+	m := NewManager(root, []Server{{Name: "ghost", Command: []string{"/nonexistent/ink-lsp"}, Extensions: []string{".go"}}})
 	t.Cleanup(m.Close)
 	p := writeGo(t, root)
 	got := m.Diagnose(context.Background(), p)

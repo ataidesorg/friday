@@ -11,8 +11,8 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 
-	"github.com/ataidesorg/friday/internal/core"
-	"github.com/ataidesorg/friday/internal/runtime"
+	"github.com/ataidesorg/ink/internal/core"
+	"github.com/ataidesorg/ink/internal/runtime"
 )
 
 func enter() tea.KeyMsg { return tea.KeyMsg{Type: tea.KeyEnter} }
@@ -84,7 +84,7 @@ func TestChatTurnRendersReplyAndStatus(t *testing.T) {
 		t.Fatal("model still running after turn")
 	}
 	joined := strings.Join(m.Lines, "\n")
-	for _, want := range []string{"[you] fix the bug", "[tool] read_file", "[friday] Fixed the bug."} {
+	for _, want := range []string{"[you] fix the bug", "[tool] read_file", "[ink] Fixed the bug."} {
 		if !strings.Contains(joined, want) {
 			t.Fatalf("scrollback missing %q:\n%s", want, joined)
 		}
@@ -111,7 +111,7 @@ func TestChatStreamingAccumulatesIntoOneReply(t *testing.T) {
 	if strings.Contains(joined, "[model]") {
 		t.Fatalf("raw delta lines leaked into the scrollback:\n%s", joined)
 	}
-	if n := strings.Count(joined, "[friday] streamed answer"); n != 1 {
+	if n := strings.Count(joined, "[ink] streamed answer"); n != 1 {
 		t.Fatalf("want exactly one committed reply line, got %d:\n%s", n, joined)
 	}
 	if m.reply != "" {
@@ -293,7 +293,7 @@ func TestChatSlashHelpModelClear(t *testing.T) {
 		t.Fatal("/help must not start a turn")
 	}
 	help := strings.Join(m.Lines, "\n")
-	for _, want := range []string{"FRIDAY(1)", "SESSION", "/model", "/agent NAME", "ctrl+c, ctrl+q"} {
+	for _, want := range []string{"INK(1)", "SESSION", "/model", "/agent NAME", "ctrl+c, ctrl+q"} {
 		if !strings.Contains(help, want) {
 			t.Fatalf("/help missing %q:\n%s", want, help)
 		}
@@ -496,7 +496,7 @@ func TestChatStyleConversationPlain(t *testing.T) {
 	cs := newChatStyles(false) // NO_COLOR: plain text, structural rail only
 	out := cs.conversation([]string{
 		"[you] fix the bug",
-		"[friday] on it",
+		"[ink] on it",
 		"[tool] read_file ok in 3ms",
 	}, 40, -1)
 	for _, want := range []string{"fix the bug", "on it", "read_file ok in 3ms"} {
@@ -504,12 +504,12 @@ func TestChatStyleConversationPlain(t *testing.T) {
 			t.Fatalf("conversation missing %q:\n%s", want, out)
 		}
 	}
-	for _, want := range []string{"You", "Friday", "Tool"} {
+	for _, want := range []string{"You", "Ink", "Tool"} {
 		if !strings.Contains(out, want) {
 			t.Fatalf("conversation missing label %q:\n%s", want, out)
 		}
 	}
-	for _, want := range []string{"╭ You", "╭ Friday"} {
+	for _, want := range []string{"╭ You", "╭ Ink"} {
 		if !strings.Contains(out, want) {
 			t.Fatalf("conversation missing message box %q:\n%s", want, out)
 		}
@@ -528,14 +528,14 @@ func TestChatStyleConversationPlain(t *testing.T) {
 func TestChatMarkdownAssistantView(t *testing.T) {
 	cs := newChatStyles(false)
 	out := cs.conversation([]string{
-		"[friday] ## Heading",
-		"[friday] intro",
-		"[friday] ```",
-		"[friday] func main() {}",
-		"[friday] ```",
-		"[friday] after",
+		"[ink] ## Heading",
+		"[ink] intro",
+		"[ink] ```",
+		"[ink] func main() {}",
+		"[ink] ```",
+		"[ink] after",
 	}, 40, -1)
-	if strings.Contains(out, "[friday]") {
+	if strings.Contains(out, "[ink]") {
 		t.Fatalf("tag leaked into painted view:\n%s", out)
 	}
 	for _, want := range []string{"Heading", "intro", "func main() {}", "after"} {
@@ -554,16 +554,16 @@ func TestChatMarkdownAssistantView(t *testing.T) {
 func TestChatStyleGroupsAssistantResponseInOneBox(t *testing.T) {
 	cs := newChatStyles(false)
 	out := cs.conversation([]string{
-		"[friday] Hi! I'm Friday, a coding agent for this project.",
-		"[friday] ",
-		"[friday] What can I help you with?",
-		"[friday] - Look around the codebase",
-		"[friday] - Make changes",
+		"[ink] Hi! I'm Ink, a coding agent for this project.",
+		"[ink] ",
+		"[ink] What can I help you with?",
+		"[ink] - Look around the codebase",
+		"[ink] - Make changes",
 	}, 80, -1)
-	if got := strings.Count(out, "╭ Friday"); got != 1 {
+	if got := strings.Count(out, "╭ Ink"); got != 1 {
 		t.Fatalf("assistant response rendered %d boxes, want 1:\n%s", got, out)
 	}
-	for _, want := range []string{"Hi! I'm Friday", "What can I help", "Look around", "Make changes"} {
+	for _, want := range []string{"Hi! I'm Ink", "What can I help", "Look around", "Make changes"} {
 		if !strings.Contains(out, want) {
 			t.Fatalf("grouped response missing %q:\n%s", want, out)
 		}
@@ -573,22 +573,22 @@ func TestChatStyleGroupsAssistantResponseInOneBox(t *testing.T) {
 func TestChatCopyHelpersReturnMessageBodyWithoutRails(t *testing.T) {
 	cs := newChatStyles(false)
 	out := cs.conversation([]string{
-		"[friday] Hi! I'm Friday.",
-		"[friday] ",
-		"[friday] - Build and test",
+		"[ink] Hi! I'm Ink.",
+		"[ink] ",
+		"[ink] - Build and test",
 	}, 80, -1)
 	if !strings.Contains(out, "│ Hi!") {
 		t.Fatalf("rendered message should keep side rails:\n%s", out)
 	}
 	copied := lastAssistantReply([]string{
-		"[friday] Hi! I'm Friday.",
-		"[friday] ",
-		"[friday] - Build and test",
+		"[ink] Hi! I'm Ink.",
+		"[ink] ",
+		"[ink] - Build and test",
 	})
 	if strings.Contains(copied, "│") || strings.Contains(copied, "╭") || strings.Contains(copied, "╰") {
 		t.Fatalf("copy helper leaked frame glyphs: %q", copied)
 	}
-	for _, want := range []string{"Hi! I'm Friday.", "- Build and test"} {
+	for _, want := range []string{"Hi! I'm Ink.", "- Build and test"} {
 		if !strings.Contains(copied, want) {
 			t.Fatalf("copy helper missing %q: %q", want, copied)
 		}
@@ -670,8 +670,8 @@ func TestChatCtrlCCancelsTurnThenQuits(t *testing.T) {
 func TestChatStyleDoesNotClipStyledLineStarts(t *testing.T) {
 	cs := newChatStyles(true)
 	out := cs.conversation([]string{
-		"[friday] hi",
-		"[friday] What would you like to work on?",
+		"[ink] hi",
+		"[ink] What would you like to work on?",
 	}, 64, -1)
 	plain := stripANSI(out)
 	for _, want := range []string{"hi", "What would you like"} {
@@ -1274,7 +1274,7 @@ func TestChatStickyScrollKeepsOffsetWhenScrolledUp(t *testing.T) {
 		t.Fatalf("pgup did not scroll up: y=%d bottom=%d", m.vp.YOffset, bottom)
 	}
 	held := m.vp.YOffset
-	m = m.append("[friday] streamed token")
+	m = m.append("[ink] streamed token")
 	if m.vp.AtBottom() {
 		t.Fatal("layout jumped to the tail after the user scrolled up")
 	}
@@ -1483,11 +1483,11 @@ func TestChatHeaderFolderBranchContext(t *testing.T) {
 }
 
 func TestDisplayCwdKeepsPath(t *testing.T) {
-	if got := displayCwd(""); got != "friday" {
+	if got := displayCwd(""); got != "ink" {
 		t.Fatalf("empty = %q", got)
 	}
-	got := displayCwd("/tmp/work/studio/projects/friday")
-	if !strings.Contains(got, "friday") || got == "friday" {
+	got := displayCwd("/tmp/work/studio/projects/ink")
+	if !strings.Contains(got, "ink") || got == "ink" {
 		t.Fatalf("long cwd collapsed: %q", got)
 	}
 }
@@ -1555,12 +1555,12 @@ func TestChatWelcomeEmptyState(t *testing.T) {
 	next, _ := m.Update(tea.WindowSizeMsg{Width: 80, Height: 24})
 	m = next.(ChatModel)
 	v := m.View()
-	for _, want := range []string{"╱╲", "─◉─", "Friday", "Ask anything", "what does this repo do?", "deepseek-v4-flash"} {
+	for _, want := range []string{"╱╲", "─◉─", "Ink", "Ask anything", "what does this repo do?", "deepseek-v4-flash"} {
 		if !strings.Contains(v, want) {
 			t.Fatalf("empty chat missing %q:\n%s", want, v)
 		}
 	}
-	if strings.Contains(v, "[you]") || strings.Contains(v, "[friday]") {
+	if strings.Contains(v, "[you]") || strings.Contains(v, "[ink]") {
 		t.Fatalf("welcome painted log tags:\n%s", v)
 	}
 
@@ -1678,7 +1678,7 @@ func TestChatMouseDragCopiesFramedMessageBody(t *testing.T) {
 	next, _ := m.Update(tea.WindowSizeMsg{Width: 90, Height: 18})
 	m = next.(ChatModel)
 	m = m.append(
-		tagReply+" Hi! I'm Friday.",
+		tagReply+" Hi! I'm Ink.",
 		tagReply+" ",
 		tagReply+" - Build and test",
 	)
@@ -1699,7 +1699,7 @@ func TestChatMouseDragCopiesFramedMessageBody(t *testing.T) {
 	})
 	m = next.(ChatModel)
 
-	want := "Hi! I'm Friday.\n\n• Build and test"
+	want := "Hi! I'm Ink.\n\n• Build and test"
 	if copied != want {
 		t.Fatalf("mouse copied = %q, want %q\npane:\n%s", copied, want, m.paneView())
 	}
@@ -1781,7 +1781,7 @@ func TestChatMouseClickDoesNotCopy(t *testing.T) {
 	}}, nil)
 	next, _ := m.Update(tea.WindowSizeMsg{Width: 90, Height: 18})
 	m = next.(ChatModel)
-	m = m.append(tagReply + " Hi! I'm Friday.")
+	m = m.append(tagReply + " Hi! I'm Ink.")
 	row := rowContaining(t, strings.Split(m.paneView(), "\n"), "Hi!")
 
 	next, _ = m.Update(tea.MouseMsg{

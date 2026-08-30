@@ -12,14 +12,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ataidesorg/friday/internal/commands"
-	"github.com/ataidesorg/friday/internal/config"
-	"github.com/ataidesorg/friday/internal/core"
-	"github.com/ataidesorg/friday/internal/redact"
-	"github.com/ataidesorg/friday/internal/runtime"
-	sessionstore "github.com/ataidesorg/friday/internal/session"
-	"github.com/ataidesorg/friday/internal/tools"
-	"github.com/ataidesorg/friday/internal/tui"
+	"github.com/ataidesorg/ink/internal/commands"
+	"github.com/ataidesorg/ink/internal/config"
+	"github.com/ataidesorg/ink/internal/core"
+	"github.com/ataidesorg/ink/internal/redact"
+	"github.com/ataidesorg/ink/internal/runtime"
+	sessionstore "github.com/ataidesorg/ink/internal/session"
+	"github.com/ataidesorg/ink/internal/tools"
+	"github.com/ataidesorg/ink/internal/tui"
 )
 
 type nopObs struct{}
@@ -613,7 +613,7 @@ func TestReservedSlashComesFromTheTUITable(t *testing.T) {
 	}
 
 	root := t.TempDir()
-	dir := filepath.Join(root, ".friday", "commands")
+	dir := filepath.Join(root, ".ink", "commands")
 	if err := os.MkdirAll(dir, 0o700); err != nil {
 		t.Fatal(err)
 	}

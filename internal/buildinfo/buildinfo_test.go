@@ -6,7 +6,7 @@ import (
 )
 
 func TestSummary(t *testing.T) {
-	if s := Summary(); !strings.HasPrefix(s, "friday dev (commit ") || !strings.HasSuffix(s, ")") {
+	if s := Summary(); !strings.HasPrefix(s, "ink dev (commit ") || !strings.HasSuffix(s, ")") {
 		t.Fatalf("Summary() = %q", s)
 	}
 }

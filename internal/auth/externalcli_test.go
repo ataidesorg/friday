@@ -10,9 +10,9 @@ import (
 	"sync/atomic"
 	"testing"
 
-	"github.com/ataidesorg/friday/internal/config"
-	"github.com/ataidesorg/friday/internal/core"
-	"github.com/ataidesorg/friday/internal/providers"
+	"github.com/ataidesorg/ink/internal/config"
+	"github.com/ataidesorg/ink/internal/core"
+	"github.com/ataidesorg/ink/internal/providers"
 )
 
 func anthropicEntry(t *testing.T) providers.Entry {
@@ -142,7 +142,7 @@ func fileResolver(t *testing.T, spy *spyRegistrar) (*Resolver, string) {
 	r := NewResolver(spy, envOf(nil),
 		WithGetenv(func(k string) string {
 			switch k {
-			case "FRIDAY_STATE_DIR":
+			case "INK_STATE_DIR":
 				return stateDir
 			case "HOME":
 				return home
@@ -204,7 +204,7 @@ func TestClaudeCodeMissListsEveryLocation(t *testing.T) {
 		oauthStorePrefix + "anthropic-oauth",
 		claudeKeychainService,
 		".claude/.credentials.json",
-		"friday auth login anthropic-oauth",
+		"ink auth login anthropic-oauth",
 	} {
 		if !strings.Contains(msg, want) {
 			t.Errorf("miss %q lacks %q", msg, want)

@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ataidesorg/friday/internal/providers"
+	"github.com/ataidesorg/ink/internal/providers"
 )
 
 // RFC 8628 device authorization grant. The device-auth request and every

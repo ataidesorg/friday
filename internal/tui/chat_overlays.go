@@ -157,7 +157,7 @@ func (m ChatModel) overlayCommit(kind overlayKind, id string) (tea.Model, tea.Cm
 	return c.Run(m, "")
 }
 
-// skillHelp is the /skills overlay's "How to manage" copy: Friday has no
+// skillHelp is the /skills overlay's "How to manage" copy: Ink has no
 // remote store, so the answer to every one of these is a directory.
 func skillHelp(id string) []string {
 	switch id {
@@ -166,7 +166,7 @@ func skillHelp(id string) []string {
 			tagStatus + " create skill",
 			"  A skill is a reusable instruction pack the agent can follow.",
 			"  Use it for workflows like review, diagnose, migration, or project-specific taste rules.",
-			"  Add one under skills/ in this repo or your Friday home, then reopen Friday to load it.",
+			"  Add one under skills/ in this repo or your Ink home, then reopen Ink to load it.",
 		}
 	case "help:user-skill":
 		return []string{
@@ -177,7 +177,7 @@ func skillHelp(id string) []string {
 	case "help:remove-skill":
 		return []string{
 			tagStatus + " remove skill",
-			"  Delete its directory. Friday has no remote store; skills are local files.",
+			"  Delete its directory. Ink has no remote store; skills are local files.",
 		}
 	default:
 		return []string{tagWarn + " no help for " + clip(id)}

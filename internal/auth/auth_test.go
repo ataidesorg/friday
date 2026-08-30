@@ -10,9 +10,9 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/ataidesorg/friday/internal/config"
-	"github.com/ataidesorg/friday/internal/core"
-	"github.com/ataidesorg/friday/internal/providers"
+	"github.com/ataidesorg/ink/internal/config"
+	"github.com/ataidesorg/ink/internal/core"
+	"github.com/ataidesorg/ink/internal/providers"
 )
 
 // spyRegistrar records every literal handed to the redactor.
@@ -47,7 +47,7 @@ func testResolver(t *testing.T, spy *spyRegistrar, env map[string]string, opts .
 	stateDir := t.TempDir()
 	base := []Option{
 		WithGetenv(func(k string) string {
-			if k == "FRIDAY_STATE_DIR" {
+			if k == "INK_STATE_DIR" {
 				return stateDir
 			}
 			return ""
@@ -88,7 +88,7 @@ func TestEnvSourceMissingIsTypedAndSilent(t *testing.T) {
 	if !errors.As(err, &noCred) {
 		t.Fatalf("want *ErrNoCredential, got %T: %v", err, err)
 	}
-	if !strings.Contains(err.Error(), "friday auth set") {
+	if !strings.Contains(err.Error(), "ink auth set") {
 		t.Fatalf("error must name the remedy, got: %v", err)
 	}
 }
@@ -176,12 +176,12 @@ func TestKeyringHit(t *testing.T) {
 	secret := "tok-keyring-1234567890"
 	spy := &spyRegistrar{}
 	r := testResolver(t, spy, nil, WithKeyringLookup(func(_ context.Context, service, account string) (string, bool, error) {
-		if service == "friday" && account == "fireworks" {
+		if service == "ink" && account == "fireworks" {
 			return secret, true, nil
 		}
 		return "", false, nil
 	}))
-	cred, err := r.Resolve(context.Background(), config.AuthRef{Source: "keyring", Service: "friday", Account: "fireworks"})
+	cred, err := r.Resolve(context.Background(), config.AuthRef{Source: "keyring", Service: "ink", Account: "fireworks"})
 	if err != nil {
 		t.Fatalf("resolve: %v", err)
 	}
@@ -203,7 +203,7 @@ func TestKeyringUnavailableFallsBackToStore(t *testing.T) {
 	if err := r.StoreSet("fireworks", secret); err != nil {
 		t.Fatalf("seed store: %v", err)
 	}
-	cred, err := r.Resolve(context.Background(), config.AuthRef{Source: "keyring", Service: "friday", Account: "fireworks"})
+	cred, err := r.Resolve(context.Background(), config.AuthRef{Source: "keyring", Service: "ink", Account: "fireworks"})
 	if err != nil {
 		t.Fatalf("resolve: %v", err)
 	}
@@ -225,7 +225,7 @@ func TestSecretStoreRoundTripAndPermissions(t *testing.T) {
 	spy := &spyRegistrar{}
 	stateDir := t.TempDir()
 	getenv := func(k string) string {
-		if k == "FRIDAY_STATE_DIR" {
+		if k == "INK_STATE_DIR" {
 			return stateDir
 		}
 		return ""
@@ -273,7 +273,7 @@ func TestSecretStoreRoundTripAndPermissions(t *testing.T) {
 func TestSecretStoreCorruptFileFailsClosed(t *testing.T) {
 	stateDir := t.TempDir()
 	getenv := func(k string) string {
-		if k == "FRIDAY_STATE_DIR" {
+		if k == "INK_STATE_DIR" {
 			return stateDir
 		}
 		return ""
@@ -345,7 +345,7 @@ func TestForProviderOAuthNotLoggedIn(t *testing.T) {
 	if !errors.As(err, &missing) {
 		t.Fatalf("pkce with no stored token must be ErrNoCredential, got: %v", err)
 	}
-	if !strings.Contains(err.Error(), "friday auth login codex") {
+	if !strings.Contains(err.Error(), "ink auth login codex") {
 		t.Fatalf("error must point at auth login, got: %v", err)
 	}
 }

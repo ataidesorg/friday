@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ataidesorg/friday/internal/core"
+	"github.com/ataidesorg/ink/internal/core"
 )
 
 func usd(n core.USDMicros) core.CostReport {

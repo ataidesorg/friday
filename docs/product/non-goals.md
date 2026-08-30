@@ -1,8 +1,8 @@
 # Non-goals
 
-What Friday refuses to be, and the one reason each. See [vision.md](vision.md) for what it is.
+What Ink refuses to be, and the one reason each. See [vision.md](vision.md) for what it is.
 
-1. **Not a hosted platform.** Friday is a CLI binary (`cmd/friday`) that reads and writes local
+1. **Not a hosted platform.** Ink is a CLI binary (`cmd/ink`) that reads and writes local
    files; there is no server, no listener, and the event trail is local JSONL —
    nothing is sent anywhere (`internal/config/defaults.toml`).
 
@@ -21,7 +21,7 @@ What Friday refuses to be, and the one reason each. See [vision.md](vision.md) f
    [evaluation strategy](../evals/evaluation-strategy.md). There is no baseline store yet, so
    no comparative claim is made at all.
 
-5. **Not an IDE fork.** Friday is a CLI and terminal UI that edits files and
+5. **Not an IDE fork.** Ink is a CLI and terminal UI that edits files and
    runs commands in a workspace. It does not embed or wrap an existing editor.
    Optional LSP diagnostics after edits come from user-configured stdio
    language servers (`[lsp.NAME]`), not an IDE.
@@ -29,8 +29,8 @@ What Friday refuses to be, and the one reason each. See [vision.md](vision.md) f
 6. **Not a cloud sandbox service.** The default is a local `os/exec` process
    sandbox, documented as **not** a security boundary and **not** OS network
    isolation. An optional local Docker/Podman container provider exists;
-   Friday does not ship a hosted sandbox runtime.
+   Ink does not ship a hosted sandbox runtime.
 
 7. **No auto-synthesised skills.** Skills are reviewed files treated as
-   context, never as executable instructions. Friday does not generate and
+   context, never as executable instructions. Ink does not generate and
    install new skills on its own.

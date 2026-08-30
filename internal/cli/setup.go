@@ -12,12 +12,12 @@ import (
 	"strings"
 
 	"github.com/BurntSushi/toml"
-	"github.com/ataidesorg/friday/internal/auth"
-	"github.com/ataidesorg/friday/internal/config"
-	"github.com/ataidesorg/friday/internal/models/catalog"
-	"github.com/ataidesorg/friday/internal/providers"
-	"github.com/ataidesorg/friday/internal/redact"
-	"github.com/ataidesorg/friday/internal/tui"
+	"github.com/ataidesorg/ink/internal/auth"
+	"github.com/ataidesorg/ink/internal/config"
+	"github.com/ataidesorg/ink/internal/models/catalog"
+	"github.com/ataidesorg/ink/internal/providers"
+	"github.com/ataidesorg/ink/internal/redact"
+	"github.com/ataidesorg/ink/internal/tui"
 )
 
 // errSetupAborted is the sentinel firstRunSetup returns when the user quits a
@@ -26,7 +26,7 @@ var errSetupAborted = errors.New("model setup cancelled")
 
 // needsModelSetup reports whether chat has no route to run at all — the true
 // first-run state. A config with routes but no default is not first-run: it
-// gets resolveProvider's `friday model --set` guidance instead.
+// gets resolveProvider's `ink model --set` guidance instead.
 func needsModelSetup(cfg config.Config) bool {
 	return len(cfg.Models.Routes) == 0
 }
@@ -111,7 +111,7 @@ func pickProvider(cfg config.Config, in, out *os.File, environ []string) (provid
 		if !ready[j] {
 			// The note carries the exact reason (a missing credential, or the
 			// risk opt-in); point at both fixers rather than guess one.
-			return "", false, fmt.Errorf("provider %s is not ready (%s); configure it (see `friday auth set %s` or `friday providers`), then run `friday` again", rows[j].id, full[j].note, rows[j].id)
+			return "", false, fmt.Errorf("provider %s is not ready (%s); configure it (see `ink auth set %s` or `ink providers`), then run `ink` again", rows[j].id, full[j].note, rows[j].id)
 		}
 		return rows[j].id, false, nil
 	default:
@@ -170,7 +170,7 @@ func customSetup(opts config.Options, in, out *os.File, stderr io.Writer, enviro
 		return "", fmt.Errorf("%q is not an env var name (A-Z, 0-9, _)", envName)
 	}
 	if v, ok := envLookupOK(environ)(envName); !ok || v == "" {
-		return "", fmt.Errorf("$%s is not set; export it, then run `friday` again", envName)
+		return "", fmt.Errorf("$%s is not set; export it, then run `ink` again", envName)
 	}
 	model, err := ask(in, out, "model id: ")
 	if err != nil {
@@ -231,7 +231,7 @@ func customName(baseURL string) string {
 // the tree, re-encode. Hand-written comments do not survive; values do.
 func updateUserConfig(configDir string, mutate func(map[string]any)) (string, error) {
 	if configDir == "" {
-		return "", fmt.Errorf("no user config directory; pass --config-dir or set $FRIDAY_CONFIG_DIR")
+		return "", fmt.Errorf("no user config directory; pass --config-dir or set $INK_CONFIG_DIR")
 	}
 	path := filepath.Join(configDir, "config.toml")
 	m := map[string]any{}
@@ -323,7 +323,7 @@ func pickModel(cfg config.Config, provider string, in, out *os.File, stderr io.W
 }
 
 // providerCatalog fetches a provider's advertised models the same way
-// `friday models` does; a provider with no catalogable wire, or any fetch
+// `ink models` does; a provider with no catalogable wire, or any fetch
 // trouble, degrades to an empty list (the caller then asks for a typed id).
 // ponytail: mirrors modelsCmd's fetch; kept separate because that command
 // maps the same conditions to exit codes, this one to graceful degradation.
@@ -377,7 +377,7 @@ func writeUserRoute(configDir, name, provider, model string, setDefault bool) (s
 // configure: key-auth providers with a usable base URL, plus OAuth
 // providers whose endpoints the registry records — those sign in from the
 // wizard itself. Vendor-prohibited (opt_in_risk) flows and entries with
-// no recorded endpoints stay out: Friday never invents an OAuth flow.
+// no recorded endpoints stay out: Ink never invents an OAuth flow.
 func connectProviders() []tui.ProviderInfo {
 	var out []tui.ProviderInfo
 	for _, e := range providers.All() {
@@ -393,7 +393,7 @@ func connectProviders() []tui.ProviderInfo {
 			}
 			if e.Auth.OptInRisk {
 				// Vendor-prohibited flows stay out of the default wizard.
-				// `friday providers` still lists them with their risk notes.
+				// `ink providers` still lists them with their risk notes.
 				continue
 			}
 			out = append(out, tui.ProviderInfo{Name: e.ID, Detail: "sign in with your browser", OAuth: true})
@@ -461,7 +461,7 @@ func connectWrite(configDir string, cfg config.Config, red *redact.Redactor, env
 	if req.Provider != "" {
 		entry, ok := providers.Lookup(req.Provider)
 		if !ok {
-			return "", "", fmt.Errorf("unknown provider %q; `friday providers` lists them", req.Provider)
+			return "", "", fmt.Errorf("unknown provider %q; `ink providers` lists them", req.Provider)
 		}
 		name = entry.ID // canonical id, aliases collapse
 		if strings.TrimSpace(req.Key) == "" && entry.Auth.Kind == providers.AuthKey {

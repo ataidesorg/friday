@@ -7,7 +7,7 @@ import (
 	"io"
 	"os/exec"
 
-	"github.com/ataidesorg/friday/internal/core"
+	"github.com/ataidesorg/ink/internal/core"
 )
 
 // Start launches a config-declared server process and wires a client to its

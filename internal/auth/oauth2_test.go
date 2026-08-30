@@ -15,8 +15,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ataidesorg/friday/internal/config"
-	"github.com/ataidesorg/friday/internal/providers"
+	"github.com/ataidesorg/ink/internal/config"
+	"github.com/ataidesorg/ink/internal/providers"
 )
 
 // fakeIDP is an httptest token endpoint that enforces PKCE: the exchange

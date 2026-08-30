@@ -1,8 +1,8 @@
 # Evaluation strategy
 
-How Friday will measure whether a change made things better or worse. The types below
+How Ink will measure whether a change made things better or worse. The types below
 exist today (`internal/core/evaluation.go`), and a minimal runner executes one scenario
-at a time (`internal/evals`, `friday eval run`) — see [Status](#status).
+at a time (`internal/evals`, `ink eval run`) — see [Status](#status).
 
 ## Scenario model
 
@@ -128,14 +128,14 @@ a smoke test against a scripted model, which measures the harness, not a provide
 instance: it copies the fixture into an ephemeral workspace, runs the task through
 `runtime.Run` with the scripted provider, then checks every expectation against the
 resulting tree, the redacted trail, and a fresh process sandbox for `command_*` kinds.
-`memory_written` returns `NotImplementedError` until a memory store exists. `friday eval run
+`memory_written` returns `NotImplementedError` until a memory store exists. `ink eval run
 SCENARIO.json --script FILE` prints one line per check and exits 0 only when the run
 did not fail and every check passed. `test/scenarios/001-add-farewell.json` is the
 first scenario (`file_contains`, `command_succeeds`, `no_secret_leak`).
 
 `implemented: internal/evals/evals_test.go TestRunnerRun, internal/cli/report_test.go`
 
-Known limits: the eval trail is discarded with the ephemeral copy (keep a `friday run`
+Known limits: the eval trail is discarded with the ephemeral copy (keep a `ink run`
 trail instead), `no_secret_leak` scans the whole tree rather than only changed files,
 and results are printed, not stored — the baseline store, suites, and the
 `internal/improve` promotion flow are Stage 4 work; see

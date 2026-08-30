@@ -1,5 +1,5 @@
 name: Bug report
-description: Something Friday did that it should not have
+description: Something Ink did that it should not have
 labels: ["bug"]
 body:
   - type: textarea
@@ -12,8 +12,8 @@ body:
   - type: input
     id: version
     attributes:
-      label: Friday version
-      description: Output of `friday version`
+      label: Ink version
+      description: Output of `ink version`
     validations:
       required: true
   - type: input

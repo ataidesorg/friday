@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/ataidesorg/friday/internal/core"
+	"github.com/ataidesorg/ink/internal/core"
 )
 
 // complete makes one model call, accounts usage and cost, and appends the

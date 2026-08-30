@@ -12,7 +12,7 @@ import (
 	"testing/quick"
 	"time"
 
-	"github.com/ataidesorg/friday/internal/redact"
+	"github.com/ataidesorg/ink/internal/redact"
 )
 
 func sampleEvents() []Event {

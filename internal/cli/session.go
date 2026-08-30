@@ -1,6 +1,6 @@
 package cli
 
-// The interactive chat REPL: bare `friday` on a terminal opens a
+// The interactive chat REPL: bare `ink` on a terminal opens a
 // multi-turn conversation that persists to the session store and resumes
 // across launches. One heavy graph (provider, sandbox, workspace, policy) is
 // built per launch and reused across every turn; each turn runs one
@@ -16,17 +16,17 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ataidesorg/friday/internal/config"
-	"github.com/ataidesorg/friday/internal/core"
-	"github.com/ataidesorg/friday/internal/lsp"
-	"github.com/ataidesorg/friday/internal/mcp"
-	"github.com/ataidesorg/friday/internal/observability"
-	"github.com/ataidesorg/friday/internal/redact"
-	"github.com/ataidesorg/friday/internal/runtime"
-	sessionstore "github.com/ataidesorg/friday/internal/session"
-	"github.com/ataidesorg/friday/internal/skills"
-	"github.com/ataidesorg/friday/internal/tools"
-	"github.com/ataidesorg/friday/internal/workspace"
+	"github.com/ataidesorg/ink/internal/config"
+	"github.com/ataidesorg/ink/internal/core"
+	"github.com/ataidesorg/ink/internal/lsp"
+	"github.com/ataidesorg/ink/internal/mcp"
+	"github.com/ataidesorg/ink/internal/observability"
+	"github.com/ataidesorg/ink/internal/redact"
+	"github.com/ataidesorg/ink/internal/runtime"
+	sessionstore "github.com/ataidesorg/ink/internal/session"
+	"github.com/ataidesorg/ink/internal/skills"
+	"github.com/ataidesorg/ink/internal/tools"
+	"github.com/ataidesorg/ink/internal/workspace"
 )
 
 // chatSession owns the one graph a whole conversation reuses. turn is the
@@ -89,7 +89,7 @@ func newChatSession(ctx context.Context, cfg config.Config, target *providerTarg
 	}
 	deps.Approve = chatApprover(yes)
 	in.Project.ID, in.Project.Root = core.NewProjectID(), root
-	rulesHome, _ := config.FridayHome(envLookup(environ))
+	rulesHome, _ := config.Home(envLookup(environ))
 	in.Project.InstructionFiles, in.Project.GlobalInstructionFiles = discoverRules(root, rulesHome, in.Project.InstructionFiles)
 	if vcs, err := workspace.Status(ctx, root); err == nil {
 		in.Project.VCS = &vcs
@@ -113,7 +113,7 @@ func newChatSession(ctx context.Context, cfg config.Config, target *providerTarg
 	// and never leave the machine. A home resolution failure disables
 	// metrics rather than blocking the chat: they are best-effort local analytics.
 	var metrics *sessionstore.MetricsLog
-	if home, herr := config.FridayHome(envLookup(environ)); herr == nil {
+	if home, herr := config.Home(envLookup(environ)); herr == nil {
 		if ml, merr := sessionstore.NewMetricsLog(home, red); merr == nil {
 			metrics = ml
 		}
@@ -318,7 +318,7 @@ func (c *chatSession) close(stderr io.Writer) {
 }
 
 // dropIfEmpty removes the live session when it has no transcript. Opening
-// Friday and quitting without sending a prompt must not leave a shell behind.
+// Ink and quitting without sending a prompt must not leave a shell behind.
 func (c *chatSession) dropIfEmpty(stderr io.Writer) {
 	if c.store == nil || c.id == "" {
 		return

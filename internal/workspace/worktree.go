@@ -8,18 +8,18 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/ataidesorg/friday/internal/core"
+	"github.com/ataidesorg/ink/internal/core"
 )
 
 // worktreeName restricts worktree names to path-safe tokens.
 var worktreeName = regexp.MustCompile(`^[A-Za-z0-9._-]+$`)
 
-// branchPrefix namespaces the branches Friday's worktrees live on.
-const branchPrefix = "friday/"
+// branchPrefix namespaces the branches Ink's worktrees live on.
+const branchPrefix = "ink/"
 
 // worktree materialises a dedicated git worktree under o.WorktreeDir so
 // parallel sessions never share a checkout. An existing worktree of the same
-// name is selected as-is; a missing one is created on branch friday/<name>
+// name is selected as-is; a missing one is created on branch ink/<name>
 // (reusing that branch when a previous worktree left it behind). Cleanup
 // removes the worktree only when it is clean — commits survive on the
 // branch, uncommitted work keeps the directory.

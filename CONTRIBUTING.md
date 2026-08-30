@@ -1,6 +1,6 @@
-# Contributing to Friday
+# Contributing to Ink
 
-Friday is pre-release and moving quickly. Contributions are welcome when they
+Ink is pre-release and moving quickly. Contributions are welcome when they
 respect the product line: local-first, explicit side effects, no fake support,
 and a TUI that earns daily use.
 
@@ -80,7 +80,7 @@ Allowed types: `feat`, `fix`, `refactor`, `docs`, `test`, `chore`, `perf`,
 - Tests cover the behavior that changed.
 - No secret-shaped literals are present in code, docs, fixtures, or tests.
 - No new third-party dependency appears without an ADR and archtest update.
-- `friday run` non-TTY output still works when TUI code changes.
+- `ink run` non-TTY output still works when TUI code changes.
 - Risky actions remain policy-checked and attributable.
 - Docs are updated when commands, config, install, release, or user-visible
   behavior changes.
@@ -94,8 +94,8 @@ The import direction is enforced by `internal/archtest/deps_test.go`.
 - `internal/config` owns layered config and trust decisions.
 - `internal/runtime` owns the agent loop.
 - `internal/tui` owns presentation and input, but must preserve plain-output
-  parity for `friday run`.
-- `internal/cli` wires packages together; `cmd/friday` is only the entrypoint.
+  parity for `ink run`.
+- `internal/cli` wires packages together; `cmd/ink` is only the entrypoint.
 
 Allowed direct third-party modules are intentionally small. Adding one needs a
 documented decision, not just `go get`.
@@ -103,7 +103,7 @@ documented decision, not just `go get`.
 ## Security
 
 Do not put secrets in project config, docs, prompts, snapshots, logs, tests, or
-git history. Use env, keychain, or Friday's encrypted secret store.
+git history. Use env, keychain, or Ink's encrypted secret store.
 
 Read [SECURITY.md](SECURITY.md) and
 [docs/security/threat-model.md](docs/security/threat-model.md) before working on

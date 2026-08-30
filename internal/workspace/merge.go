@@ -10,7 +10,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/ataidesorg/friday/internal/core"
+	"github.com/ataidesorg/ink/internal/core"
 )
 
 // MergeResult is the outcome of merging one or more branches into root.
@@ -95,8 +95,8 @@ func gitWrite(ctx context.Context, dir string, args ...string) (stdout, stderr s
 	defer cancel()
 	argv := append([]string{
 		"-c", "core.hooksPath=/dev/null",
-		"-c", "user.name=friday",
-		"-c", "user.email=friday@localhost",
+		"-c", "user.name=ink",
+		"-c", "user.email=ink@localhost",
 		"-C", dir,
 	}, args...)
 	cmd := exec.CommandContext(ctx, "git", argv...) //nolint:gosec // argv only, no shell; subcommands are fixed by this package

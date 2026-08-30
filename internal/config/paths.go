@@ -4,31 +4,31 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/ataidesorg/friday/internal/core"
+	"github.com/ataidesorg/ink/internal/core"
 )
 
 // File names and locations.
 const (
 	UserConfigFileName   = "config.toml"
 	ProfilesDirName      = "profiles"
-	ProjectConfigRelPath = ".friday/config.toml"
+	ProjectConfigRelPath = ".ink/config.toml"
 	// ProjectLocalConfigRelPath is the git-ignored per-clone layer; same
 	// schema and trust rule as the committed file.
-	ProjectLocalConfigRelPath = ".friday/config.local.toml"
-	configDirEnv              = "FRIDAY_CONFIG_DIR"
+	ProjectLocalConfigRelPath = ".ink/config.local.toml"
+	configDirEnv              = "INK_CONFIG_DIR"
 )
 
 // Dir resolves the user configuration directory:
-// $FRIDAY_CONFIG_DIR, then $XDG_CONFIG_HOME/friday, then $HOME/.config/friday.
+// $INK_CONFIG_DIR, then $XDG_CONFIG_HOME/ink, then $HOME/.config/ink.
 func Dir(getenv func(string) string) (string, error) {
 	if dir := getenv(configDirEnv); dir != "" {
 		return dir, nil
 	}
 	if xdg := getenv("XDG_CONFIG_HOME"); xdg != "" {
-		return filepath.Join(xdg, "friday"), nil
+		return filepath.Join(xdg, "ink"), nil
 	}
 	if home := getenv("HOME"); home != "" {
-		return filepath.Join(home, ".config", "friday"), nil
+		return filepath.Join(home, ".config", "ink"), nil
 	}
 	return "", fmt.Errorf("%w: none of %s, XDG_CONFIG_HOME, HOME is set", core.ErrInvalidInput, configDirEnv)
 }

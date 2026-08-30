@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ataidesorg/friday/internal/redact"
+	"github.com/ataidesorg/ink/internal/redact"
 )
 
 // MemoryCategory is the kind of knowledge a record holds.

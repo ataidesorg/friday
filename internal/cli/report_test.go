@@ -72,7 +72,7 @@ func TestEvalRunExitCodes(t *testing.T) {
 		code int
 		err  string
 	}{
-		{"no subcommand", []string{"eval"}, exitUsage, "usage: friday eval run"},
+		{"no subcommand", []string{"eval"}, exitUsage, "usage: ink eval run"},
 		{"wrong subcommand", []string{"eval", "list"}, exitUsage, "usage"},
 		{"no scenario", []string{"eval", "run"}, exitUsage, "usage"},
 		{"bad flag", []string{"eval", "run", "--bogus", "x.json"}, exitUsage, ""},

@@ -17,9 +17,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/ataidesorg/friday/internal/core"
-	"github.com/ataidesorg/friday/internal/fsutil"
-	"github.com/ataidesorg/friday/internal/sandbox"
+	"github.com/ataidesorg/ink/internal/core"
+	"github.com/ataidesorg/ink/internal/fsutil"
+	"github.com/ataidesorg/ink/internal/sandbox"
 )
 
 // Name is the provider's registry key (`sandbox.provider = "process"`).
@@ -71,7 +71,7 @@ func (p *Provider) Create(ctx context.Context, spec core.SandboxSpec) (core.Sand
 	case !st.IsDir():
 		return nil, fmt.Errorf("%w: work_dir %s is not a directory", core.ErrInvalidInput, spec.WorkDir)
 	}
-	home, err := os.MkdirTemp("", "friday-sbx-*")
+	home, err := os.MkdirTemp("", "ink-sbx-*")
 	if err != nil {
 		return nil, err
 	}

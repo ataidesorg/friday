@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ataidesorg/friday/internal/core"
-	"github.com/ataidesorg/friday/internal/runtime"
+	"github.com/ataidesorg/ink/internal/core"
+	"github.com/ataidesorg/ink/internal/runtime"
 )
 
 func TestRunGraphWavesAndParallel(t *testing.T) {

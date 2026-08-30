@@ -1,10 +1,10 @@
 # Threat Model
 
-Friday is a local-first agent harness. It runs on the developer's machine,
+Ink is a local-first agent. It runs on the developer's machine,
 inside a repository, with local config, local session state, local event trails,
 and user-configured model providers.
 
-The short version: Friday trusts the operator and the local machine. It does not
+The short version: Ink trusts the operator and the local machine. It does not
 trust model output, repository content, tool output, web content, retrieved
 memory, or unreviewed extension metadata.
 
@@ -37,7 +37,7 @@ memory, or unreviewed extension metadata.
 
 ```mermaid
 flowchart LR
-    dev["Developer"] --> tui["Friday CLI/TUI"]
+    dev["Developer"] --> tui["Ink CLI/TUI"]
     repo["Repository"] -. untrusted data .-> tui
     cfg["User config"] --> tui
     proj["Project config"] -. restricted layer .-> tui
@@ -76,7 +76,7 @@ flowchart LR
   allow-listed commands and still asks for destructive work.
 - Do not paste secrets into prompts or project config.
 - Use worktree sessions for risky changes.
-- Keep provider credentials in env, keychain, or Friday's secret store.
+- Keep provider credentials in env, keychain, or Ink's secret store.
 
 ## Known Gaps
 

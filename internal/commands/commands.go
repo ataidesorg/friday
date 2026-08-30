@@ -1,5 +1,5 @@
 // Package commands loads user-defined slash commands: Markdown prompt files
-// under <friday-home>/commands and <project>/.friday/commands whose body is
+// under <ink-home>/commands and <project>/.ink/commands whose body is
 // the prompt, with optional TOML frontmatter for description and model.
 package commands
 
@@ -14,8 +14,8 @@ import (
 
 	"github.com/BurntSushi/toml"
 
-	"github.com/ataidesorg/friday/internal/core"
-	"github.com/ataidesorg/friday/internal/fmatter"
+	"github.com/ataidesorg/ink/internal/core"
+	"github.com/ataidesorg/ink/internal/fmatter"
 )
 
 // Command is one loadable slash command.
@@ -78,7 +78,7 @@ func Load(root, home string, warn io.Writer, reserved map[string]bool) []Command
 		dirs = append(dirs, filepath.Join(home, "commands"))
 	}
 	if root != "" {
-		dirs = append(dirs, filepath.Join(root, ".friday", "commands"))
+		dirs = append(dirs, filepath.Join(root, ".ink", "commands"))
 	}
 	for _, dir := range dirs {
 		entries, err := os.ReadDir(dir)
@@ -90,17 +90,17 @@ func Load(root, home string, warn io.Writer, reserved map[string]bool) []Command
 				continue
 			}
 			if fi, err := e.Info(); err == nil && fi.Size() > maxCommandSize {
-				fmt.Fprintf(warn, "friday: command %s skipped: %d bytes (max %d)\n", e.Name(), fi.Size(), maxCommandSize)
+				fmt.Fprintf(warn, "ink: command %s skipped: %d bytes (max %d)\n", e.Name(), fi.Size(), maxCommandSize)
 				continue
 			}
 			b, err := os.ReadFile(filepath.Join(dir, e.Name())) //nolint:gosec // the user's own command files under known roots
 			if err != nil {
-				fmt.Fprintf(warn, "friday: command %s skipped: %v\n", e.Name(), err)
+				fmt.Fprintf(warn, "ink: command %s skipped: %v\n", e.Name(), err)
 				continue
 			}
 			c, err := Parse(strings.TrimSuffix(e.Name(), ".md"), b, reserved)
 			if err != nil {
-				fmt.Fprintf(warn, "friday: command %s skipped: %v\n", e.Name(), err)
+				fmt.Fprintf(warn, "ink: command %s skipped: %v\n", e.Name(), err)
 				continue
 			}
 			byName[c.Name] = c

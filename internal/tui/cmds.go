@@ -185,7 +185,7 @@ func builtins() []chatCmd {
 		},
 		{
 			ID: "theme", Slash: "theme", Title: "Switch Theme", Key: "/theme",
-			Detail: "friday, dark, light, ansi", Group: gDisplay,
+			Detail: "ink, dark, light, ansi", Group: gDisplay,
 			Run: ChatModel.cmdTheme,
 		},
 		{
@@ -235,12 +235,12 @@ func builtins() []chatCmd {
 		},
 		{
 			ID: "quit", Slash: "quit", Title: "Quit", Key: "ctrl+c",
-			Detail: "exit friday", Group: gOther,
+			Detail: "exit ink", Group: gOther,
 			Run: noArg(ChatModel.quitChat),
 		},
 		{
 			ID: "exit", Slash: "exit", Title: "Exit", Key: "/exit",
-			Detail: "exit friday", Group: gOther,
+			Detail: "exit ink", Group: gOther,
 			Run: noArg(ChatModel.quitChat),
 		},
 	}

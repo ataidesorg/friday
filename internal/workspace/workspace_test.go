@@ -10,8 +10,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ataidesorg/friday/internal/core"
-	"github.com/ataidesorg/friday/internal/workspace"
+	"github.com/ataidesorg/ink/internal/core"
+	"github.com/ataidesorg/ink/internal/workspace"
 )
 
 var ctx = context.Background()
@@ -48,7 +48,7 @@ func read(t *testing.T, dir, rel string) string {
 }
 
 // repo creates a committed git repository with main.go and README.md and a
-// .gitignore for .friday/local, returning its symlink-resolved root.
+// .gitignore for .ink/local, returning its symlink-resolved root.
 func repo(t *testing.T) string {
 	t.Helper()
 	if _, err := exec.LookPath("git"); err != nil {
@@ -61,7 +61,7 @@ func repo(t *testing.T) string {
 	git(t, dir, "init", "-q", "-b", "main")
 	write(t, dir, "main.go", "package main\n")
 	write(t, dir, "README.md", "# demo\n")
-	write(t, dir, ".gitignore", ".friday/local/\n")
+	write(t, dir, ".gitignore", ".ink/local/\n")
 	git(t, dir, "add", ".")
 	git(t, dir, "commit", "-q", "-m", "init")
 	return dir
@@ -126,7 +126,7 @@ func TestPrepareAutoDirty(t *testing.T) {
 	dir := repo(t)
 	write(t, dir, "main.go", "package main // wip\n")
 	write(t, dir, "scratch.txt", "untracked\n")
-	write(t, dir, ".friday/local/runs/x/events.jsonl", "{}\n")
+	write(t, dir, ".ink/local/runs/x/events.jsonl", "{}\n")
 	before := git(t, dir, "status", "--porcelain")
 	ws, cleanup, err := workspace.Prepare(ctx, workspace.Options{Root: dir, Mode: workspace.ModeAuto})
 	if err != nil {
@@ -140,8 +140,8 @@ func TestPrepareAutoDirty(t *testing.T) {
 			t.Errorf("%s differs in the copy", rel)
 		}
 	}
-	if _, err := os.Stat(filepath.Join(ws.Root, ".friday", "local")); !errors.Is(err, os.ErrNotExist) {
-		t.Errorf(".friday/local should not be copied: %v", err)
+	if _, err := os.Stat(filepath.Join(ws.Root, ".ink", "local")); !errors.Is(err, os.ErrNotExist) {
+		t.Errorf(".ink/local should not be copied: %v", err)
 	}
 	if vcs, err := workspace.Status(ctx, ws.Root); err != nil || vcs.Kind != "git" || !vcs.Dirty {
 		t.Fatalf("copy status = %+v, %v", vcs, err)

@@ -1,5 +1,5 @@
 // Package observability persists a run's event trail as JSON lines under
-// .friday/local/runs/<run>/events.jsonl and replays it for `friday trace`.
+// .ink/local/runs/<run>/events.jsonl and replays it for `ink trace`.
 // Everything stays on the local machine; the only writer is a
 // core.RedactingSink, so a raw event never reaches disk.
 package observability
@@ -14,20 +14,20 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/ataidesorg/friday/internal/core"
-	"github.com/ataidesorg/friday/internal/redact"
+	"github.com/ataidesorg/ink/internal/core"
+	"github.com/ataidesorg/ink/internal/redact"
 )
 
 // Layout of the local run store.
 const (
-	LocalDir  = ".friday/local"
+	LocalDir  = ".ink/local"
 	TrailFile = "events.jsonl"
 	dirPerm   = 0o700
 	filePerm  = 0o600
 	syncEvery = 16
 )
 
-// RunDir is <root>/.friday/local/runs/<run>.
+// RunDir is <root>/.ink/local/runs/<run>.
 func RunDir(projectRoot string, run core.RunID) string {
 	return filepath.Join(projectRoot, filepath.FromSlash(LocalDir), "runs", string(run))
 }
@@ -52,7 +52,7 @@ func OpenJSONL(path string, perm fs.FileMode) (*JSONLSink, error) {
 	if err := os.MkdirAll(filepath.Dir(path), dirPerm); err != nil {
 		return nil, fmt.Errorf("create run dir: %w", err)
 	}
-	f, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, perm) //nolint:gosec // path is the run's own trail under .friday/local
+	f, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, perm) //nolint:gosec // path is the run's own trail under .ink/local
 	if err != nil {
 		return nil, fmt.Errorf("open trail: %w", err)
 	}

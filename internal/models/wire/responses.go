@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/ataidesorg/friday/internal/core"
+	"github.com/ataidesorg/ink/internal/core"
 )
 
 // Responses speaks the OpenAI Responses dialect (POST /responses) used by
@@ -243,7 +243,7 @@ func buildRespRequest(req core.CompletionRequest, model string, stream bool) res
 	if len(req.OutputSchema) > 0 {
 		out.Text = &respTextConfig{Format: respFormat{
 			Type:   "json_schema",
-			Name:   "friday_output",
+			Name:   "ink_output",
 			Schema: req.OutputSchema,
 			Strict: true,
 		}}

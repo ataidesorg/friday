@@ -4,26 +4,26 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/ataidesorg/friday/internal/core"
+	"github.com/ataidesorg/ink/internal/core"
 )
 
-const fridayHomeEnv = "FRIDAY_HOME"
+const homeEnv = "INK_HOME"
 
-// FridayHome resolves the Friday home directory, where sessions, logs, and
-// local stores live. Resolution order: $FRIDAY_HOME, then $HOME/.friday, then
-// the Friday state directory ($FRIDAY_STATE_DIR or $XDG_STATE_HOME/friday) as
+// Home resolves the Ink home directory, where sessions, logs, and
+// local stores live. Resolution order: $INK_HOME, then $HOME/.ink, then
+// the Ink state directory ($INK_STATE_DIR or $XDG_STATE_HOME/ink) as
 // a fallback when $HOME is unset. It fails closed when none is resolvable.
-func FridayHome(getenv func(string) string) (string, error) {
-	if dir := getenv(fridayHomeEnv); dir != "" {
+func Home(getenv func(string) string) (string, error) {
+	if dir := getenv(homeEnv); dir != "" {
 		return filepath.Clean(dir), nil
 	}
 	if home := getenv("HOME"); home != "" {
-		return filepath.Join(home, ".friday"), nil
+		return filepath.Join(home, ".ink"), nil
 	}
 	dir, err := StateFilePath(getenv, "")
 	if err != nil {
-		return "", fmt.Errorf("%w: cannot resolve Friday home (none of %s, %s, XDG_STATE_HOME, HOME set)",
-			core.ErrInvalidInput, fridayHomeEnv, stateDirEnv)
+		return "", fmt.Errorf("%w: cannot resolve Ink home (none of %s, %s, XDG_STATE_HOME, HOME set)",
+			core.ErrInvalidInput, homeEnv, stateDirEnv)
 	}
 	return filepath.Clean(dir), nil
 }

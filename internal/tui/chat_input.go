@@ -8,7 +8,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 
-	"github.com/ataidesorg/friday/internal/core"
+	"github.com/ataidesorg/ink/internal/core"
 )
 
 func (m ChatModel) mouse(v tea.MouseMsg) (tea.Model, tea.Cmd) {
@@ -182,7 +182,7 @@ func (m ChatModel) key(v tea.KeyMsg) (tea.Model, tea.Cmd) {
 			m.cancel()
 			m.cancel = nil
 			m.lastQuit, m.quitHint, m.quitKey = m.now(), true, "ctrl+c"
-			return m.append(tagWarn + " cancelling turn... press ctrl+c again to quit Friday"), nil
+			return m.append(tagWarn + " cancelling turn... press ctrl+c again to quit Ink"), nil
 		}
 		return m.confirmQuit("ctrl+c")
 	case m.keys.ScrollUp:
@@ -309,7 +309,7 @@ func (m ChatModel) approvalKey(v tea.KeyMsg) (tea.Model, tea.Cmd) {
 			m.cancel()
 			m.cancel = nil
 			m.lastQuit, m.quitHint, m.quitKey = m.now(), true, "ctrl+c"
-			return m.append(tagWarn + " cancelling turn... press ctrl+c again to quit Friday"), nil
+			return m.append(tagWarn + " cancelling turn... press ctrl+c again to quit Ink"), nil
 		}
 		return m.confirmQuit("ctrl+c")
 	}
@@ -348,7 +348,7 @@ func (m ChatModel) questionKey(v tea.KeyMsg) (tea.Model, tea.Cmd) {
 			m.cancel()
 			m.cancel = nil
 			m.lastQuit, m.quitHint, m.quitKey = m.now(), true, "ctrl+c"
-			return m.append(tagWarn + " cancelling turn... press ctrl+c again to quit Friday"), nil
+			return m.append(tagWarn + " cancelling turn... press ctrl+c again to quit Ink"), nil
 		}
 		return m.confirmQuit("ctrl+c")
 	}
@@ -595,7 +595,7 @@ func (m ChatModel) confirmQuit(key string) (tea.Model, tea.Cmd) {
 		return m, tea.Quit
 	}
 	m.lastQuit, m.quitHint, m.quitKey = now, true, key
-	return m.append(tagWarn + " press " + key + " again to quit Friday"), nil
+	return m.append(tagWarn + " press " + key + " again to quit Ink"), nil
 }
 
 func (m ChatModel) toggleQueue() (tea.Model, tea.Cmd) {

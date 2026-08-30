@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/ataidesorg/friday/internal/core"
+	"github.com/ataidesorg/ink/internal/core"
 )
 
 // CheckpointSchema is bumped on incompatible checkpoint JSON.
@@ -28,9 +28,9 @@ type Checkpoint struct {
 	Summary  string                  `json:"summary,omitempty"`
 }
 
-// CheckpointPath is <root>/.friday/local/runs/<run>/checkpoint.json.
+// CheckpointPath is <root>/.ink/local/runs/<run>/checkpoint.json.
 func CheckpointPath(projectRoot string, run core.RunID) string {
-	return filepath.Join(projectRoot, ".friday", "local", "runs", string(run), "checkpoint.json")
+	return filepath.Join(projectRoot, ".ink", "local", "runs", string(run), "checkpoint.json")
 }
 
 // SaveCheckpoint writes c to path, creating parent directories. Images on

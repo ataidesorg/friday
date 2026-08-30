@@ -1,13 +1,13 @@
 package core
 
-// Project is a repository or directory Friday works in.
+// Project is a repository or directory Ink works in.
 type Project struct {
 	ID               ProjectID `json:"id"`
 	Name             string    `json:"name"`
 	Root             string    `json:"root"`
 	InstructionFiles []string  `json:"instruction_files,omitempty"`
 	// GlobalInstructionFiles are absolute paths wired by the CLI from the
-	// Friday home (never from project config), so they bypass root confinement.
+	// Ink home (never from project config), so they bypass root confinement.
 	GlobalInstructionFiles []string          `json:"global_instruction_files,omitempty"`
 	Commands               map[string]string `json:"commands,omitempty"`
 	VCS                    *VCSInfo          `json:"vcs,omitempty"`

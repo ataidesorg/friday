@@ -34,14 +34,14 @@ func TestAssistantReplyCopyHelpers(t *testing.T) {
 
 func TestCleanCopiedPaneRowsStripsFrameRails(t *testing.T) {
 	rows := []string{
-		"  ╭ Friday ─────────────────────────╮",
-		"  │ Hi! I'm Friday.                  │",
+		"  ╭ Ink ─────────────────────────╮",
+		"  │ Hi! I'm Ink.                  │",
 		"  │                                   │",
 		"  │ • Build and test                  │",
 		"  ╰───────────────────────────────────╯",
 	}
 	got := cleanCopiedPaneRows(rows)
-	want := "Hi! I'm Friday.\n\n• Build and test"
+	want := "Hi! I'm Ink.\n\n• Build and test"
 	if got != want {
 		t.Fatalf("cleaned copy = %q, want %q", got, want)
 	}

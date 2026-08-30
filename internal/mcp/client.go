@@ -13,7 +13,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/ataidesorg/friday/internal/core"
+	"github.com/ataidesorg/ink/internal/core"
 )
 
 const protocolVersion = "2025-03-26"
@@ -134,7 +134,7 @@ func (c *Client) Initialize() error {
 	params := map[string]any{
 		"protocolVersion": protocolVersion,
 		"capabilities":    map[string]any{},
-		"clientInfo":      map[string]any{"name": "friday"},
+		"clientInfo":      map[string]any{"name": "ink"},
 	}
 	var discard json.RawMessage
 	if err := c.call("initialize", params, &discard); err != nil {

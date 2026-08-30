@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/ataidesorg/friday/internal/core"
+	"github.com/ataidesorg/ink/internal/core"
 )
 
 // previewLines caps how much of a diff or patch an approval prompt shows.

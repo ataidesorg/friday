@@ -8,7 +8,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/ataidesorg/friday/internal/core"
+	"github.com/ataidesorg/ink/internal/core"
 )
 
 // ChatCompletions speaks the OpenAI-compatible POST /chat/completions
@@ -330,7 +330,7 @@ func buildCCRequest(req core.CompletionRequest, model string, stream bool) ccReq
 	if len(req.OutputSchema) > 0 {
 		out.ResponseFormat = &ccResponseFormat{
 			Type:       "json_schema",
-			JSONSchema: ccJSONSchema{Name: "friday_output", Schema: req.OutputSchema, Strict: true},
+			JSONSchema: ccJSONSchema{Name: "ink_output", Schema: req.OutputSchema, Strict: true},
 		}
 	}
 	return out

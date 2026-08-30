@@ -1,11 +1,11 @@
-// Package config loads, merges, validates, and explains Friday configuration.
+// Package config loads, merges, validates, and explains Ink configuration.
 package config
 
 import (
 	"fmt"
 	"time"
 
-	"github.com/ataidesorg/friday/internal/core"
+	"github.com/ataidesorg/ink/internal/core"
 )
 
 // Config is the complete typed configuration. defaults.toml mirrors it.
@@ -39,7 +39,7 @@ type AgentConfig struct {
 }
 
 // TUIConfig sets terminal-UI preferences. Theme names the launch palette
-// (a live picker choice saved in the Friday home wins over it); Keys rebinds
+// (a live picker choice saved in the Ink home wins over it); Keys rebinds
 // chat actions to key names. Both are validated at chat launch, where the
 // theme list and the keymap actually live. HideAdvisories drops warnings
 // about guardrails that could not be enforced, such as an unpriced model or
@@ -89,7 +89,7 @@ type AuthRef struct {
 }
 
 // OAuthRef overrides a registry entry's OAuth endpoints from user config —
-// the escape hatch for flows whose endpoints Friday has not verified.
+// the escape hatch for flows whose endpoints Ink has not verified.
 // Non-empty fields win over the registry values.
 type OAuthRef struct {
 	AuthURL       string   `toml:"auth_url,omitempty"`

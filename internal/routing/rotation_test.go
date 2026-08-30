@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ataidesorg/friday/internal/core"
+	"github.com/ataidesorg/ink/internal/core"
 )
 
 // statusErr matches wire.Error's HTTPStatus method without importing the
