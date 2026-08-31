@@ -256,9 +256,13 @@ func (m ChatModel) openThemes() (tea.Model, tea.Cmd) {
 	items := make([]overlayItem, len(m.themes))
 	cursor := 0
 	for i, t := range m.themes {
-		detail := ""
+		detail := t.Label
 		if t.Name == m.themeName {
-			detail = "· active"
+			if detail != "" {
+				detail += " · active"
+			} else {
+				detail = "· active"
+			}
 			cursor = i
 		}
 		items[i] = overlayItem{id: t.Name, title: t.Name, detail: detail}

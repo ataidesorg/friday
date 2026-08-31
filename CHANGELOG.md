@@ -16,7 +16,8 @@ a minor release. Breaking changes are always listed under **Changed**.
   overrides use the `INK__` prefix (`INK_HOME`, `INK_CONFIG_DIR`,
   `INK_STATE_DIR`). The default theme is `ink`: quiet black, graphite accent,
   no pink. The Friday avatar is gone; the mark is a drop of ink
-  (`assets/logo.png`). This is a breaking pre-release change; old `FRIDAY_*`
+  (`assets/logo.png`), including the TUI welcome wordmark. This is a breaking
+  pre-release change; old `FRIDAY_*`
   variables and `.friday` paths are not read.
 - Profile `style` (`concise` | `detailed`) is injected into the system prompt.
 - Removed unused config: `[memory]`, `profiles.*.harness`,
@@ -32,6 +33,8 @@ a minor release. Breaking changes are always listed under **Changed**.
 
 ### Added
 
+- Built-in themes `carbon`, `sepia`, `moss`, `wine`, and `sea`. The theme
+  picker shows a short label next to each name.
 - Session-scoped goals (`/goal`, `ink run --goal`) that stay active until
   `goal_complete` records command, test, file, or eval evidence. Prose "done"
   does not complete a goal. Turn, no-progress, and token caps pause automatic

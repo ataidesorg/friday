@@ -22,9 +22,11 @@ Palette intent:
 - Default (`ink`): off-white type, one graphite accent, on the terminal's
   own field. No painted canvas — trailing padding would copy with the
   transcript.
-- Light: warm paper canvas, black ink for voice and selection.
-- Dark: cool dark with a blue accent, for people who want color on dark.
-- ANSI: structural fallback for restricted terminals.
+- `carbon`, `sepia`, `moss`, `wine`, `sea`: named colorways. One accent
+  each, still no canvas.
+- `dark`: cool blue, for people who want color on dark.
+- `light`: warm paper canvas, black ink for voice and selection.
+- `ansi`: structural fallback for restricted terminals.
 
 Never rely on color alone. Every state must have text, placement, or shape as a
 backup.
@@ -100,7 +102,7 @@ InkAI, Inkwell, or InkOS.
 
 Before calling a TUI slice production-ready:
 
-- Test no-color, ink, light, dark, and narrow terminals.
+- Test no-color, ink, light, dark, a named colorway, and narrow terminals.
 - Test long paths, long model ids, long session titles, many sessions, and
   empty states.
 - Confirm transcript rows copy cleanly without trailing padding.

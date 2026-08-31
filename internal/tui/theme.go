@@ -30,6 +30,7 @@ func (c ThemeColor) paint() lipgloss.TerminalColor {
 // Theme is a named palette the chat styles resolve from at View time.
 type Theme struct {
 	Name   string
+	Label  string     // short picker line; empty for unnamed custom files
 	Accent ThemeColor // Ink's voice and the app name
 	User   ThemeColor // the human's voice
 	OK     ThemeColor
@@ -46,7 +47,8 @@ type Theme struct {
 func builtinThemes() []Theme {
 	hex := func(h string) ThemeColor { return ThemeColor{h, h} }
 	ink := Theme{
-		Name: "ink",
+		Name:  "ink",
+		Label: "graphite",
 		// Quiet black on the terminal's own field. No canvas: trailing
 		// padding would travel with every copied transcript row.
 		Accent: hex("#C8C8CC"),
@@ -57,8 +59,64 @@ func builtinThemes() []Theme {
 		Dim:    hex("#8E8E93"),
 		Rule:   hex("#3A3A3C"),
 	}
+	carbon := Theme{
+		Name:   "carbon",
+		Label:  "steel",
+		Accent: hex("#8FA3B8"),
+		User:   hex("#E8EEF4"),
+		OK:     hex("#5FB38A"),
+		Warn:   hex("#D4A054"),
+		Fail:   hex("#E06C75"),
+		Dim:    hex("#7B8494"),
+		Rule:   hex("#3A4048"),
+	}
+	sepia := Theme{
+		Name:   "sepia",
+		Label:  "lamp",
+		Accent: hex("#C4A574"),
+		User:   hex("#F0E6D4"),
+		OK:     hex("#7A9E6A"),
+		Warn:   hex("#D19A4A"),
+		Fail:   hex("#C45C4A"),
+		Dim:    hex("#A09078"),
+		Rule:   hex("#4A4038"),
+	}
+	moss := Theme{
+		Name:   "moss",
+		Label:  "sage",
+		Accent: hex("#7FA887"),
+		User:   hex("#E6EEE6"),
+		OK:     hex("#5A9A62"),
+		Warn:   hex("#C9A227"),
+		Fail:   hex("#C65B4A"),
+		Dim:    hex("#7E8B7C"),
+		Rule:   hex("#3A423A"),
+	}
+	wine := Theme{
+		Name:   "wine",
+		Label:  "oxblood",
+		Accent: hex("#B5525A"),
+		User:   hex("#F2E8E8"),
+		OK:     hex("#5F9E72"),
+		Warn:   hex("#D4A04A"),
+		Fail:   hex("#E05555"),
+		Dim:    hex("#9A8084"),
+		Rule:   hex("#3E3234"),
+	}
+	sea := Theme{
+		Name:   "sea",
+		Label:  "teal",
+		Accent: hex("#5EA3A8"),
+		User:   hex("#E4EEF0"),
+		OK:     hex("#4DA67A"),
+		Warn:   hex("#D4A04A"),
+		Fail:   hex("#D46565"),
+		Dim:    hex("#7A9094"),
+		Rule:   hex("#2E3A3C"),
+	}
 	dark := Theme{
 		Name:   "dark",
+		Label:  "cool blue",
 		Accent: hex("#6CB6FF"),
 		User:   hex("#E6EDF3"),
 		OK:     hex("#3FB950"),
@@ -69,6 +127,7 @@ func builtinThemes() []Theme {
 	}
 	light := Theme{
 		Name:   "light",
+		Label:  "paper",
 		Accent: hex("#1D1D1F"),
 		User:   hex("#1C1917"),
 		OK:     hex("#1A7F37"),
@@ -80,6 +139,7 @@ func builtinThemes() []Theme {
 	}
 	ansi := Theme{
 		Name:   "ansi",
+		Label:  "16-color",
 		Accent: ThemeColor{"4", "4"},
 		User:   ThemeColor{"7", "7"},
 		OK:     ThemeColor{"2", "2"},
@@ -88,7 +148,7 @@ func builtinThemes() []Theme {
 		Dim:    ThemeColor{"8", "8"},
 		Rule:   ThemeColor{"8", "8"},
 	}
-	return []Theme{ink, dark, light, ansi}
+	return []Theme{ink, carbon, sepia, moss, wine, sea, dark, light, ansi}
 }
 
 func defaultTheme() Theme { return builtinThemes()[0] }

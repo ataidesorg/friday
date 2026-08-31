@@ -1550,14 +1550,69 @@ func TestChatComposerIsBoxed(t *testing.T) {
 	}
 }
 
+func TestInkMarkGeometry(t *testing.T) {
+	for _, mark := range []string{inkMarkLarge, inkMarkSmall} {
+		lines := strings.Split(strings.TrimSuffix(mark, "\n"), "\n")
+		if len(lines) < 4 {
+			t.Fatalf("mark too short:\n%s", mark)
+		}
+		var left, right []int
+		for _, l := range lines {
+			i, j := -1, -1
+			for k, r := range []rune(l) {
+				if r != ' ' {
+					if i < 0 {
+						i = k
+					}
+					j = k
+				}
+			}
+			if i < 0 {
+				t.Fatalf("blank line in mark:\n%s", mark)
+			}
+			left = append(left, i)
+			right = append(right, j)
+		}
+		if right[0]-left[0] != 1 {
+			t.Fatalf("tip should be two cells, got %d-%d\n%s", left[0], right[0], mark)
+		}
+		tip := left[0] + right[0]
+		bot := left[len(left)-1] + right[len(right)-1]
+		if tip != bot {
+			t.Fatalf("tip center %d != bottom center %d\n%s", tip, bot, mark)
+		}
+		widening := true
+		for i := 1; i < len(left); i++ {
+			span, prev := right[i]-left[i], right[i-1]-left[i-1]
+			if widening {
+				if span < prev {
+					widening = false
+				}
+				continue
+			}
+			if span > prev {
+				t.Fatalf("mark is not a drop (widens after taper at line %d)\n%s", i+1, mark)
+			}
+		}
+		if widening {
+			t.Fatalf("mark never tapers:\n%s", mark)
+		}
+	}
+}
+
 func TestChatWelcomeEmptyState(t *testing.T) {
 	m := NewChat(Options{Width: 80, Route: "fireworks/deepseek-v4-flash"}, nil)
 	next, _ := m.Update(tea.WindowSizeMsg{Width: 80, Height: 24})
 	m = next.(ChatModel)
 	v := m.View()
-	for _, want := range []string{"╱╲", "─◉─", "Ink", "Ask anything", "what does this repo do?", "deepseek-v4-flash"} {
+	for _, want := range []string{"╱╲", "Ink", "Ask anything", "what does this repo do?", "deepseek-v4-flash"} {
 		if !strings.Contains(v, want) {
 			t.Fatalf("empty chat missing %q:\n%s", want, v)
+		}
+	}
+	for _, dead := range []string{"◉", "╱_____╱"} {
+		if strings.Contains(v, dead) {
+			t.Fatalf("welcome still shows the Friday mark %q:\n%s", dead, v)
 		}
 	}
 	if strings.Contains(v, "[you]") || strings.Contains(v, "[ink]") {

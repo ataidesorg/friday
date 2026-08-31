@@ -185,7 +185,7 @@ func builtins() []chatCmd {
 		},
 		{
 			ID: "theme", Slash: "theme", Title: "Switch Theme", Key: "/theme",
-			Detail: "ink, dark, light, ansi", Group: gDisplay,
+			Detail: "named palettes", Group: gDisplay,
 			Run: ChatModel.cmdTheme,
 		},
 		{

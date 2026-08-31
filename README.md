@@ -111,6 +111,7 @@ Common TUI controls:
 | `Shift+Tab` | Cycle mode: normal, plan, auto, always-approve, always-ask |
 | `Ctrl+b` | Prompt queue |
 | `/model` | Switch route |
+| `/theme` | Switch palette: ink, carbon, sepia, moss, wine, sea, dark, light, ansi |
 | `/agent` | Switch agent profile |
 | `/usage` | Toggle context and configured spend caps near the model |
 | `/tools` | Show or hide tool activity |

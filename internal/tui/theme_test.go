@@ -9,22 +9,26 @@ import (
 
 func TestBuiltinThemes(t *testing.T) {
 	themes := builtinThemes()
-	names := make([]string, len(themes))
+	got := make([]string, len(themes))
 	for i, th := range themes {
-		names[i] = th.Name
+		got[i] = th.Name
 	}
-	for _, want := range []string{"ink", "dark", "light", "ansi"} {
-		if !strings.Contains(strings.Join(names, " "), want) {
-			t.Fatalf("built-ins %v missing %s", names, want)
-		}
+	want := []string{"ink", "carbon", "sepia", "moss", "wine", "sea", "dark", "light", "ansi"}
+	if strings.Join(got, " ") != strings.Join(want, " ") {
+		t.Fatalf("built-ins %v, want %v", got, want)
 	}
-	// ink, dark, and light are fixed: both variants equal.
+	if themes[0].Name != "ink" {
+		t.Fatalf("default slot is %q, want ink", themes[0].Name)
+	}
 	for _, th := range themes {
-		if th.Name != "ink" && th.Name != "dark" && th.Name != "light" {
+		if th.Name == "ansi" {
 			continue
 		}
 		if th.Accent.Light != th.Accent.Dark {
 			t.Fatalf("theme %s accent not fixed: %+v", th.Name, th.Accent)
+		}
+		if th.Label == "" {
+			t.Fatalf("theme %s has no picker label", th.Name)
 		}
 	}
 }
@@ -89,11 +93,9 @@ func TestParseThemeRejectsBadInput(t *testing.T) {
 }
 
 func TestLightThemePaintsCanvas(t *testing.T) {
-	var light Theme
-	for _, th := range builtinThemes() {
-		if th.Name == "light" {
-			light = th
-		}
+	light, ok := lookupTheme("light")
+	if !ok {
+		t.Fatal("missing light theme")
 	}
 	if light.Bg.Light == "" || light.Bg.Dark == "" {
 		t.Fatal("light theme must set a background")
@@ -109,10 +111,23 @@ func TestLightThemePaintsCanvas(t *testing.T) {
 	if len(strings.Split(out, "\n")) != 3 {
 		t.Fatalf("canvas height = %d, want 3", len(strings.Split(out, "\n")))
 	}
-	dark := themedStyles(true, builtinThemes()[1])
-	if dark.hasCanvas {
-		t.Fatal("dark theme must not force a canvas")
+	for _, th := range builtinThemes() {
+		if th.Name == "light" {
+			continue
+		}
+		if themedStyles(true, th).hasCanvas {
+			t.Fatalf("%s must not paint a canvas", th.Name)
+		}
 	}
+}
+
+func lookupTheme(name string) (Theme, bool) {
+	for _, th := range builtinThemes() {
+		if th.Name == name {
+			return th, true
+		}
+	}
+	return Theme{}, false
 }
 
 func TestBuiltinThemesAreDistinct(t *testing.T) {
@@ -178,11 +193,14 @@ func TestChatThemeSwitch(t *testing.T) {
 	if cm.ov == nil || cm.ov.kind != overlayThemes {
 		t.Fatal("palette Switch theme must open the theme picker")
 	}
-	view := cm.ov.view(newChatStyles(false), 80, 10)
-	for _, want := range []string{"ink", "dark", "ansi", "custom"} {
+	view := cm.ov.view(newChatStyles(false), 80, 24)
+	for _, want := range []string{"ink", "carbon", "sepia", "dark", "ansi", "custom"} {
 		if !strings.Contains(view, want) {
 			t.Fatalf("theme picker missing %s:\n%s", want, view)
 		}
+	}
+	if !strings.Contains(view, "graphite") {
+		t.Fatalf("theme picker missing ink label:\n%s", view)
 	}
 
 	// Filter to the custom theme and commit: applied, persisted, announced.

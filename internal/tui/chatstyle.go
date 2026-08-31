@@ -444,42 +444,64 @@ func (cs chatStyles) selectionLine(s string, start, end int) string {
 	return string(runes[:start]) + "\x1b[7m" + string(runes[start:end]) + "\x1b[27m" + string(runes[end:])
 }
 
-// welcome is the idle empty-session pane: a wordmark, one line of copy,
-// and one example. Vertical placement is paneView's job (pin to composer).
+// welcome is the idle empty-session pane: a drop, the name, one line of
+// copy, and one example. Vertical placement is paneView's job.
 func (cs chatStyles) welcome(width, height int) string {
 	_ = height
 	mark := inkMarkLarge
 	if width < 34 {
 		mark = inkMarkSmall
 	}
-	title := "Ink"
-	if cs.on {
-		mark = cs.accent.Render(mark)
-		title = cs.header.Render(title)
+	paint := func(s string, st lipgloss.Style) string {
+		if !cs.on || s == "" {
+			return s
+		}
+		return st.Render(s)
+	}
+	var lines []string
+	for _, l := range strings.Split(mark, "\n") {
+		lines = append(lines, centerLine(paint(l, cs.accent), width))
 	}
 	ask := "Ask anything."
 	ex := `"what does this repo do?"`
-	if cs.on {
-		ask = cs.dim.Render(ask)
-		ex = cs.dim.Render(ex)
-	}
-	return mark + "\n\n" + title + "\n\n" + fit(ask, max(1, width)) + "\n" + fit(ex, max(1, width))
+	lines = append(lines,
+		"",
+		centerLine(paint("Ink", cs.header), width),
+		"",
+		centerLine(paint(ask, cs.dim), width),
+		centerLine(paint(ex, cs.dim), width),
+	)
+	return strings.Join(lines, "\n")
 }
 
-const inkMarkLarge = `       ╱╲
-      ╱╱╲
-     ╱╱  ╲
-    ╱╱    ╲
-   ╱╱   ─◉─
-  ╱╱      ╱
- ╱╱     ╱
-╱_____╱`
+// centerLine left-pads s so it sits in the middle of width. It never
+// right-pads: trailing spaces would copy with the row.
+func centerLine(s string, width int) string {
+	s = strings.TrimRight(s, " \t")
+	if s == "" || width <= 0 {
+		return s
+	}
+	w := lipgloss.Width(s)
+	if w >= width {
+		return fit(s, width)
+	}
+	return strings.Repeat(" ", (width-w)/2) + s
+}
 
-const inkMarkSmall = `   ╱╱╲
-  ╱╱  ╲
- ╱╱  ◉│
-╱╱   ╱
- ╲__╱`
+const inkMarkLarge = `        ╱╲
+       ╱  ╲
+      ╱    ╲
+     ╱      ╲
+    ╱        ╲
+    ╲        ╱
+     ╲      ╱
+      ╲────╱`
+
+const inkMarkSmall = `    ╱╲
+   ╱  ╲
+  ╱    ╲
+  ╲    ╱
+   ╲──╱`
 
 type hint struct{ key, label string }
 

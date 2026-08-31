@@ -144,7 +144,7 @@ instructions = []
 # Values here are also allowed argv prefixes for run_command once approved.
 
 [tui]
-# Launch theme. Built-ins: ink, dark, light, ansi.
+# Launch theme. Built-ins: ink, carbon, sepia, moss, wine, sea, dark, light, ansi.
 # Empty = the built-in default. A live /theme pick saved in the Ink home
 # wins over this.
 theme = ""
